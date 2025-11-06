@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle de Mezcla #{{ mezcla.numero }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @media print {
+            /* Ocultar elementos que no deben imprimirse */
+            nav,
+            button,
+            .no-print,
+            a[href] {
+                display: none !important;
+            }
+            
+            /* Ajustar el cuerpo para impresión */
+            body {
+                background: white !important;
+                padding: 20px;
+            }
+            
+            /* Asegurar que todo el contenido sea visible */
+            .container {
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            
+            /* Mejorar la presentación de tarjetas */
+            .bg-white {
+                box-shadow: none !important;
+                border: 1px solid #ddd;
+                page-break-inside: avoid;
+            }
+            
+            /* Asegurar que las tablas se vean bien */
+            table {
+                page-break-inside: auto;
+            }
+            
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+            
+            /* Título más grande para impresión */
+            h2 {
+                font-size: 24pt !important;
+            }
+            
+            h3 {
+                font-size: 18pt !important;
+            }
+            
+            /* Asegurar que los colores se impriman */
+            .bg-purple-600,
+            .bg-purple-100,
+            .bg-purple-50,
+            .bg-amber-100,
+            .bg-blue-100,
+            .bg-green-600 {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            /* Agregar encabezado de impresión */
+            @page {
+                margin: 2cm;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Navegación -->
+    <nav class="bg-amber-700 text-white p-4 shadow-lg no-print">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <i class="fas fa-coffee text-2xl"></i>
+                <h1 class="text-xl font-bold">Beneficio de Café</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <a href="{% url 'dashboard' %}" class="hover:text-amber-200">
+                    <i class="fas fa-home mr-2"></i>Inicio
+                </a>
+                <a href="{% url 'lista_mezclas' %}" class="hover:text-amber-200">
+                    <i class="fas fa-blender mr-2"></i>Mezclas
+                </a>
+                <span class="text-amber-200">|</span>
+                <span>
+                    <i class="fas fa-user mr-2"></i>{{ user.username }}
+                </span>
+                <a href="{% url 'logout' %}" class="hover:text-amber-200">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Salir
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <div class="container mx-auto mt-8 px-4">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-blender mr-3 text-purple-600"></i>
+                        Mezcla No. {{ mezcla.numero }}
+                    </h2>
+                    <p class="text-gray-600 mt-2">
+                        <i class="fas fa-calendar mr-2"></i>
+                        Creada el {{ mezcla.fecha|date:"d/m/Y H:i" }}
+                    </p>
+                    <span class="inline-block mt-2 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
+                        <i class="fas fa-tag mr-1"></i>Mezcla No.{{ mezcla.numero }} - {{ mezcla.fecha|date:"d/m/Y" }}
+                    </span>
+                </div>
+                <div class="flex space-x-3 no-print">
+                    <button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-print mr-2"></i>Imprimir
+                    </button>
+                    <a href="{% url 'lista_mezclas' %}" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">
+                        <i class="fas fa-arrow-left mr-2"></i>Volver
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información General -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Datos de la Mezcla -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                    <i class="fas fa-info-circle mr-2 text-purple-600"></i>
+                    Información de la Mezcla
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Número de Mezcla:</span>
+                        <span class="font-semibold">#{{ mezcla.numero }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Fecha:</span>
+                        <span class="font-semibold">{{ mezcla.fecha|date:"d/m/Y H:i" }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Destino:</span>
+                        <span class="font-semibold text-purple-700">{{ mezcla.destino }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Peso Total:</span>
+                        <span class="font-semibold text-lg text-green-600">{{ mezcla.peso_total_kg|floatformat:2 }} kg</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Cantidad de Lotes:</span>
+                        <span class="font-semibold">{{ detalles.count }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Responsable:</span>
+                        <span class="font-semibold">{{ mezcla.responsable.username }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Descripción -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                    <i class="fas fa-comment mr-2 text-purple-600"></i>
+                    Descripción
+                </h3>
+                <p class="text-gray-700">{{ mezcla.descripcion|default:"Sin descripción" }}</p>
+            </div>
+        </div>
+
+        <!-- Composición de la Mezcla -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-chart-pie mr-2 text-purple-600"></i>
+                Composición de la Mezcla
+            </h3>
+            
+            <!-- Gráfico de composición (visual simple) -->
+            <div class="mb-6">
+                <div class="flex items-center justify-center space-x-2 mb-4 flex-wrap">
+                    {% for detalle in detalles %}
+                    <div class="text-center mb-4">
+                        <div class="w-20 h-20 rounded-full flex items-center justify-center text-white font-bold"
+                             style="background-color: {% cycle '#8B5CF6' '#7C3AED' '#6D28D9' '#5B21B6' '#4C1D95' %}">
+                            {{ detalle.porcentaje|floatformat:0 }}%
+                        </div>
+                        <p class="text-xs mt-1">{{ detalle.lote.codigo }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Tabla de detalles -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead class="bg-purple-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lote</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo de Café</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bodega</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Peso (kg)</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Porcentaje</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for detalle in detalles %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3">
+                                <span class="font-medium">{{ detalle.lote.codigo }}</span>
+                            </td>
+                            <td class="px-4 py-3">
+                                <span class="px-2 py-1 bg-amber-100 text-amber-800 rounded text-sm">
+                                    {{ detalle.lote.tipo_cafe.nombre }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3">
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">
+                                    Bodega {{ detalle.lote.bodega.codigo }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 font-semibold">{{ detalle.peso_kg|floatformat:2 }}</td>
+                            <td class="px-4 py-3">
+                                <div class="flex items-center">
+                                    <div class="w-24 bg-gray-200 rounded-full h-4 mr-2">
+                                        <div class="bg-purple-600 h-4 rounded-full" style="width: {{ detalle.porcentaje }}%"></div>
+                                    </div>
+                                    <span class="font-semibold">{{ detalle.porcentaje|floatformat:1 }}%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-4 py-8 text-center text-gray-500">
+                                No hay componentes en esta mezcla
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Footer de impresión -->
+        <div class="text-center text-gray-500 text-sm mb-8 no-print">
+            <p>Sistema de Gestión de Beneficio de Café - {{ mezcla.fecha|date:"Y" }}</p>
+        </div>
+    </div>
+</body>
+</html>

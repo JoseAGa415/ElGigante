@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Reproceso - Beneficio de Café{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+            <i class="fas fa-sync mr-3 text-purple-600"></i>
+            Editar Reproceso #{{ reproceso.numero }}
+        </h2>
+        <p class="text-gray-600 mt-2">De Trilla #{{ reproceso.procesado.numero_trilla }} - Lote {{ reproceso.procesado.lote.codigo }}</p>
+    </div>
+
+    <!-- Formulario -->
+    <form method="post" class="bg-white rounded-lg shadow-md p-6 space-y-6">
+        {% csrf_token %}
+        
+        <!-- Información del origen -->
+        <div class="bg-gray-50 p-4 rounded-lg">
+            <h3 class="font-bold text-gray-700 mb-2">Información de Origen</h3>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <span class="text-gray-600">Trilla:</span>
+                    <span class="font-semibold ml-2">#{{ reproceso.procesado.numero_trilla }}</span>
+                </div>
+                <div>
+                    <span class="text-gray-600">Lote:</span>
+                    <span class="font-semibold ml-2">{{ reproceso.procesado.lote.codigo }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pesos -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Peso Inicial (kg) <span class="text-red-500">*</span>
+                </label>
+                <input type="number" step="0.01" name="peso_inicial_kg" value="{{ reproceso.peso_inicial_kg }}" required
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Peso Final (kg) <span class="text-red-500">*</span>
+                </label>
+                <input type="number" step="0.01" name="peso_final_kg" value="{{ reproceso.peso_final_kg }}" required
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
+            </div>
+        </div>
+
+        <!-- Mermas -->
+        <div>
+            <h3 class="font-bold text-gray-700 mb-3">Mermas del Reproceso</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Catadura (kg)</label>
+                    <input type="number" step="0.01" name="catadura" value="{{ reproceso.catadura }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Rechazo Electrónica (kg)</label>
+                    <input type="number" step="0.01" name="rechazo_electronica" value="{{ reproceso.rechazo_electronica }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Bajo Zaranda (kg)</label>
+                    <input type="number" step="0.01" name="bajo_zaranda" value="{{ reproceso.bajo_zaranda }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Barridos (kg)</label>
+                    <input type="number" step="0.01" name="barridos" value="{{ reproceso.barridos }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
+                </div>
+            </div>
+        </div>
+
+        <!-- Motivo -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                Motivo del Reproceso <span class="text-red-500">*</span>
+            </label>
+            <textarea name="motivo" rows="4" required
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">{{ reproceso.motivo }}</textarea>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex justify-end space-x-4">
+            <a href="{% url 'detalle_reproceso' reproceso.id %}" 
+               class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                Cancelar
+            </a>
+            <button type="submit" 
+                    class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                <i class="fas fa-save mr-2"></i>Actualizar Reproceso
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

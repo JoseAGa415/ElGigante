@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Beneficio de Café{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-3xl font-bold text-gray-800 flex items-center">
+            <i class="fas fa-chart-line mr-3 text-amber-600"></i>
+            Dashboard Principal
+        </h2>
+        <p class="text-gray-600 mt-2">Resumen general del beneficio de café</p>
+    </div>
+
+    <!-- Estadísticas Generales -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <!-- Total Lotes -->
+        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-blue-100 text-sm uppercase font-semibold">Lotes Activos</p>
+                    <p class="text-4xl font-bold mt-2">{{ total_lotes }}</p>
+                </div>
+                <div class="bg-white bg-opacity-30 rounded-full p-4">
+                    <i class="fas fa-box text-3xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Procesados -->
+        <div class="bg-gradient-to-br from-amber-500 to-amber-600 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-amber-100 text-sm uppercase font-semibold">Procesados</p>
+                    <p class="text-4xl font-bold mt-2">{{ total_procesados }}</p>
+                </div>
+                <div class="bg-white bg-opacity-30 rounded-full p-4">
+                    <i class="fas fa-cogs text-3xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Reprocesos -->
+        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-purple-100 text-sm uppercase font-semibold">Reprocesos</p>
+                    <p class="text-4xl font-bold mt-2">{{ total_reprocesos }}</p>
+                </div>
+                <div class="bg-white bg-opacity-30 rounded-full p-4">
+                    <i class="fas fa-sync text-3xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Mezclas -->
+        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-green-100 text-sm uppercase font-semibold">Mezclas</p>
+                    <p class="text-4xl font-bold mt-2">{{ total_mezclas }}</p>
+                </div>
+                <div class="bg-white bg-opacity-30 rounded-full p-4">
+                    <i class="fas fa-blender text-3xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estado de Bodegas -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-warehouse mr-2 text-amber-600"></i>
+            Estado de Bodegas
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {% for bodega in bodegas %}
+            <div class="border border-gray-200 rounded-lg p-4 hover:shadow-lg transition duration-200">
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="text-lg font-bold text-gray-700">Bodega {{ bodega.codigo }}</h4>
+                    <i class="fas fa-warehouse text-2xl text-amber-500"></i>
+                </div>
+                
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-600">Capacidad:</span>
+                        <span class="font-semibold">{{ bodega.capacidad|floatformat:0 }} kg</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-600">Ocupado:</span>
+                        <span class="font-semibold text-red-600">{{ bodega.ocupado|floatformat:0 }} kg</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-600">Disponible:</span>
+                        <span class="font-semibold text-green-600">{{ bodega.disponible|floatformat:0 }} kg</span>
+                    </div>
+                </div>
+
+                <!-- Barra de progreso -->
+                <div class="mt-3">
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="h-3 rounded-full transition-all duration-300
+                            {% if bodega.porcentaje >= 90 %}bg-red-500
+                            {% elif bodega.porcentaje >= 70 %}bg-yellow-500
+                            {% else %}bg-green-500{% endif %}"
+                            style="width: {{ bodega.porcentaje }}%">
+                        </div>
+                    </div>
+                    <p class="text-xs text-center mt-1 font-semibold
+                        {% if bodega.porcentaje >= 90 %}text-red-600
+                        {% elif bodega.porcentaje >= 70 %}text-yellow-600
+                        {% else %}text-green-600{% endif %}">
+                        {{ bodega.porcentaje|floatformat:1 }}% Ocupado
+                    </p>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-4 text-center text-gray-500 py-8">
+                <i class="fas fa-warehouse text-4xl mb-2"></i>
+                <p>No hay bodegas configuradas</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Lotes Recientes -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-clock mr-2 text-blue-600"></i>
+            Lotes Recientes
+        </h3>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Código</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bodega</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Peso</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha Ingreso</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for lote in ultimos_lotes %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ lote.codigo }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ lote.tipo_cafe.nombre }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">Bodega {{ lote.bodega.codigo }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ lote.peso_kg }} kg</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ lote.fecha_ingreso|date:"d/m/Y H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">No hay lotes recientes</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Actividad de Hoy -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-calendar-day mr-2 text-amber-600"></i>
+            Actividad de Hoy
+        </h3>
+        <p class="text-gray-500 text-center py-8">
+            <i class="fas fa-coffee text-4xl mb-2"></i><br>
+            No hay actividades registradas hoy
+        </p>
+    </div>
+</div>
+{% endblock %}

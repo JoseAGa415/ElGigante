@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Lote - {{ lote.codigo }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-bold text-red-600 mb-4">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            Confirmar Eliminación
+        </h2>
+        
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <p class="text-gray-700">
+                ¿Está seguro que desea eliminar este lote? Esta acción marcará el lote como inactivo.
+            </p>
+        </div>
+
+        <div class="bg-gray-50 p-4 rounded-lg mb-6">
+            <h3 class="font-bold text-gray-800 mb-3">Información del Lote:</h3>
+            <div class="space-y-2 text-sm text-gray-700">
+                <div class="flex justify-between">
+                    <span class="font-medium">Código:</span>
+                    <span>{{ lote.codigo }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="font-medium">Tipo de Café:</span>
+                    <span>{{ lote.tipo_cafe }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="font-medium">Bodega:</span>
+                    <span>{{ lote.bodega.codigo }} - {{ lote.bodega.nombre }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="font-medium">Peso:</span>
+                    <span class="font-semibold">{{ lote.peso_kg|floatformat:2 }} kg</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="font-medium">Proveedor:</span>
+                    <span>{{ lote.proveedor }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="font-medium">Fecha Ingreso:</span>
+                    <span>{{ lote.fecha_ingreso|date:"d/m/Y" }}</span>
+                </div>
+            </div>
+        </div>
+
+        {% if lote.procesos.all %}
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <h4 class="font-bold text-red-800 mb-2">
+                <i class="fas fa-exclamation-circle mr-2"></i>Advertencia:
+            </h4>
+            <p class="text-sm text-gray-700">
+                Este lote tiene {{ lote.procesos.count }} proceso(s) asociado(s). Al eliminarlo, el lote será marcado como inactivo.
+            </p>
+        </div>
+        {% endif %}
+
+        <form method="post" class="flex justify-end space-x-4">
+            {% csrf_token %}
+            <a href="{% url 'detalle_lote' lote.id %}" 
+               class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                Cancelar
+            </a>
+            <button type="submit" 
+                    class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                <i class="fas fa-trash mr-2"></i>Eliminar Lote
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

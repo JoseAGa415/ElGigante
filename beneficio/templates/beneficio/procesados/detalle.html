@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle Procesado/Trilla #{{ procesado.numero_trilla }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @media print {
+            /* Ocultar elementos que no deben imprimirse */
+            nav,
+            button,
+            .no-print,
+            a[href] {
+                display: none !important;
+            }
+            
+            /* Ajustar el cuerpo para impresión */
+            body {
+                background: white !important;
+                padding: 20px;
+            }
+            
+            /* Asegurar que todo el contenido sea visible */
+            .container {
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            
+            /* Mejorar la presentación de tarjetas */
+            .bg-white {
+                box-shadow: none !important;
+                border: 1px solid #ddd;
+                page-break-inside: avoid;
+            }
+            
+            /* Asegurar que las tablas se vean bien */
+            table {
+                page-break-inside: auto;
+            }
+            
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+            
+            /* Título más grande para impresión */
+            h2 {
+                font-size: 24pt !important;
+            }
+            
+            h3 {
+                font-size: 18pt !important;
+            }
+            
+            /* Asegurar que los colores se impriman */
+            .bg-amber-600,
+            .bg-amber-100,
+            .bg-amber-50,
+            .bg-blue-100,
+            .bg-green-100,
+            .bg-red-100,
+            .bg-yellow-100,
+            .bg-purple-100 {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            /* Agregar encabezado de impresión */
+            @page {
+                margin: 2cm;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Navegación -->
+    <nav class="bg-amber-700 text-white p-4 shadow-lg no-print">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <i class="fas fa-coffee text-2xl"></i>
+                <h1 class="text-xl font-bold">Beneficio de Café</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <a href="{% url 'dashboard' %}" class="hover:text-amber-200">
+                    <i class="fas fa-home mr-2"></i>Inicio
+                </a>
+                <a href="{% url 'lista_procesados' %}" class="hover:text-amber-200">
+                    <i class="fas fa-cogs mr-2"></i>Procesados
+                </a>
+                <span class="text-amber-200">|</span>
+                <span>
+                    <i class="fas fa-user mr-2"></i>{{ user.username }}
+                </span>
+                <a href="{% url 'logout' %}" class="hover:text-amber-200">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Salir
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <div class="container mx-auto mt-8 px-4">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-cogs mr-3 text-amber-600"></i>
+                        Trilla #{{ procesado.numero_trilla }}
+                    </h2>
+                    <p class="text-gray-600 mt-2">
+                        <i class="fas fa-calendar mr-2"></i>
+                        Procesado el {{ procesado.fecha|date:"d/m/Y H:i" }}
+                    </p>
+                    <span class="inline-block mt-2 px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-sm font-medium">
+                        <i class="fas fa-tag mr-1"></i>Trilla #{{ procesado.numero_trilla }} - {{ procesado.fecha|date:"d/m/Y" }}
+                    </span>
+                </div>
+                <div class="flex space-x-3 no-print">
+                    <button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-print mr-2"></i>Imprimir
+                    </button>
+                    <a href="{% url 'lista_procesados' %}" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">
+                        <i class="fas fa-arrow-left mr-2"></i>Volver
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información General -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Datos del Procesado -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                    <i class="fas fa-info-circle mr-2 text-amber-600"></i>
+                    Información General
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Fecha de Proceso:</span>
+                        <span class="font-semibold">{{ procesado.fecha|date:"d/m/Y H:i" }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Operador:</span>
+                        <span class="font-semibold">{{ procesado.operador.username|default:"Sistema" }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Lote:</span>
+                        <span class="font-semibold">{{ procesado.lote.codigo }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Tipo de Café:</span>
+                        <span class="font-semibold text-amber-700">{{ procesado.lote.tipo_cafe }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Bodega:</span>
+                        <span class="font-semibold">Bodega {{ procesado.lote.bodega.codigo }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pesos y Rendimiento -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                    <i class="fas fa-weight mr-2 text-amber-600"></i>
+                    Pesos y Rendimiento
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Peso Inicial:</span>
+                        <span class="font-semibold text-lg text-blue-600">{{ procesado.peso_inicial_kg|floatformat:2 }} kg</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Peso Final:</span>
+                        <span class="font-semibold text-lg text-green-600">{{ procesado.peso_final_kg|floatformat:2 }} kg</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Merma Total:</span>
+                        <span class="font-semibold text-lg text-red-600">{{ procesado.merma_total|floatformat:2 }} kg</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-2 border-t">
+                        <span class="text-gray-600 font-medium">Rendimiento:</span>
+                        <span class="font-bold text-2xl {% if procesado.rendimiento >= 80 %}text-green-600{% elif procesado.rendimiento >= 70 %}text-yellow-600{% else %}text-red-600{% endif %}">
+                            {{ procesado.rendimiento|floatformat:2 }}%
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clasificación de Café -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-star mr-2 text-amber-600"></i>
+                Clasificación de Café
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="border border-gray-200 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-2">Café de Primera</p>
+                    <p class="text-2xl font-bold text-green-700">{{ procesado.cafe_primera|floatformat:2 }} kg</p>
+                </div>
+                <div class="border border-gray-200 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-2">Café de Segunda</p>
+                    <p class="text-2xl font-bold text-yellow-700">{{ procesado.cafe_segunda|floatformat:2 }} kg</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detalle de Mermas -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-chart-bar mr-2 text-amber-600"></i>
+                Detalle de Mermas
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="border border-gray-200 p-4 rounded-lg text-center">
+                    <p class="text-sm text-gray-600 mb-2">Catadura</p>
+                    <p class="text-xl font-bold">{{ procesado.catadura|floatformat:2 }} kg</p>
+                </div>
+                <div class="border border-gray-200 p-4 rounded-lg text-center">
+                    <p class="text-sm text-gray-600 mb-2">Rechazo Electrónica</p>
+                    <p class="text-xl font-bold">{{ procesado.rechazo_electronica|floatformat:2 }} kg</p>
+                </div>
+                <div class="border border-gray-200 p-4 rounded-lg text-center">
+                    <p class="text-sm text-gray-600 mb-2">Bajo Zaranda</p>
+                    <p class="text-xl font-bold">{{ procesado.bajo_zaranda|floatformat:2 }} kg</p>
+                </div>
+                <div class="border border-gray-200 p-4 rounded-lg text-center">
+                    <p class="text-sm text-gray-600 mb-2">Barridos</p>
+                    <p class="text-xl font-bold">{{ procesado.barridos|floatformat:2 }} kg</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reprocesos -->
+        {% if procesado.reprocesos.exists %}
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-sync mr-2 text-purple-600"></i>
+                Reprocesos Realizados
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead class="bg-purple-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reproceso No.</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Peso Inicial</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Peso Final</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rendimiento</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase no-print">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for reproceso in procesado.reprocesos.all %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3">
+                                <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded text-sm font-medium">
+                                    Reproceso #{{ reproceso.numero }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-sm">{{ reproceso.fecha|date:"d/m/Y H:i" }}</td>
+                            <td class="px-4 py-3 font-semibold">{{ reproceso.peso_inicial_kg|floatformat:2 }} kg</td>
+                            <td class="px-4 py-3 font-semibold">{{ reproceso.peso_final_kg|floatformat:2 }} kg</td>
+                            <td class="px-4 py-3 font-semibold {% if reproceso.rendimiento >= 80 %}text-green-600{% elif reproceso.rendimiento >= 70 %}text-yellow-600{% else %}text-red-600{% endif %}">
+                                {{ reproceso.rendimiento|floatformat:2 }}%
+                            </td>
+                            <td class="px-4 py-3 text-sm no-print">
+                                <a href="{% url 'detalle_reproceso' reproceso.id %}" class="text-purple-600 hover:text-purple-900">
+                                    <i class="fas fa-eye"></i> Ver
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Observaciones -->
+        {% if procesado.observaciones %}
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                <i class="fas fa-comment mr-2 text-amber-600"></i>
+                Observaciones
+            </h3>
+            <p class="text-gray-700 leading-relaxed">{{ procesado.observaciones }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Footer de impresión -->
+        <div class="text-center text-gray-500 text-sm mb-8 no-print">
+            <p>Sistema de Gestión de Beneficio de Café - {{ procesado.fecha|date:"Y" }}</p>
+        </div>
+    </div>
+</body>
+</html>

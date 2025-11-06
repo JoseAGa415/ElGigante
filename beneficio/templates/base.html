@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EL GIGANTE - INPROCAF{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Styles -->
+    <style>
+        .coffee-gradient {
+            background: linear-gradient(135deg, #6B4423 0%, #8B5A2B 50%, #D2691E 100%);
+        }
+        .sidebar-hover:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        .card-shadow {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-50">
+    {% if user.is_authenticated %}
+    <!-- Navegación Principal -->
+    <nav class="coffee-gradient shadow-lg fixed top-0 w-full z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-coffee text-white text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h1 class="text-white text-xl font-bold">EL GIGANTE</h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-white">
+                        <i class="fas fa-user mr-2"></i>{{ user.username }}
+                    </span>
+                    <a href="{% url 'logout' %}" class="text-white hover:text-yellow-200 transition">
+                        <i class="fas fa-sign-out-alt mr-1"></i>Salir
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex min-h-screen pt-16">
+        <!-- Sidebar -->
+        <div class="w-64 coffee-gradient text-white fixed h-full top-16 overflow-y-auto">
+            <nav class="mt-8 pb-8">
+                <a href="{% url 'dashboard' %}" class="block px-6 py-3 sidebar-hover">
+                    <i class="fas fa-dashboard mr-3"></i>Dashboard
+                </a>
+                
+                <div class="mt-4 px-6">
+                    <p class="text-xs uppercase text-yellow-200 font-semibold">Gestión</p>
+                </div>
+                
+                <a href="{% url 'lista_lotes' %}" class="block px-6 py-3 sidebar-hover">
+                    <i class="fas fa-box mr-3"></i>Lotes
+                </a>
+                
+                <a href="{% url 'lista_procesados' %}" class="block px-6 py-3 sidebar-hover">
+                    <i class="fas fa-cogs mr-3"></i>Procesado/Trilla
+                </a>
+                
+                <a href="{% url 'lista_reprocesos' %}" class="block px-6 py-3 sidebar-hover">
+                    <i class="fas fa-sync mr-3"></i>Reprocesos
+                </a>
+                
+                <a href="{% url 'lista_mezclas' %}" class="block px-6 py-3 sidebar-hover">
+                    <i class="fas fa-blender mr-3"></i>Mezclas
+                </a>
+                
+                <a href="{% url 'lista_cataciones' %}" class="block px-6 py-3 sidebar-hover">
+                    <i class="fas fa-coffee mr-3"></i>Cataciones
+                </a>
+
+                <div class="mt-4 px-6">
+                    <p class="text-xs uppercase text-yellow-200 font-semibold">Reportes</p>
+                </div>
+                
+                <a href="{% url 'historial' %}" class="block px-6 py-3 sidebar-hover">
+                    <i class="fas fa-history mr-3"></i>Historial
+                </a>
+                
+                {% if user.is_superuser %}
+                <div class="mt-4 px-6">
+                    <p class="text-xs uppercase text-yellow-200 font-semibold">Administración</p>
+                </div>
+                
+                <a href="/admin/" class="block px-6 py-3 sidebar-hover">
+                    <i class="fas fa-user-cog mr-3"></i>Panel Admin
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+
+        <!-- Contenido Principal -->
+        <div class="flex-1 ml-64">
+            <main class="p-6">
+                <!-- Mensajes -->
+                {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                    <div class="p-4 mb-2 rounded-lg 
+                        {% if message.tags == 'error' %}bg-red-100 text-red-700 border border-red-400
+                        {% elif message.tags == 'success' %}bg-green-100 text-green-700 border border-green-400
+                        {% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-700 border border-yellow-400
+                        {% else %}bg-blue-100 text-blue-700 border border-blue-400{% endif %}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+    {% else %}
+    <!-- Si no está autenticado -->
+    <div class="min-h-screen flex items-center justify-center coffee-gradient">
+        <div class="bg-white p-8 rounded-lg shadow-2xl text-center max-w-md">
+            <i class="fas fa-coffee text-6xl text-amber-600 mb-4"></i>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Beneficio de Café</h2>
+            <p class="text-gray-600 mb-6">Por favor, inicia sesión para continuar</p>
+            <a href="{% url 'login' %}" class="bg-amber-600 text-white px-6 py-3 rounded-lg hover:bg-amber-700 transition inline-block">
+                <i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- JavaScript -->
+   <script>
+    // Agregar botón de cerrar a los mensajes
+    document.addEventListener('DOMContentLoaded', function() {
+        const messages = document.querySelectorAll('[class*="bg-"][class*="text-"]');
+        messages.forEach(msg => {
+            if (msg.closest('main')) {
+                // Crear botón de cerrar
+                const closeBtn = document.createElement('button');
+                closeBtn.innerHTML = '&times;';
+                closeBtn.className = 'float-right text-2xl font-bold leading-none hover:opacity-75';
+                closeBtn.onclick = function() {
+                    msg.style.transition = 'opacity 0.3s';
+                    msg.style.opacity = '0';
+                    setTimeout(() => msg.remove(), 300);
+                };
+                msg.insertBefore(closeBtn, msg.firstChild);
+            }
+        });
+    });
+</script>
+    
+    {% block extra_js %}{% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear Lote - Beneficio de Café{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+            <i class="fas fa-box mr-3 text-blue-600"></i>
+            Crear Nuevo Lote
+        </h2>
+        <p class="text-gray-600 mt-2">Registrar ingreso de café en bodega</p>
+    </div>
+
+    <!-- Formulario -->
+    <form method="post" class="bg-white rounded-lg shadow-md p-6 space-y-6">
+        {% csrf_token %}
+        
+        <!-- Información Básica -->
+        <div>
+            <h3 class="font-bold text-gray-700 mb-4">Información del Lote</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Código del Lote <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" name="codigo" required
+                           placeholder="Ej: L-2025-001"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Tipo de Café <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" 
+                           name="tipo_cafe" 
+                           list="tipos-cafe-list"
+                           required
+                           placeholder="Ej: Arábica, Robusta, Geisha, Pacamara, Bourbon, Caturra..."
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
+                    <datalist id="tipos-cafe-list">
+                        <option value="Arábica">
+                        <option value="Robusta">
+                        <option value="Geisha">
+                        <option value="Pacamara">
+                        <option value="Bourbon">
+                        <option value="Caturra">
+                        <option value="Catuaí">
+                        <option value="Typica">
+                        <option value="Maragogipe">
+                        <option value="Mundo Novo">
+                        <option value="SL28">
+                        <option value="SL34">
+                        <option value="Liberica">
+                        <option value="Villa Sarchi">
+                        <option value="Tekisic">
+                        <option value="Pache">
+                    </datalist>
+                    <p class="text-xs text-gray-500 mt-1">Escribe manualmente la variedad o selecciona del listado</p>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Bodega <span class="text-red-500">*</span>
+                    </label>
+                    <select name="bodega_id" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
+                        <option value="">Seleccione bodega...</option>
+                        {% for bodega in bodegas %}
+                        <option value="{{ bodega.id }}">{{ bodega.codigo }} - {{ bodega.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Peso (kg) <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" step="0.01" name="peso_kg" required
+                           placeholder="0.00"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
+                </div>
+            </div>
+        </div>
+
+        <!-- Características -->
+        <div>
+            <h3 class="font-bold text-gray-700 mb-4">Características</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Humedad (%) <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" step="0.01" name="humedad" required
+                           placeholder="0.00"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Fecha de Ingreso <span class="text-red-500">*</span>
+                    </label>
+                    <input type="datetime-local" name="fecha_ingreso" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
+                </div>
+            </div>
+        </div>
+
+        <!-- Información Comercial -->
+        <div>
+            <h3 class="font-bold text-gray-700 mb-4">Información Comercial</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Proveedor <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" name="proveedor" required
+                           placeholder="Nombre del proveedor"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Precio por Quintal <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" step="0.01" name="precio_quintal" required
+                           placeholder="0.00"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
+                </div>
+            </div>
+        </div>
+
+        <!-- Observaciones -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Observaciones</label>
+            <textarea name="observaciones" rows="4"
+                      placeholder="Notas adicionales sobre el lote..."
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600"></textarea>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex justify-end space-x-4">
+            <a href="{% url 'lista_lotes' %}" 
+               class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                Cancelar
+            </a>
+            <button type="submit" 
+                    class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                <i class="fas fa-save mr-2"></i>Guardar Lote
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+// Guardar nuevas variedades en localStorage
+document.querySelector('form').addEventListener('submit', function() {
+    const tipoCafe = document.querySelector('input[name="tipo_cafe"]').value;
+    if (tipoCafe) {
+        let variedades = JSON.parse(localStorage.getItem('variedadesCafe') || '[]');
+        if (!variedades.includes(tipoCafe)) {
+            variedades.push(tipoCafe);
+            localStorage.setItem('variedadesCafe', JSON.stringify(variedades));
+        }
+    }
+});
+
+// Cargar variedades guardadas
+window.addEventListener('DOMContentLoaded', function() {
+    const datalist = document.getElementById('tipos-cafe-list');
+    const variedades = JSON.parse(localStorage.getItem('variedadesCafe') || '[]');
+    variedades.forEach(function(variedad) {
+        const option = document.createElement('option');
+        option.value = variedad;
+        datalist.appendChild(option);
+    });
+});
+</script>
+{% endblock %}

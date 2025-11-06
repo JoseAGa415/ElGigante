@@ -1,0 +1,603 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalle Catación - {{ catacion.codigo_muestra }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex justify-between items-start">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-flask mr-3 text-amber-600"></i>
+                    Detalle de Catación - {{ catacion.codigo_muestra }}
+                </h2>
+                <p class="text-gray-600 mt-2">Fecha: {{ catacion.fecha_catacion|date:"d/m/Y H:i" }}</p>
+            </div>
+            <div class="flex gap-2">
+                <a href="{% url 'lista_cataciones' %}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                    <i class="fas fa-arrow-left mr-2"></i>Volver
+                </a>
+<button onclick="window.print()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+    <i class="fas fa-print mr-2"></i>Imprimir
+</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información Básica -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Información Básica</h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label class="text-sm font-semibold text-gray-600">Código de Muestra</label>
+                <p class="text-gray-900 font-medium">{{ catacion.codigo_muestra }}</p>
+            </div>
+            <div>
+                <label class="text-sm font-semibold text-gray-600">Fecha de Catación</label>
+                <p class="text-gray-900 font-medium">{{ catacion.fecha_catacion|date:"d/m/Y H:i" }}</p>
+            </div>
+            <div>
+                <label class="text-sm font-semibold text-gray-600">Tipo de Muestra</label>
+                <p class="text-gray-900 font-medium">{{ catacion.get_tipo_muestra_display }}</p>
+            </div>
+            <div>
+                <label class="text-sm font-semibold text-gray-600">Humedad del Grano</label>
+                <p class="text-gray-900 font-medium">{{ catacion.humedad_grano|default:"N/A" }}%</p>
+            </div>
+        </div>
+
+        {% if catacion.lote %}
+        <div class="mt-4 bg-blue-50 p-4 rounded">
+            <label class="text-sm font-semibold text-blue-800">Lote:</label>
+            <p class="text-blue-900 font-medium">{{ catacion.lote.codigo }} - {{ catacion.lote.tipo_cafe }}</p>
+        </div>
+        {% endif %}
+
+        {% if catacion.procesado %}
+        <div class="mt-4 bg-green-50 p-4 rounded">
+            <label class="text-sm font-semibold text-green-800">Procesado:</label>
+            <p class="text-green-900 font-medium">Trilla #{{ catacion.procesado.numero_trilla }} - Lote {{ catacion.procesado.lote.codigo }}</p>
+        </div>
+        {% endif %}
+
+        {% if catacion.mezcla %}
+        <div class="mt-4 bg-purple-50 p-4 rounded">
+            <label class="text-sm font-semibold text-purple-800">Mezcla:</label>
+            <p class="text-purple-900 font-medium">Mezcla #{{ catacion.mezcla.numero }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- PUNTAJE DESTACADO -->
+    <div class="bg-gradient-to-r from-amber-500 to-amber-600 rounded-lg shadow-lg p-8 text-white">
+        <div class="text-center">
+            <h3 class="text-2xl font-bold mb-4">PUNTAJE FINAL</h3>
+            <div class="bg-white text-gray-900 rounded-lg p-6 inline-block shadow-xl">
+                <div class="text-6xl font-bold mb-2">{{ catacion.puntaje_total|floatformat:2 }}</div>
+                <div class="text-xl font-semibold mt-2 
+                    {% if catacion.puntaje_total >= 90 %}text-purple-600
+                    {% elif catacion.puntaje_total >= 85 %}text-green-600
+                    {% elif catacion.puntaje_total >= 80 %}text-blue-600
+                    {% elif catacion.puntaje_total >= 70 %}text-yellow-600
+                    {% else %}text-red-600{% endif %}">
+                    {% if catacion.puntaje_total >= 90 %}EXCEPCIONAL
+                    {% elif catacion.puntaje_total >= 85 %}SOBRESALIENTE
+                    {% elif catacion.puntaje_total >= 80 %}CAFÉ ESPECIAL
+                    {% elif catacion.puntaje_total >= 70 %}MUY BUENO
+                    {% else %}PROMEDIO{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EVALUACIONES EN 2 COLUMNAS -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- COLUMNA IZQUIERDA: EVALUACIÓN DESCRIPTIVA -->
+            <div class="space-y-4">
+                <div class="bg-gray-800 text-white px-3 py-2 rounded">
+                    <h3 class="font-bold text-sm">PARTE 1: EVALUACIÓN DESCRIPTIVA</h3>
+                </div>
+
+                <!-- Fragancia/Aroma -->
+                <div class="border border-gray-300 p-4 rounded">
+                    <h4 class="font-bold text-sm mb-3 text-gray-800">Fragancia/Aroma</h4>
+                    
+                    <!-- Intensidades -->
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <div>
+                            <label class="text-xs font-semibold text-gray-600">Fragancia - Intensidad</label>
+                            <div class="relative h-6 bg-gray-200 rounded mt-1">
+                                <div class="h-full bg-gradient-to-r from-yellow-400 to-amber-600 rounded" 
+                                     style="width: {% widthratio catacion.intensidad_fragancia|default:5 1 10 %}%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold text-gray-600">Aroma - Intensidad</label>
+                            <div class="relative h-6 bg-gray-200 rounded mt-1">
+                                <div class="h-full bg-gradient-to-r from-yellow-400 to-amber-600 rounded" 
+                                     style="width: {% widthratio catacion.intensidad_aroma|default:5 1 10 %}%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Atributos Seleccionados -->
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        {% if catacion.attr_floral %}<span class="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs"><i class="fas fa-spa mr-1"></i>Floral</span>{% endif %}
+                        {% if catacion.attr_afrutado %}<span class="px-2 py-1 bg-pink-100 text-pink-800 rounded text-xs"><i class="fas fa-apple-alt mr-1"></i>Afrutado</span>{% endif %}
+                        {% if catacion.attr_verde_vegetal %}<span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs"><i class="fas fa-leaf mr-1"></i>Verde/Vegetal</span>{% endif %}
+                        {% if catacion.attr_tostado %}<span class="px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs"><i class="fas fa-fire mr-1"></i>Tostado</span>{% endif %}
+                        {% if catacion.attr_nueces_cacao %}<span class="px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs"><i class="fas fa-seedling mr-1"></i>Nueces/Cacao</span>{% endif %}
+                        {% if catacion.attr_dulce %}<span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs"><i class="fas fa-candy-cane mr-1"></i>Dulce</span>{% endif %}
+                        {% if catacion.attr_especias %}<span class="px-2 py-1 bg-red-200 text-red-900 rounded text-xs"><i class="fas fa-pepper-hot mr-1"></i>Especias</span>{% endif %}
+                        {% if catacion.attr_acido_fermentado %}<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs"><i class="fas fa-vial mr-1"></i>Ácido/Fermentado</span>{% endif %}
+                    </div>
+
+                    {% if catacion.notas_fragancia_aroma %}
+                    <div class="bg-gray-50 p-2 rounded">
+                        <p class="text-xs text-gray-700">{{ catacion.notas_fragancia_aroma }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Sabor -->
+                <div class="border border-gray-300 p-4 rounded">
+                    <h4 class="font-bold text-sm mb-2 text-gray-800">Sabor</h4>
+                    <div class="mb-2">
+                        <label class="text-xs font-semibold text-gray-600">Intensidad</label>
+                        <div class="relative h-6 bg-gray-200 rounded mt-1">
+                            <div class="h-full bg-gradient-to-r from-yellow-400 to-amber-600 rounded" 
+                                 style="width: {% widthratio catacion.intensidad_sabor|default:5 1 10 %}%"></div>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mb-2">
+                        {% if catacion.gusto_salado %}<span class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs">Salado</span>{% endif %}
+                        {% if catacion.gusto_acido %}<span class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs">Ácido</span>{% endif %}
+                        {% if catacion.gusto_dulce %}<span class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs">Dulce</span>{% endif %}
+                        {% if catacion.gusto_amargo %}<span class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs">Amargo</span>{% endif %}
+                        {% if catacion.gusto_umami %}<span class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs">Umami</span>{% endif %}
+                    </div>
+                    {% if catacion.notas_sabor %}
+                    <div class="bg-gray-50 p-2 rounded">
+                        <p class="text-xs text-gray-700">{{ catacion.notas_sabor }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Sabor Residual -->
+                <div class="border border-gray-300 p-4 rounded">
+                    <h4 class="font-bold text-sm mb-2 text-gray-800">Sabor Residual</h4>
+                    <div class="mb-2">
+                        <label class="text-xs font-semibold text-gray-600">Intensidad</label>
+                        <div class="relative h-6 bg-gray-200 rounded mt-1">
+                            <div class="h-full bg-gradient-to-r from-yellow-400 to-amber-600 rounded" 
+                                 style="width: {% widthratio catacion.intensidad_sabor_residual|default:5 1 10 %}%"></div>
+                        </div>
+                    </div>
+                    {% if catacion.notas_residual %}
+                    <div class="bg-gray-50 p-2 rounded">
+                        <p class="text-xs text-gray-700">{{ catacion.notas_residual }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Acidez -->
+                <div class="border border-gray-300 p-4 rounded">
+                    <h4 class="font-bold text-sm mb-2 text-gray-800">Acidez</h4>
+                    <div class="mb-2">
+                        <label class="text-xs font-semibold text-gray-600">Intensidad</label>
+                        <div class="relative h-6 bg-gray-200 rounded mt-1">
+                            <div class="h-full bg-gradient-to-r from-yellow-400 to-amber-600 rounded" 
+                                 style="width: {% widthratio catacion.intensidad_acidez|default:5 1 10 %}%"></div>
+                        </div>
+                    </div>
+                    {% if catacion.notas_acidez %}
+                    <div class="bg-gray-50 p-2 rounded">
+                        <p class="text-xs text-gray-700">{{ catacion.notas_acidez }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Sensación en Boca -->
+                <div class="border border-gray-300 p-4 rounded">
+                    <h4 class="font-bold text-sm mb-2 text-gray-800">Sensación en Boca (Cuerpo)</h4>
+                    <div class="mb-2">
+                        <label class="text-xs font-semibold text-gray-600">Intensidad</label>
+                        <div class="relative h-6 bg-gray-200 rounded mt-1">
+                            <div class="h-full bg-gradient-to-r from-yellow-400 to-amber-600 rounded" 
+                                 style="width: {% widthratio catacion.intensidad_cuerpo|default:5 1 10 %}%"></div>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mb-2">
+                        {% if catacion.cuerpo_aspero %}<span class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs">Áspero</span>{% endif %}
+                        {% if catacion.cuerpo_aceitoso %}<span class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs">Aceitoso</span>{% endif %}
+                        {% if catacion.cuerpo_suave %}<span class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs">Suave</span>{% endif %}
+                        {% if catacion.cuerpo_seca_boca %}<span class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs">Seca boca</span>{% endif %}
+                        {% if catacion.cuerpo_metalico %}<span class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs">Metálico</span>{% endif %}
+                    </div>
+                    {% if catacion.notas_cuerpo %}
+                    <div class="bg-gray-50 p-2 rounded">
+                        <p class="text-xs text-gray-700">{{ catacion.notas_cuerpo }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Evaluación Extrínseca -->
+                <div class="bg-gray-800 text-white px-3 py-2 rounded">
+                    <h3 class="font-bold text-sm">PARTE 3: EVALUACIÓN EXTRÍNSECA</h3>
+                </div>
+                {% if catacion.notas_extrinseca %}
+                <div class="border border-gray-300 p-3 rounded">
+                    <p class="text-sm text-gray-700">{{ catacion.notas_extrinseca }}</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- COLUMNA DERECHA: EVALUACIÓN AFECTIVA -->
+            <div class="space-y-3">
+                <div class="bg-gray-800 text-white px-3 py-2 rounded">
+                    <h3 class="font-bold text-sm">PARTE 2: EVALUACIÓN AFECTIVA (PUNTAJES)</h3>
+                </div>
+
+                <!-- Tabla de Puntajes -->
+                <div class="border border-gray-300 rounded overflow-hidden">
+                    <table class="min-w-full">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-bold text-gray-700">ATRIBUTO</th>
+                                <th class="px-4 py-2 text-center text-xs font-bold text-gray-700">PUNTAJE</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr>
+                                <td class="px-4 py-2 text-sm text-gray-900">Fragancia</td>
+                                <td class="px-4 py-2 text-center text-sm font-bold text-amber-600">{{ catacion.fragancia|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2 text-sm text-gray-900">Aroma</td>
+                                <td class="px-4 py-2 text-center text-sm font-bold text-amber-600">{{ catacion.aroma|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2 text-sm text-gray-900">Sabor</td>
+                                <td class="px-4 py-2 text-center text-sm font-bold text-amber-600">{{ catacion.sabor|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2 text-sm text-gray-900">Sabor Residual</td>
+                                <td class="px-4 py-2 text-center text-sm font-bold text-amber-600">{{ catacion.sabor_residual|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2 text-sm text-gray-900">Acidez</td>
+                                <td class="px-4 py-2 text-center text-sm font-bold text-amber-600">{{ catacion.acidez|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2 text-sm text-gray-900">Cuerpo</td>
+                                <td class="px-4 py-2 text-center text-sm font-bold text-amber-600">{{ catacion.cuerpo|floatformat:2 }}</td>
+                            </tr>
+                            <tr class="bg-green-50">
+                                <td class="px-4 py-2 text-sm text-gray-900 font-semibold">Uniformidad</td>
+                                <td class="px-4 py-2 text-center text-sm font-bold text-green-600">{{ catacion.uniformidad|floatformat:2 }}</td>
+                            </tr>
+                            <tr class="bg-green-50">
+                                <td class="px-4 py-2 text-sm text-gray-900 font-semibold">Taza Limpia</td>
+                                <td class="px-4 py-2 text-center text-sm font-bold text-green-600">{{ catacion.taza_limpia|floatformat:2 }}</td>
+                            </tr>
+                            <tr class="bg-green-50">
+                                <td class="px-4 py-2 text-sm text-gray-900 font-semibold">Dulzor</td>
+                                <td class="px-4 py-2 text-center text-sm font-bold text-green-600">{{ catacion.dulzor|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2 text-sm text-gray-900">Balance</td>
+                                <td class="px-4 py-2 text-center text-sm font-bold text-amber-600">{{ catacion.balance|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2 text-sm text-gray-900">Impresión Global</td>
+                                <td class="px-4 py-2 text-center text-sm font-bold text-amber-600">{{ catacion.general|floatformat:2 }}</td>
+                            </tr>
+                            <tr class="bg-red-50">
+                                <td class="px-4 py-2 text-sm text-red-900 font-semibold">Defectos</td>
+                                <td class="px-4 py-2 text-center text-sm font-bold text-red-600">-{{ catacion.total_defectos|floatformat:2 }}</td>
+                            </tr>
+                            <tr class="bg-amber-100">
+                                <td class="px-4 py-3 text-sm text-gray-900 font-bold">TOTAL</td>
+                                <td class="px-4 py-3 text-center text-lg font-bold text-amber-700">{{ catacion.puntaje_total|floatformat:2 }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Notas de cada atributo -->
+                {% if catacion.notas_fragancia or catacion.notas_aroma or catacion.notas_sabor_afectivo %}
+                <div class="border border-gray-300 p-3 rounded">
+                    <h4 class="font-bold text-xs text-gray-700 mb-2">Notas Adicionales</h4>
+                    <div class="space-y-2 text-xs">
+                        {% if catacion.notas_fragancia %}<p><strong>Fragancia:</strong> {{ catacion.notas_fragancia }}</p>{% endif %}
+                        {% if catacion.notas_aroma %}<p><strong>Aroma:</strong> {{ catacion.notas_aroma }}</p>{% endif %}
+                        {% if catacion.notas_sabor_afectivo %}<p><strong>Sabor:</strong> {{ catacion.notas_sabor_afectivo }}</p>{% endif %}
+                        {% if catacion.notas_residual_afectivo %}<p><strong>Sabor Residual:</strong> {{ catacion.notas_residual_afectivo }}</p>{% endif %}
+                        {% if catacion.notas_acidez_afectivo %}<p><strong>Acidez:</strong> {{ catacion.notas_acidez_afectivo }}</p>{% endif %}
+                        {% if catacion.notas_cuerpo_afectivo %}<p><strong>Cuerpo:</strong> {{ catacion.notas_cuerpo_afectivo }}</p>{% endif %}
+                        {% if catacion.notas_balance %}<p><strong>Balance:</strong> {{ catacion.notas_balance }}</p>{% endif %}
+                        {% if catacion.notas_general %}<p><strong>General:</strong> {{ catacion.notas_general }}</p>{% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- DEFECTOS -->
+    {% if catacion.total_defectos > 0 %}
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="bg-red-800 text-white px-4 py-2 rounded-t-lg -mx-6 -mt-6 mb-4">
+            <h3 class="font-bold text-lg">DEFECTOS</h3>
+        </div>
+        <div class="grid grid-cols-3 gap-4">
+            <div class="bg-red-50 p-4 rounded border border-red-200">
+                <label class="text-sm font-bold text-red-900">Intensidad 2:</label>
+                <p class="text-2xl font-bold text-red-700">{{ catacion.defectos_intensidad_2 }}</p>
+            </div>
+            <div class="bg-red-50 p-4 rounded border border-red-200">
+                <label class="text-sm font-bold text-red-900">Intensidad 4:</label>
+                <p class="text-2xl font-bold text-red-700">{{ catacion.defectos_intensidad_4 }}</p>
+            </div>
+            <div class="bg-red-100 p-4 rounded border border-red-300">
+                <label class="text-sm font-bold text-red-900">Total Defectos:</label>
+                <p class="text-2xl font-bold text-red-800">{{ catacion.total_defectos|floatformat:2 }}</p>
+            </div>
+        </div>
+        {% if catacion.descripcion_defectos %}
+        <div class="mt-4 bg-red-50 p-4 rounded border border-red-200">
+            <label class="text-sm font-bold text-red-900">Descripción:</label>
+            <p class="text-sm text-gray-700 mt-2">{{ catacion.descripcion_defectos }}</p>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- DIAGRAMA RADAR -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">
+            <i class="fas fa-chart-radar mr-2 text-amber-600"></i>
+            Perfil Sensorial
+        </h3>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Gráfico -->
+            <div class="flex items-center justify-center">
+                <div class="w-full max-w-md">
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Información Adicional -->
+            <div class="space-y-3">
+                {% if catacion.notas_perfil %}
+                <div class="bg-gradient-to-br from-blue-900 to-blue-800 text-white p-4 rounded-lg">
+                    <h4 class="font-bold text-sm mb-2">NOTAS</h4>
+                    <p class="text-sm">{{ catacion.notas_perfil }}</p>
+                </div>
+                {% endif %}
+
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                    {% if catacion.productor %}
+                    <div class="bg-gray-50 p-3 rounded border">
+                        <label class="font-bold text-gray-700 text-xs">PRODUCTOR:</label>
+                        <p class="text-gray-900">{{ catacion.productor }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if catacion.altitud %}
+                    <div class="bg-gray-50 p-3 rounded border">
+                        <label class="font-bold text-gray-700 text-xs">ALTITUD:</label>
+                        <p class="text-gray-900">{{ catacion.altitud }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if catacion.region %}
+                    <div class="bg-gray-50 p-3 rounded border">
+                        <label class="font-bold text-gray-700 text-xs">REGIÓN:</label>
+                        <p class="text-gray-900">{{ catacion.region }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if catacion.variedad %}
+                    <div class="bg-gray-50 p-3 rounded border">
+                        <label class="font-bold text-gray-700 text-xs">VARIEDAD:</label>
+                        <p class="text-gray-900">{{ catacion.variedad }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if catacion.proceso %}
+                    <div class="bg-gray-50 p-3 rounded border">
+                        <label class="font-bold text-gray-700 text-xs">PROCESO:</label>
+                        <p class="text-gray-900">{{ catacion.proceso }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if catacion.secado %}
+                    <div class="bg-gray-50 p-3 rounded border">
+                        <label class="font-bold text-gray-700 text-xs">SECADO:</label>
+                        <p class="text-gray-900">{{ catacion.secado }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if catacion.horas_fermentacion %}
+                    <div class="bg-gray-50 p-3 rounded border col-span-2">
+                        <label class="font-bold text-gray-700 text-xs">HORAS DE FERMENTACIÓN:</label>
+                        <p class="text-gray-900">{{ catacion.horas_fermentacion }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if catacion.finca %}
+                    <div class="bg-gray-50 p-3rounded border col-span-2">
+<label class="font-bold text-gray-700 text-xs">FINCA:</label>
+<p class="text-gray-900">{{ catacion.finca }}</p>
+</div>
+{% endif %}
+</div>
+</div>
+</div>
+</div>
+<!-- NOTAS DEL CATADOR -->
+{% if catacion.notas_catador %}
+<div class="bg-white rounded-lg shadow-md p-6">
+    <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">
+        <i class="fas fa-comment-dots mr-2 text-amber-600"></i>
+        Notas Finales del Catador
+    </h3>
+    <div class="bg-gray-50 p-4 rounded border">
+        <p class="text-gray-700">{{ catacion.notas_catador }}</p>
+    </div>
+</div>
+{% endif %}
+
+<!-- Información del Sistema -->
+<div class="bg-white rounded-lg shadow-md p-6">
+    <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Información del Sistema</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+        <div>
+            <label class="text-gray-600 font-semibold">Catador:</label>
+            <p class="text-gray-900">{{ catacion.catador.get_full_name|default:catacion.catador.username }}</p>
+        </div>
+        <div>
+            <label class="text-gray-600 font-semibold">Fecha de Registro:</label>
+            <p class="text-gray-900">{{ catacion.created_at|date:"d/m/Y H:i" }}</p>
+        </div>
+        <div>
+            <label class="text-gray-600 font-semibold">Última Actualización:</label>
+            <p class="text-gray-900">{{ catacion.updated_at|date:"d/m/Y H:i" }}</p>
+        </div>
+    </div>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('radarChart');
+    
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['FRAGANCIA', 'AROMA', 'SABOR', 'SABOR RESIDUAL', 'ACIDEZ', 'CUERPO', 'DULZURA', 'EN GENERAL'],
+                datasets: [{
+                    label: 'Perfil Sensorial',
+                    data: [
+                        {{ catacion.fragancia|default:0 }},
+                        {{ catacion.aroma|default:0 }},
+                        {{ catacion.sabor|default:0 }},
+                        {{ catacion.sabor_residual|default:0 }},
+                        {{ catacion.acidez|default:0 }},
+                        {{ catacion.cuerpo|default:0 }},
+                        {{ catacion.dulzor|default:0 }},
+                        {{ catacion.general|default:0 }}
+                    ],
+                    fill: true,
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    borderColor: 'rgb(59, 130, 246)',
+                    pointBackgroundColor: 'rgb(59, 130, 246)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgb(59, 130, 246)',
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        min: 0,
+                        max: 10,
+                        ticks: {
+                            stepSize: 2,
+                            font: {
+                                size: 10,
+                                weight: 'bold'
+                            },
+                            color: '#ffffff',
+                            backdropColor: 'rgba(30, 58, 138, 0.8)',
+                            backdropPadding: 4
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.3)',
+                            circular: true
+                        },
+                        pointLabels: {
+                            font: {
+                                size: 11,
+                                weight: 'bold'
+                            },
+                            color: '#ffffff'
+                        },
+                        angleLines: {
+                            color: 'rgba(255, 255, 255, 0.3)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(30, 58, 138, 0.9)',
+                        titleFont: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        padding: 10,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                return 'Puntaje: ' + context.parsed.r.toFixed(2);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Aplicar fondo azul oscuro al canvas
+        ctx.style.backgroundColor = '#1e3a8a';
+        ctx.style.borderRadius = '8px';
+        ctx.style.padding = '20px';
+    }
+});
+</script>
+<style>
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    body {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+}
+</style>
+<style>
+@media print {
+    .no-print, nav, header, footer, .bg-amber-600, button, a {
+        display: none !important;
+    }
+    
+    body {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+    
+    .bg-white {
+        background-color: white !important;
+    }
+}
+</style>
+{% endblock %}

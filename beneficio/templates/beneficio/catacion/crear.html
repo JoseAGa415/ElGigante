@@ -1,0 +1,1203 @@
+{% extends 'base.html' %}
+
+{% block title %}Nueva Catación - Formato SCA{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+            <i class="fas fa-flask mr-3 text-amber-600"></i>
+            Sistema de Evaluación del Café de la SCA
+        </h2>
+        <p class="text-gray-600 mt-2">Evaluación sensorial completa según estándares SCA</p>
+    </div>
+
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+        
+        <!-- Información Básica -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Código de Muestra <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" name="codigo_muestra" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Fecha de Catación <span class="text-red-500">*</span>
+                    </label>
+                    <input type="datetime-local" name="fecha_catacion" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Tipo de Muestra <span class="text-red-500">*</span>
+                    </label>
+                    <select name="tipo_muestra" id="tipo_muestra" required onchange="actualizarOpciones()"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600">
+                        <option value="">Seleccione...</option>
+                        <option value="lote">Lote</option>
+                        <option value="procesado">Procesado/Trilla</option>
+                        <option value="reproceso">Reproceso</option>
+                        <option value="mezcla">Mezcla</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Humedad (%)
+                    </label>
+                    <input type="number" step="0.01" name="humedad_grano" min="0" max="20"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div id="div-lote" style="display:none;">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Lote</label>
+                    <select name="lote_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600">
+                        <option value="">Seleccione un lote...</option>
+                        {% for lote in lotes %}
+                        <option value="{{ lote.id }}">{{ lote.codigo }} - {{ lote.tipo_cafe }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div id="div-procesado" style="display:none;">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Procesado</label>
+                    <select name="procesado_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600">
+                        <option value="">Seleccione un procesado...</option>
+                        {% for procesado in procesados %}
+                        <option value="{{ procesado.id }}">Trilla #{{ procesado.numero_trilla }} - Lote {{ procesado.lote.codigo }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div id="div-reproceso" style="display:none;">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Reproceso</label>
+                    <select name="reproceso_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600">
+                        <option value="">Seleccione un reproceso...</option>
+                        {% for reproceso in reprocesos %}
+                        <option value="{{ reproceso.id }}">Reproceso #{{ reproceso.numero }} - Trilla {{ reproceso.procesado.numero_trilla }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div id="div-mezcla" style="display:none;">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Mezcla</label>
+                    <select name="mezcla_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600">
+                        <option value="">Seleccione una mezcla...</option>
+                        {% for mezcla in mezclas %}
+                        <option value="{{ mezcla.id }}">Mezcla #{{ mezcla.numero }} - {{ mezcla.fecha|date:"d/m/Y" }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- FORMULARIO DIVIDIDO: IZQUIERDA Y DERECHA -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- COLUMNA IZQUIERDA: EVALUACIÓN DESCRIPTIVA -->
+                <div class="space-y-4">
+                    <div class="bg-gray-800 text-white px-3 py-2 rounded">
+                        <h3 class="font-bold text-sm">PARTE 1: EVALUACIÓN DESCRIPTIVA</h3>
+                    </div>
+
+                    <!-- Fragancia/Aroma -->
+                    <div class="border border-gray-300 p-3 rounded">
+                        <h4 class="font-bold text-sm mb-3">Fragancia/Aroma</h4>
+                        
+                        <!-- Barras de Intensidad -->
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div>
+                                <label class="text-xs font-semibold text-gray-700">Fragancia - Intensidad</label>
+                                <input type="range" name="intensidad_fragancia" min="0" max="10" value="5" step="0.5"
+                                       oninput="actualizarBarraIntensidad(this, 'barra-int-fragancia')"
+                                       class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                <div class="relative h-4 bg-gray-200 rounded mt-1">
+                                    <div id="barra-int-fragancia" class="h-full bg-gradient-to-r from-yellow-400 to-amber-600 rounded transition-all" style="width: 50%"></div>
+                                </div>
+                                <div class="flex justify-between text-xs text-gray-600 mt-1">
+                                    <span>Baja</span>
+                                    <span>Media</span>
+                                    <span>Alta</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="text-xs font-semibold text-gray-700">Aroma - Intensidad</label>
+                                <input type="range" name="intensidad_aroma" min="0" max="10" value="5" step="0.5"
+                                       oninput="actualizarBarraIntensidad(this, 'barra-int-aroma')"
+                                       class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                <div class="relative h-4 bg-gray-200 rounded mt-1">
+                                    <div id="barra-int-aroma" class="h-full bg-gradient-to-r from-yellow-400 to-amber-600 rounded transition-all" style="width: 50%"></div>
+                                </div>
+                                <div class="flex justify-between text-xs text-gray-600 mt-1">
+                                    <span>Baja</span>
+                                    <span>Media</span>
+                                    <span>Alta</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Grupos y Subgrupos -->
+                        <div class="space-y-2">
+                            <!-- FLORAL -->
+                            <div class="bg-purple-50 p-2 rounded border border-purple-200">
+                                <label class="flex items-center font-semibold text-purple-900 text-xs mb-1">
+                                    <input type="checkbox" name="attr_floral" class="mr-2 w-3 h-3">
+                                    <i class="fas fa-spa mr-1"></i> FLORAL
+                                </label>
+                                <div class="ml-5 space-y-1 text-xs">
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_floral_jazmin" class="mr-1 w-3 h-3"> Jazmín
+                                    </label>
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_floral_rosa" class="mr-1 w-3 h-3"> Rosa
+                                    </label>
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_floral_lavanda" class="mr-1 w-3 h-3"> Lavanda
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- AFRUTADO -->
+                            <div class="bg-pink-50 p-2 rounded border border-pink-200">
+                                <label class="flex items-center font-semibold text-pink-900 text-xs mb-1">
+                                    <input type="checkbox" name="attr_afrutado" class="mr-2 w-3 h-3">
+                                    <i class="fas fa-apple-alt mr-1"></i> AFRUTADO
+                                </label>
+                                <div class="ml-5 space-y-1 text-xs">
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_afrutado_bayas" class="mr-1 w-3 h-3"> Bayas
+                                    </label>
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_afrutado_citricos" class="mr-1 w-3 h-3"> Cítricos
+                                    </label>
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_afrutado_frutas_secas" class="mr-1 w-3 h-3"> Frutas secas
+                                    </label>
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_afrutado_tropical" class="mr-1 w-3 h-3"> Tropical
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- VERDE/VEGETAL -->
+                            <div class="bg-green-50 p-2 rounded border border-green-200">
+                                <label class="flex items-center font-semibold text-green-900 text-xs mb-1">
+                                    <input type="checkbox" name="attr_verde_vegetal" class="mr-2 w-3 h-3">
+                                    <i class="fas fa-leaf mr-1"></i> VERDE/VEGETAL
+                                </label>
+                                <div class="ml-5 space-y-1 text-xs">
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_verde_hierba" class="mr-1 w-3 h-3"> Hierba fresca
+                                    </label>
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_verde_te" class="mr-1 w-3 h-3"> Té verde
+                                    </label>
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_verde_guisante" class="mr-1 w-3 h-3"> Guisante
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- TOSTADO -->
+                            <div class="bg-amber-50 p-2 rounded border border-amber-200">
+                                <label class="flex items-center font-semibold text-amber-900 text-xs mb-1">
+                                    <input type="checkbox" name="attr_tostado" class="mr-2 w-3 h-3">
+                                    <i class="fas fa-fire mr-1"></i> TOSTADO
+                                </label>
+                                <div class="ml-5 space-y-1 text-xs">
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_tostado_cereal" class="mr-1 w-3 h-3"> Cereal
+                                    </label>
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_tostado_pan" class="mr-1 w-3 h-3"> Pan tostado
+                                    </label>
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_tostado_caramelo" class="mr-1 w-3 h-3"> Caramelo
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- NUECES/CACAO -->
+                            <div class="bg-orange-50 p-2 rounded border border-orange-200">
+                                <label class="flex items-center font-semibold text-orange-900 text-xs mb-1">
+                                    <input type="checkbox" name="attr_nueces_cacao" class="mr-2 w-3 h-3">
+                                    <i class="fas fa-seedling mr-1"></i> NUECES/CACAO
+                                </label>
+                                <div class="ml-5 space-y-1 text-xs">
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_nueces_almendras" class="mr-1 w-3 h-3"> Almendras
+                                    </label>
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_nueces_avellanas" class="mr-1 w-3 h-3"> Avellanas
+                                    </label>
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_nueces_cacao_oscuro" class="mr-1 w-3 h-3"> Cacao oscuro
+                                    </label>
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_nueces_chocolate" class="mr-1 w-3 h-3"> Chocolate
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- DULCE -->
+                            <div class="bg-red-50 p-2 rounded border border-red-200">
+                                <label class="flex items-center font-semibold text-red-900 text-xs mb-1">
+                                    <input type="checkbox" name="attr_dulce" class="mr-2 w-3 h-3">
+                                    <i class="fas fa-candy-cane mr-1"></i> DULCE
+                                </label>
+                                <div class="ml-5 space-y-1 text-xs">
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_dulce_miel" class="mr-1 w-3 h-3"> Miel
+                                    </label>
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_dulce_azucar_morena" class="mr-1 w-3 h-3"> Azúcar morena
+                                    </label>
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_dulce_vainilla" class="mr-1 w-3 h-3"> Vainilla
+                                    </label>
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_dulce_maple" class="mr-1 w-3 h-3"> Jarabe maple
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- ESPECIAS -->
+                            <div class="bg-red-100 p-2 rounded border border-red-300">
+                                <label class="flex items-center font-semibold text-red-900 text-xs mb-1">
+                                    <input type="checkbox" name="attr_especias" class="mr-2 w-3 h-3">
+                                    <i class="fas fa-pepper-hot mr-1"></i> ESPECIAS
+                                </label>
+                                <div class="ml-5 space-y-1 text-xs">
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_especias_canela" class="mr-1 w-3 h-3"> Canela
+                                    </label>
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_especias_clavo" class="mr-1 w-3 h-3"> Clavo
+                                    </label>
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_especias_nuez_moscada" class="mr-1 w-3 h-3"> Nuez moscada
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- ÁCIDO/FERMENTADO -->
+                            <div class="bg-yellow-50 p-2 rounded border border-yellow-200">
+                                <label class="flex items-center font-semibold text-yellow-900 text-xs mb-1">
+                                    <input type="checkbox" name="attr_acido_fermentado" class="mr-2 w-3 h-3">
+                                    <i class="fas fa-vial mr-1"></i> ÁCIDO/FERMENTADO
+                                </label>
+                                <div class="ml-5 space-y-1 text-xs">
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_acido_vinagre" class="mr-1 w-3 h-3"> Vinagre
+                                    </label>
+                                    <label class="flex items-center text-gray-700">
+                                        <input type="checkbox" name="attr_acido_vino" class="mr-1 w-3 h-3"> Vino
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <textarea name="notas_fragancia_aroma" rows="2" placeholder="Notas adicionales sobre fragancia y aroma..."
+                                  class="w-full mt-3 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+                    </div>
+
+                    <!-- Sabor -->
+                    <div class="border border-gray-300 p-3 rounded">
+                        <h4 class="font-bold text-sm mb-2">Sabor</h4>
+                        
+                        <!-- Barra de Intensidad Sabor -->
+                        <div class="mb-3">
+                            <label class="text-xs font-semibold text-gray-700">Intensidad</label>
+                            <input type="range" name="intensidad_sabor" min="0" max="10" value="5" step="0.5"
+                                   oninput="actualizarBarraIntensidad(this, 'barra-int-sabor')"
+                                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                            <div class="relative h-4 bg-gray-200 rounded mt-1">
+                                <div id="barra-int-sabor" class="h-full bg-gradient-to-r from-yellow-400 to-amber-600 rounded transition-all" style="width: 50%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-600 mt-1">
+                                <span>Baja</span>
+                                <span>Media</span>
+                                <span>Alta</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-1 text-xs mb-2">
+                            <label class="flex items-center"><input type="checkbox" name="gusto_salado" class="mr-1 w-3 h-3"> Salado</label>
+                            <label class="flex items-center"><input type="checkbox" name="gusto_acido" class="mr-1 w-3 h-3"> Ácido</label>
+                            <label class="flex items-center"><input type="checkbox" name="gusto_dulce" class="mr-1 w-3 h-3"> Dulce</label>
+                            <label class="flex items-center"><input type="checkbox" name="gusto_amargo" class="mr-1 w-3 h-3"> Amargo</label>
+                            <label class="flex items-center"><input type="checkbox" name="gusto_umami" class="mr-1 w-3 h-3"> Umami</label>
+                        </div>
+                        <textarea name="notas_sabor" rows="2" placeholder="Notas..."
+                                  class="w-full px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+                    </div>
+
+                    <!-- Sabor Residual -->
+                    <div class="border border-gray-300 p-3 rounded">
+                        <h4 class="font-bold text-sm mb-2">Sabor Residual</h4>
+                        
+                        <!-- Barra de Intensidad Sabor Residual -->
+                        <div class="mb-2">
+                            <label class="text-xs font-semibold text-gray-700">Intensidad</label>
+                            <input type="range" name="intensidad_sabor_residual" min="0" max="10" value="5" step="0.5"
+                                   oninput="actualizarBarraIntensidad(this, 'barra-int-residual')"
+                                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                            <div class="relative h-4 bg-gray-200 rounded mt-1">
+                                <div id="barra-int-residual" class="h-full bg-gradient-to-r from-yellow-400 to-amber-600 rounded transition-all" style="width: 50%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-600 mt-1">
+                                <span>Baja</span>
+                                <span>Media</span>
+                                <span>Alta</span>
+                            </div>
+                        </div>
+
+                        <textarea name="notas_residual" rows="2" placeholder="Notas..."
+                                  class="w-full px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+                    </div>
+
+                    <!-- Acidez -->
+                    <div class="border border-gray-300 p-3 rounded">
+                        <h4 class="font-bold text-sm mb-2">Acidez</h4>
+                        
+                        <!-- Barra de Intensidad Acidez -->
+                        <div class="mb-2">
+                            <label class="text-xs font-semibold text-gray-700">Intensidad</label>
+                            <input type="range" name="intensidad_acidez" min="0" max="10" value="5" step="0.5"
+                                   oninput="actualizarBarraIntensidad(this, 'barra-int-acidez')"
+                                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                            <div class="relative h-4 bg-gray-200 rounded mt-1">
+                                <div id="barra-int-acidez" class="h-full bg-gradient-to-r from-yellow-400 to-amber-600 rounded transition-all" style="width: 50%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-600 mt-1">
+                                <span>Baja</span>
+                                <span>Media</span>
+                                <span>Alta</span>
+                            </div>
+                        </div>
+
+                        <textarea name="notas_acidez" rows="2" placeholder="Notas..."
+                                  class="w-full px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+                    </div>
+
+                    <!-- Sensación en Boca -->
+                    <div class="border border-gray-300 p-3 rounded">
+                        <h4 class="font-bold text-sm mb-2">Sensación en Boca</h4>
+                        
+                        <!-- Barra de Intensidad Cuerpo -->
+                        <div class="mb-2">
+                            <label class="text-xs font-semibold text-gray-700">Intensidad</label>
+                            <input type="range" name="intensidad_cuerpo" min="0" max="10" value="5" step="0.5"
+                                   oninput="actualizarBarraIntensidad(this, 'barra-int-cuerpo')"
+                                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                            <div class="relative h-4 bg-gray-200 rounded mt-1">
+                                <div id="barra-int-cuerpo" class="h-full bg-gradient-to-r from-yellow-400 to-amber-600 rounded transition-all" style="width: 50%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-600 mt-1">
+                                <span>Baja</span>
+                                <span>Media</span>
+                                <span>Alta</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-1 text-xs mb-2">
+                            <label class="flex items-center"><input type="checkbox" name="cuerpo_aspero" class="mr-1 w-3 h-3"> Áspero</label>
+                            <label class="flex items-center"><input type="checkbox" name="cuerpo_aceitoso" class="mr-1 w-3 h-3"> Aceitoso</label>
+                            <label class="flex items-center"><input type="checkbox" name="cuerpo_suave" class="mr-1 w-3 h-3"> Suave</label>
+                            <label class="flex items-center"><input type="checkbox" name="cuerpo_seca_boca" class="mr-1 w-3 h-3"> Seca boca</label>
+                            <label class="flex items-center"><input type="checkbox" name="cuerpo_metalico" class="mr-1 w-3 h-3"> Metálico</label>
+                        </div>
+                        <textarea name="notas_cuerpo" rows="2" placeholder="Notas..."
+                                  class="w-full px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+                    </div>
+
+                    <!-- Parte 3: Extrínseca -->
+                    <div class="bg-gray-800 text-white px-3 py-2 rounded mt-4">
+                        <h3 class="font-bold text-sm">PARTE 3: EVALUACIÓN EXTRÍNSECA</h3>
+                    </div>
+                    <textarea name="notas_extrinseca" rows="3" placeholder="Notas sobre evaluación extrínseca..."
+                              class="w-full px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+                </div>
+
+                <!-- COLUMNA DERECHA: EVALUACIÓN AFECTIVA (PUNTAJES) -->
+                <div class="space-y-3">
+                    <div class="bg-gray-800 text-white px-3 py-2 rounded">
+                        <h3 class="font-bold text-sm">PARTE 2: EVALUACIÓN AFECTIVA</h3>
+                    </div>
+
+                    <!-- Fragancia -->
+                    <div class="border border-gray-300 p-2 rounded">
+                        <label class="font-bold text-xs">Fragancia</label>
+                        <div class="flex gap-1 mt-1 flex-wrap">
+                            <button type="button" onclick="selectScore(this, 'fragancia', 0)" class="score-btn">0</button>
+                            <button type="button" onclick="selectScore(this, 'fragancia', 1)" class="score-btn">1</button>
+                            <button type="button" onclick="selectScore(this, 'fragancia', 2)" class="score-btn">2</button>
+                            <button type="button" onclick="selectScore(this, 'fragancia', 3)" class="score-btn">3</button>
+                            <button type="button" onclick="selectScore(this, 'fragancia', 4)" class="score-btn">4</button>
+                            <button type="button" onclick="selectScore(this, 'fragancia', 5)" class="score-btn">5</button>
+                            <button type="button" onclick="selectScore(this, 'fragancia', 6)" class="score-btn">6</button>
+                            <button type="button" onclick="selectScore(this, 'fragancia', 7)" class="score-btn">7</button>
+                            <button type="button" onclick="selectScore(this, 'fragancia', 8)" class="score-btn">8</button>
+                            <button type="button" onclick="selectScore(this, 'fragancia', 9)" class="score-btn">9</button>
+                            <button type="button" onclick="selectScore(this, 'fragancia', 10)" class="score-btn">10</button>
+                            <input type="number" name="fragancia" id="fragancia" value="0" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-amber-50 ml-1">
+                        </div>
+                        <textarea name="notas_fragancia" rows="1" placeholder="Notas..." class="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+                    </div>
+
+                    <!-- Aroma -->
+                    <div class="border border-gray-300 p-2 rounded">
+                        <label class="font-bold text-xs">Aroma</label>
+                        <div class="flex gap-1 mt-1 flex-wrap">
+                            <button type="button" onclick="selectScore(this, 'aroma', 0)" class="score-btn">0</button>
+                            <button type="button" onclick="selectScore(this, 'aroma', 1)" class="score-btn">1</button>
+                            <button type="button" onclick="selectScore(this, 'aroma', 2)" class="score-btn">2</button>
+                            <button type="button" onclick="selectScore(this, 'aroma', 3)" class="score-btn">3</button>
+                            <button type="button" onclick="selectScore(this, 'aroma', 4)" class="score-btn">4</button>
+                            <button type="button" onclick="selectScore(this, 'aroma', 5)" class="score-btn">5</button>
+                            <button type="button" onclick="selectScore(this, 'aroma', 6)" class="score-btn">6</button>
+                            <button type="button" onclick="selectScore(this, 'aroma', 7)" class="score-btn">7</button>
+                            <button type="button" onclick="selectScore(this, 'aroma', 8)" class="score-btn">8</button>
+                            <button type="button" onclick="selectScore(this, 'aroma', 9)" class="score-btn">9</button>
+                            <button type="button" onclick="selectScore(this, 'aroma', 10)" class="score-btn">10</button>
+                            <input type="number" name="aroma" id="aroma" value="0" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-amber-50 ml-1">
+                        </div>
+                        <textarea name="notas_aroma" rows="1" placeholder="Notas..." class="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+                    </div>
+
+                    <!-- Sabor -->
+                    <div class="border border-gray-300 p-2 rounded">
+                        <label class="font-bold text-xs">Sabor</label>
+                        <div class="flex gap-1 mt-1 flex-wrap">
+                            <button type="button" onclick="selectScore(this, 'sabor', 0)" class="score-btn">0</button>
+                            <button type="button" onclick="selectScore(this, 'sabor', 1)" class="score-btn">1</button>
+                            <button type="button" onclick="selectScore(this, 'sabor', 2)" class="score-btn">2</button>
+                            <button type="button" onclick="selectScore(this, 'sabor', 3)" class="score-btn">3</button>
+                            <button type="button" onclick="selectScore(this, 'sabor', 4)" class="score-btn">4</button>
+                            <button type="button" onclick="selectScore(this, 'sabor', 5)" class="score-btn">5</button>
+                            <button type="button" onclick="selectScore(this, 'sabor', 6)" class="score-btn">6</button>
+                            <button type="button" onclick="selectScore(this, 'sabor', 7)" class="score-btn">7</button>
+                            <button type="button" onclick="selectScore(this, 'sabor', 8)" class="score-btn">8</button>
+                            <button type="button" onclick="selectScore(this, 'sabor', 9)" class="score-btn">9</button>
+                            <button type="button" onclick="selectScore(this, 'sabor', 10)" class="score-btn">10</button>
+<input type="number" name="sabor" id="sabor" value="0" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-amber-50 ml-1">
+</div>
+<textarea name="notas_sabor_afectivo" rows="1" placeholder="Notas..." class="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+</div>
+<!-- Sabor Residual -->
+                <div class="border border-gray-300 p-2 rounded">
+                    <label class="font-bold text-xs">Sabor Residual</label>
+                    <div class="flex gap-1 mt-1 flex-wrap">
+                            <button type="button" onclick="selectScore(this, 'sabor_residual', 0)" class="score-btn">0</button>
+                            <button type="button" onclick="selectScore(this, 'sabor_residual', 1)" class="score-btn">1</button>
+                            <button type="button" onclick="selectScore(this, 'sabor_residual', 2)" class="score-btn">2</button>
+                            <button type="button" onclick="selectScore(this, 'sabor_residual', 3)" class="score-btn">3</button>
+                            <button type="button" onclick="selectScore(this, 'sabor_residual', 4)" class="score-btn">4</button>
+                            <button type="button" onclick="selectScore(this, 'sabor_residual', 5)" class="score-btn">5</button>
+                            <button type="button" onclick="selectScore(this, 'sabor_residual', 6)" class="score-btn">6</button>
+                            <button type="button" onclick="selectScore(this, 'sabor_residual', 7)" class="score-btn">7</button>
+                            <button type="button" onclick="selectScore(this, 'sabor_residual', 8)" class="score-btn">8</button>
+                            <button type="button" onclick="selectScore(this, 'sabor_residual', 9)" class="score-btn">9</button>
+                            <button type="button" onclick="selectScore(this, 'sabor_residual', 10)" class="score-btn">10</button>
+                        <input type="number" name="sabor_residual" id="sabor_residual" value="0" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-amber-50 ml-1">
+                    </div>
+                    <textarea name="notas_residual_afectivo" rows="1" placeholder="Notas..." class="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+                </div>
+
+                <!-- Acidez -->
+                <div class="border border-gray-300 p-2 rounded">
+                    <label class="font-bold text-xs">Acidez</label>
+                    <div class="flex gap-1 mt-1 flex-wrap">
+                            <button type="button" onclick="selectScore(this, 'acidez', 0)" class="score-btn">0</button>
+                            <button type="button" onclick="selectScore(this, 'acidez', 1)" class="score-btn">1</button>
+                            <button type="button" onclick="selectScore(this, 'acidez', 2)" class="score-btn">2</button>
+                            <button type="button" onclick="selectScore(this, 'acidez', 3)" class="score-btn">3</button>
+                            <button type="button" onclick="selectScore(this, 'acidez', 4)" class="score-btn">4</button>
+                            <button type="button" onclick="selectScore(this, 'acidez', 5)" class="score-btn">5</button>
+                            <button type="button" onclick="selectScore(this, 'acidez', 6)" class="score-btn">6</button>
+                            <button type="button" onclick="selectScore(this, 'acidez', 7)" class="score-btn">7</button>
+                            <button type="button" onclick="selectScore(this, 'acidez', 8)" class="score-btn">8</button>
+                            <button type="button" onclick="selectScore(this, 'acidez', 9)" class="score-btn">9</button>
+                            <button type="button" onclick="selectScore(this, 'acidez', 10)" class="score-btn">10</button>
+                        <input type="number" name="acidez" id="acidez" value="0" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-amber-50 ml-1">
+                    </div>
+                    <textarea name="notas_acidez_afectivo" rows="1" placeholder="Notas..." class="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+                </div>
+
+                <!-- Cuerpo -->
+                <div class="border border-gray-300 p-2 rounded">
+                    <label class="font-bold text-xs">Cuerpo</label>
+                    <div class="flex gap-1 mt-1 flex-wrap">
+                            <button type="button" onclick="selectScore(this, 'cuerpo', 0)" class="score-btn">0</button>
+                            <button type="button" onclick="selectScore(this, 'cuerpo', 1)" class="score-btn">1</button>
+                            <button type="button" onclick="selectScore(this, 'cuerpo', 2)" class="score-btn">2</button>
+                            <button type="button" onclick="selectScore(this, 'cuerpo', 3)" class="score-btn">3</button>
+                            <button type="button" onclick="selectScore(this, 'cuerpo', 4)" class="score-btn">4</button>
+                            <button type="button" onclick="selectScore(this, 'cuerpo', 5)" class="score-btn">5</button>
+                            <button type="button" onclick="selectScore(this, 'cuerpo', 6)" class="score-btn">6</button>
+                            <button type="button" onclick="selectScore(this, 'cuerpo', 7)" class="score-btn">7</button>
+                            <button type="button" onclick="selectScore(this, 'cuerpo', 8)" class="score-btn">8</button>
+                            <button type="button" onclick="selectScore(this, 'cuerpo', 9)" class="score-btn">9</button>
+                            <button type="button" onclick="selectScore(this, 'cuerpo', 10)" class="score-btn">10</button>
+                        <input type="number" name="cuerpo" id="cuerpo" value="0" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-amber-50 ml-1">
+                    </div>
+                    <textarea name="notas_cuerpo_afectivo" rows="1" placeholder="Notas..." class="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+                </div>
+
+                <!-- Uniformidad -->
+                <div class="border border-gray-300 p-2 rounded">
+                    <label class="font-bold text-xs">Uniformidad (5 tazas)</label>
+                    <div class="flex gap-2 mt-2 items-center">
+                        <button type="button" onclick="toggleTaza(this, 'uniformidad', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">1</button>
+                        <button type="button" onclick="toggleTaza(this, 'uniformidad', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">2</button>
+                        <button type="button" onclick="toggleTaza(this, 'uniformidad', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">3</button>
+                        <button type="button" onclick="toggleTaza(this, 'uniformidad', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">4</button>
+                        <button type="button" onclick="toggleTaza(this, 'uniformidad', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">5</button>
+                        <input type="number" name="uniformidad" id="uniformidad" value="10" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-green-50 ml-2">
+                    </div>
+                    <textarea name="notas_uniformidad" rows="1" placeholder="Notas..." class="w-full mt-2 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+                </div>
+
+                <!-- Taza Limpia -->
+                <div class="border border-gray-300 p-2 rounded">
+                    <label class="font-bold text-xs">Taza Limpia (5 tazas)</label>
+                    <div class="flex gap-2 mt-2 items-center">
+                        <button type="button" onclick="toggleTaza(this, 'taza_limpia', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">1</button>
+                        <button type="button" onclick="toggleTaza(this, 'taza_limpia', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">2</button>
+                        <button type="button" onclick="toggleTaza(this, 'taza_limpia', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">3</button>
+                        <button type="button" onclick="toggleTaza(this, 'taza_limpia', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">4</button>
+                        <button type="button" onclick="toggleTaza(this, 'taza_limpia', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">5</button>
+                        <input type="number" name="taza_limpia" id="taza_limpia" value="10" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-green-50 ml-2">
+                    </div>
+                    <textarea name="notas_taza_limpia" rows="1" placeholder="Notas..." class="w-full mt-2 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+                </div>
+
+                <!-- Dulzor -->
+                <div class="border border-gray-300 p-2 rounded">
+                    <label class="font-bold text-xs">Dulzor (5 tazas)</label>
+                    <div class="flex gap-2 mt-2 items-center">
+                        <button type="button" onclick="toggleTaza(this, 'dulzor', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">1</button>
+                        <button type="button" onclick="toggleTaza(this, 'dulzor', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">2</button>
+                        <button type="button" onclick="toggleTaza(this, 'dulzor', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">3</button>
+                        <button type="button" onclick="toggleTaza(this, 'dulzor', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">4</button>
+                        <button type="button" onclick="toggleTaza(this, 'dulzor', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">5</button>
+                        <input type="number" name="dulzor" id="dulzor" value="10" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-green-50 ml-2">
+                    </div>
+                    <textarea name="notas_dulzor_afectivo" rows="1" placeholder="Notas..." class="w-full mt-2 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+                </div>
+
+                <!-- Balance -->
+                <div class="border border-gray-300 p-2 rounded">
+                    <label class="font-bold text-xs">Balance</label>
+                    <div class="flex gap-1 mt-1 flex-wrap">
+                            <button type="button" onclick="selectScore(this, 'balance', 0)" class="score-btn">0</button>
+                            <button type="button" onclick="selectScore(this, 'balance', 1)" class="score-btn">1</button>
+                            <button type="button" onclick="selectScore(this, 'balance', 2)" class="score-btn">2</button>
+                            <button type="button" onclick="selectScore(this, 'balance', 3)" class="score-btn">3</button>
+                            <button type="button" onclick="selectScore(this, 'balance', 4)" class="score-btn">4</button>
+                            <button type="button" onclick="selectScore(this, 'balance', 5)" class="score-btn">5</button>
+                            <button type="button" onclick="selectScore(this, 'balance', 6)" class="score-btn">6</button>
+                            <button type="button" onclick="selectScore(this, 'balance', 7)" class="score-btn">7</button>
+                            <button type="button" onclick="selectScore(this, 'balance', 8)" class="score-btn">8</button>
+                            <button type="button" onclick="selectScore(this, 'balance', 9)" class="score-btn">9</button>
+                            <button type="button" onclick="selectScore(this, 'balance', 10)" class="score-btn">10</button>
+                        <input type="number" name="balance" id="balance" value="0" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-amber-50 ml-1">
+                    </div>
+                    <textarea name="notas_balance" rows="1" placeholder="Notas..." class="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+                </div>
+
+                <!-- Impresión Global -->
+                <div class="border border-gray-300 p-2 rounded">
+                    <label class="font-bold text-xs">Impresión Global</label>
+                    <div class="flex gap-1 mt-1 flex-wrap">
+                            <button type="button" onclick="selectScore(this, 'general', 0)" class="score-btn">0</button>
+                            <button type="button" onclick="selectScore(this, 'general', 1)" class="score-btn">1</button>
+                            <button type="button" onclick="selectScore(this, 'general', 2)" class="score-btn">2</button>
+                            <button type="button" onclick="selectScore(this, 'general', 3)" class="score-btn">3</button>
+                            <button type="button" onclick="selectScore(this, 'general', 4)" class="score-btn">4</button>
+                            <button type="button" onclick="selectScore(this, 'general', 5)" class="score-btn">5</button>
+                            <button type="button" onclick="selectScore(this, 'general', 6)" class="score-btn">6</button>
+                            <button type="button" onclick="selectScore(this, 'general', 7)" class="score-btn">7</button>
+                            <button type="button" onclick="selectScore(this, 'general', 8)" class="score-btn">8</button>
+                            <button type="button" onclick="selectScore(this, 'general', 9)" class="score-btn">9</button>
+                            <button type="button" onclick="selectScore(this, 'general', 10)" class="score-btn">10</button>
+                        <input type="number" name="general" id="general" value="0" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-amber-50 ml-1">
+                    </div>
+                    <textarea name="notas_general" rows="1" placeholder="Notas..." class="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DEFECTOS -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="bg-red-800 text-white px-4 py-2 rounded-t-lg -mx-6 -mt-6 mb-4">
+            <h3 class="font-bold text-lg">DEFECTOS</h3>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+                <label class="font-bold text-gray-800 block mb-2">Defectos (Intensidad 2)</label>
+                <input type="number" name="defectos_intensidad_2" min="0" value="0"
+                       oninput="calcularDefectos()"
+                       class="w-20 px-2 py-1 border border-gray-300 rounded text-center">
+                <span class="ml-2 text-sm text-gray-600">× 2 = <span id="total-def-2" class="font-bold">0</span> puntos</span>
+            </div>
+            <div>
+                <label class="font-bold text-gray-800 block mb-2">Defectos (Intensidad 4)</label>
+                <input type="number" name="defectos_intensidad_4" min="0" value="0"
+                       oninput="calcularDefectos()"
+                       class="w-20 px-2 py-1 border border-gray-300 rounded text-center">
+                <span class="ml-2 text-sm text-gray-600">× 4 = <span id="total-def-4" class="font-bold">0</span> puntos</span>
+            </div>
+        </div>
+
+        <div class="bg-red-50 p-3 rounded border border-red-200">
+            <label class="font-bold text-red-900">Total Defectos:</label>
+            <input type="number" name="total_defectos" id="total_defectos" value="0" readonly
+                   class="w-24 ml-2 px-2 py-1 border border-red-300 rounded text-center font-bold bg-white">
+            <span class="text-sm text-red-700 ml-2">(se resta del puntaje total)</span>
+        </div>
+
+        <textarea name="descripcion_defectos" rows="3" placeholder="Descripción detallada de defectos encontrados..."
+                  class="w-full mt-3 px-3 py-2 border border-gray-300 rounded-lg text-sm"></textarea>
+    </div>
+
+    <!-- PUNTAJE FINAL -->
+    <div class="bg-gradient-to-r from-amber-500 to-amber-600 rounded-lg shadow-lg p-8 text-white">
+        <div class="text-center">
+            <h3 class="text-2xl font-bold mb-4">PUNTAJE FINAL</h3>
+            <div class="bg-white text-gray-900 rounded-lg p-6 inline-block shadow-xl">
+                <div class="text-6xl font-bold mb-2" id="puntaje-final">0.00</div>
+                <input type="hidden" name="puntaje_total" id="puntaje_total" value="0">
+                <div class="text-xl font-semibold mt-2" id="clasificacion">Sin clasificar</div>
+            </div>
+            <div class="mt-6 text-sm bg-white bg-opacity-20 rounded-lg p-4 inline-block">
+                <p class="mb-1"><strong>Excepcional:</strong> ≥ 90 puntos</p>
+                <p class="mb-1"><strong>Sobresaliente:</strong> 85-89.99 puntos</p>
+                <p class="mb-1"><strong>Café Especial:</strong> 80-84.99 puntos</p>
+                <p class="mb-1"><strong>Muy Bueno:</strong> 70-79.99 puntos</p>
+                <p><strong>Promedio:</strong> &lt; 70 puntos</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notas del Catador -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+            <i class="fas fa-comment-dots mr-2 text-amber-600"></i>Notas Finales del Catador
+        </label>
+        <textarea name="notas_catador" rows="4"
+                  placeholder="Observaciones generales, recomendaciones, perfil de taza completo..."
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600"></textarea>
+    </div>
+
+
+    <!-- DIAGRAMA RADAR DE PERFIL SENSORIAL -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">
+                <i class="fas fa-chart-radar mr-2 text-amber-600"></i>
+                Perfil Sensorial
+            </h3>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Gráfico Radar -->
+                <div class="flex items-center justify-center">
+                    <div class="w-full max-w-md">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Información Adicional -->
+                <div class="space-y-4">
+                    <div class="bg-gradient-to-br from-blue-900 to-blue-800 text-white p-6 rounded-lg">
+                        <h4 class="font-bold text-lg mb-4">NOTAS</h4>
+                        <textarea name="notas_perfil" rows="3" 
+                                  placeholder="Ej: CÍTRICO LIMÓN, CARAMELO, CHOCOLATE, FRUTOS ROJOS, PERA, MANZANA"
+                                  class="w-full px-3 py-2 border border-blue-300 rounded text-sm text-gray-800"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-50 p-4 rounded-lg border">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">PRODUCTOR:</label>
+                            <input type="text" name="productor" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-lg border">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">ALTITUD:</label>
+                            <input type="text" name="altitud" placeholder="Ej: 1,600 - 1800 MSNM"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-lg border">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">REGIÓN:</label>
+                            <input type="text" name="region" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-lg border">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">VARIEDAD:</label>
+                            <input type="text" name="variedad" placeholder="Ej: CATUAI"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-lg border">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">PROCESO:</label>
+                            <input type="text" name="proceso" placeholder="Ej: LAVADO"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-lg border">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">SECADO:</label>
+                            <input type="text" name="secado" placeholder="Ej: PATIOS AL SOL 12 DÍAS"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-lg border col-span-2">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">HORAS DE FERMENTACIÓN:</label>
+                            <input type="text" name="horas_fermentacion" placeholder="Ej: 40 HORAS"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-lg border col-span-2">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">FINCA:</label>
+                            <input type="text" name="finca" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notas del Catador -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                <i class="fas fa-comment-dots mr-2 text-amber-600"></i>Notas Finales del Catador
+            </label>
+            <textarea name="notas_catador" rows="4"
+                      placeholder="Observaciones generales, recomendaciones, perfil de taza completo..."
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600"></textarea>
+        </div>
+<script>
+function actualizarOpciones() {
+    const tipoMuestra = document.getElementById('tipo_muestra').value;
+    
+    document.getElementById('div-lote').style.display = 'none';
+    document.getElementById('div-procesado').style.display = 'none';
+    document.getElementById('div-reproceso').style.display = 'none';
+    document.getElementById('div-mezcla').style.display = 'none';
+    
+    if (tipoMuestra === 'lote') {
+        document.getElementById('div-lote').style.display = 'block';
+    } else if (tipoMuestra === 'procesado') {
+        document.getElementById('div-procesado').style.display = 'block';
+    } else if (tipoMuestra === 'reproceso') {
+        document.getElementById('div-reproceso').style.display = 'block';
+    } else if (tipoMuestra === 'mezcla') {
+        document.getElementById('div-mezcla').style.display = 'block';
+    }
+}
+
+function selectScore(btn, atributo, valor) {
+    const parent = btn.parentElement;
+    const buttons = parent.querySelectorAll('.score-btn');
+    buttons.forEach(b => {
+        b.classList.remove('bg-amber-500', 'text-white');
+        b.classList.add('bg-gray-100');
+    });
+    
+    btn.classList.remove('bg-gray-100');
+    btn.classList.add('bg-amber-500', 'text-white');
+    
+    document.getElementById(atributo).value = valor;
+    calcularTotal();
+    actualizarRadar();
+}
+
+function toggleTaza(btn, atributo, maxPuntos) {
+    const isActive = btn.classList.contains('bg-green-500');
+    
+    if (isActive) {
+        btn.classList.remove('bg-green-500', 'text-white', 'border-green-500');
+        btn.classList.add('border-gray-400');
+    } else {
+        btn.classList.add('bg-green-500', 'text-white', 'border-green-500');
+        btn.classList.remove('border-gray-400');
+    }
+    
+    const parent = btn.parentElement;
+    const buttons = parent.querySelectorAll('button');
+    let activados = 0;
+    buttons.forEach(b => {
+        if (b.classList.contains('bg-green-500')) {
+            activados++;
+        }
+    });
+    
+    const puntaje = maxPuntos - (activados * 2);
+    document.getElementById(atributo).value = puntaje;
+    calcularTotal();
+    actualizarRadar();
+}
+
+function calcularDefectos() {
+    const def2 = parseInt(document.querySelector('[name="defectos_intensidad_2"]').value) || 0;
+    const def4 = parseInt(document.querySelector('[name="defectos_intensidad_4"]').value) || 0;
+    
+    const totalDef2 = def2 * 2;
+    const totalDef4 = def4 * 4;
+    const totalDefectos = totalDef2 + totalDef4;
+    
+    document.getElementById('total-def-2').textContent = totalDef2;
+    document.getElementById('total-def-4').textContent = totalDef4;
+    document.getElementById('total_defectos').value = totalDefectos;
+    
+    calcularTotal();
+}
+
+function calcularTotal() {
+    const fragancia = parseFloat(document.getElementById('fragancia').value) || 0;
+    const aroma = parseFloat(document.getElementById('aroma').value) || 0;
+    const sabor = parseFloat(document.getElementById('sabor').value) || 0;
+    const saborResidual = parseFloat(document.getElementById('sabor_residual').value) || 0;
+    const acidez = parseFloat(document.getElementById('acidez').value) || 0;
+    const cuerpo = parseFloat(document.getElementById('cuerpo').value) || 0;
+    const balance = parseFloat(document.getElementById('balance').value) || 0;
+    const uniformidad = parseFloat(document.getElementById('uniformidad').value) || 0;
+    const tazaLimpia = parseFloat(document.getElementById('taza_limpia').value) || 0;
+    const dulzor = parseFloat(document.getElementById('dulzor').value) || 0;
+    const general = parseFloat(document.getElementById('general').value) || 0;
+    const defectos = parseFloat(document.getElementById('total_defectos').value) || 0;
+    
+    const total = fragancia + aroma + sabor + saborResidual + acidez + cuerpo + balance + uniformidad + tazaLimpia + dulzor + general - defectos;
+    
+    document.getElementById('puntaje-final').textContent = total.toFixed(2);
+    document.getElementById('puntaje_total').value = total.toFixed(2);
+    
+    let clasificacion = '';
+    let colorClass = '';
+    
+    if (total >= 90) {
+        clasificacion = 'EXCEPCIONAL';
+        colorClass = 'text-purple-600';
+    } else if (total >= 85) {
+        clasificacion = 'SOBRESALIENTE';
+        colorClass = 'text-green-600';
+    } else if (total >= 80) {
+        clasificacion = 'CAFE ESPECIAL';
+        colorClass = 'text-blue-600';
+    } else if (total >= 70) {
+        clasificacion = 'MUY BUENO';
+        colorClass = 'text-yellow-600';
+    } else {
+        clasificacion = 'PROMEDIO';
+        colorClass = 'text-red-600';
+    }
+    
+    const clasificacionDiv = document.getElementById('clasificacion');
+    clasificacionDiv.textContent = clasificacion;
+    clasificacionDiv.className = 'text-xl font-semibold mt-2 ' + colorClass;
+}
+
+// Gráfico Radar
+let radarChart;
+
+function inicializarRadar() {
+    const ctx = document.getElementById('radarChart');
+    
+    radarChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: ['FRAGANCIA', 'AROMA', 'SABOR', 'SABOR RESIDUAL', 'ACIDEZ', 'CUERPO', 'DULZURA', 'EN GENERAL'],
+            datasets: [{
+                label: 'Perfil Sensorial',
+                data: [0, 0, 0, 0, 0, 0, 0, 0],
+                fill: true,
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                borderColor: 'rgb(59, 130, 246)',
+                pointBackgroundColor: 'rgb(59, 130, 246)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgb(59, 130, 246)',
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                borderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    min: 0,
+                    max: 10,
+                    ticks: {
+                        stepSize: 2,
+                        font: {
+                            size: 10,
+                            weight: 'bold'
+                        },
+                        color: '#ffffff',
+                        backdropColor: 'rgba(30, 58, 138, 0.8)',
+                        backdropPadding: 4
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.3)',
+                        circular: true
+                    },
+                    pointLabels: {
+                        font: {
+                            size: 11,
+                            weight: 'bold'
+                        },
+                        color: '#ffffff'
+                    },
+                    angleLines: {
+                        color: 'rgba(255, 255, 255, 0.3)'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(30, 58, 138, 0.9)',
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 13
+                    },
+                    padding: 10,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: function(context) {
+                            return 'Puntaje: ' + context.parsed.r.toFixed(2);
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Aplicar fondo azul oscuro al canvas
+    ctx.style.backgroundColor = '#1e3a8a';
+    ctx.style.borderRadius = '8px';
+    ctx.style.padding = '20px';
+}
+
+function actualizarRadar() {
+    const fragancia = parseFloat(document.getElementById('fragancia').value) || 0;
+    const aroma = parseFloat(document.getElementById('aroma').value) || 0;
+    const sabor = parseFloat(document.getElementById('sabor').value) || 0;
+    const saborResidual = parseFloat(document.getElementById('sabor_residual').value) || 0;
+    const acidez = parseFloat(document.getElementById('acidez').value) || 0;
+    const cuerpo = parseFloat(document.getElementById('cuerpo').value) || 0;
+    const dulzor = parseFloat(document.getElementById('dulzor').value) / 10; // Convertir de escala 10 a escala 10
+    const general = parseFloat(document.getElementById('general').value) || 0;
+    
+    if (radarChart) {
+        radarChart.data.datasets[0].data = [
+            fragancia,
+            aroma,
+            sabor,
+            saborResidual,
+            acidez,
+            cuerpo,
+            dulzor,
+            general
+        ];
+        radarChart.update();
+    }
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+    calcularTotal();
+    inicializarRadar();
+});
+
+function actualizarBarraIntensidad(slider, barraId) {
+    const porcentaje = (slider.value / slider.max) * 100;
+    document.getElementById(barraId).style.width = porcentaje + '%';
+}
+</script>
+
+<style>
+.score-btn {
+    padding: 3px 6px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    background-color: #f3f4f6;
+    font-size: 9px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.score-btn:hover {
+    background-color: #fbbf24;
+    color: white;
+}
+</style>
+    <!-- Botones -->
+    <div class="flex justify-end space-x-4 pb-6">
+        <a href="{% url 'lista_cataciones' %}" 
+           class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+            <i class="fas fa-times mr-2"></i>Cancelar
+        </a>
+        <button type="submit" 
+                class="px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-lg hover:from-amber-600 hover:to-amber-700 transition shadow-lg">
+            <i class="fas fa-save mr-2"></i>Guardar Catación
+        </button>
+    </div>
+</form>
+    </div>
+<script>
+function actualizarOpciones() {
+    const tipoMuestra = document.getElementById('tipo_muestra').value;
+    
+    document.getElementById('div-lote').style.display = 'none';
+    document.getElementById('div-procesado').style.display = 'none';
+    document.getElementById('div-reproceso').style.display = 'none';
+    document.getElementById('div-mezcla').style.display = 'none';
+    
+    if (tipoMuestra === 'lote') {
+        document.getElementById('div-lote').style.display = 'block';
+    } else if (tipoMuestra === 'procesado') {
+        document.getElementById('div-procesado').style.display = 'block';
+    } else if (tipoMuestra === 'reproceso') {
+        document.getElementById('div-reproceso').style.display = 'block';
+    } else if (tipoMuestra === 'mezcla') {
+        document.getElementById('div-mezcla').style.display = 'block';
+    }
+}
+
+function selectScore(btn, atributo, valor) {
+    const parent = btn.parentElement;
+    const buttons = parent.querySelectorAll('.score-btn');
+    buttons.forEach(b => {
+        b.classList.remove('bg-amber-500', 'text-white');
+        b.classList.add('bg-gray-100');
+    });
+    
+    btn.classList.remove('bg-gray-100');
+    btn.classList.add('bg-amber-500', 'text-white');
+    
+    document.getElementById(atributo).value = valor;
+    calcularTotal();
+}
+
+function toggleTaza(btn, atributo, maxPuntos) {
+const isActive = btn.classList.contains('bg-green-500');
+if (isActive) {
+    btn.classList.remove('bg-green-500', 'text-white', 'border-green-500');
+    btn.classList.add('border-gray-400');
+} else {
+    btn.classList.add('bg-green-500', 'text-white', 'border-green-500');
+    btn.classList.remove('border-gray-400');
+}
+
+const parent = btn.parentElement;
+const buttons = parent.querySelectorAll('button');
+let activados = 0;
+buttons.forEach(b => {
+    if (b.classList.contains('bg-green-500')) {
+        activados++;
+    }
+});
+
+const puntaje = maxPuntos - (activados * 2);
+document.getElementById(atributo).value = puntaje;
+calcularTotal();
+}
+function calcularDefectos() {
+const def2 = parseInt(document.querySelector('[name="defectos_intensidad_2"]').value) || 0;
+const def4 = parseInt(document.querySelector('[name="defectos_intensidad_4"]').value) || 0;
+const totalDef2 = def2 * 2;
+const totalDef4 = def4 * 4;
+const totalDefectos = totalDef2 + totalDef4;
+
+document.getElementById('total-def-2').textContent = totalDef2;
+document.getElementById('total-def-4').textContent = totalDef4;
+document.getElementById('total_defectos').value = totalDefectos;
+
+calcularTotal();
+}
+function calcularTotal() {
+const fragancia = parseFloat(document.getElementById('fragancia').value) || 0;
+const aroma = parseFloat(document.getElementById('aroma').value) || 0;
+const sabor = parseFloat(document.getElementById('sabor').value) || 0;
+const saborResidual = parseFloat(document.getElementById('sabor_residual').value) || 0;
+const acidez = parseFloat(document.getElementById('acidez').value) || 0;
+const cuerpo = parseFloat(document.getElementById('cuerpo').value) || 0;
+const balance = parseFloat(document.getElementById('balance').value) || 0;
+const uniformidad = parseFloat(document.getElementById('uniformidad').value) || 0;
+const tazaLimpia = parseFloat(document.getElementById('taza_limpia').value) || 0;
+const dulzor = parseFloat(document.getElementById('dulzor').value) || 0;
+const general = parseFloat(document.getElementById('general').value) || 0;
+const defectos = parseFloat(document.getElementById('total_defectos').value) || 0;
+const total = fragancia + aroma + sabor + saborResidual + acidez + cuerpo + balance + uniformidad + tazaLimpia + dulzor + general - defectos;
+
+document.getElementById('puntaje-final').textContent = total.toFixed(2);
+document.getElementById('puntaje_total').value = total.toFixed(2);
+
+let clasificacion = '';
+let colorClass = '';
+
+if (total >= 90) {
+    clasificacion = 'EXCEPCIONAL';
+    colorClass = 'text-purple-600';
+} else if (total >= 85) {
+    clasificacion = 'SOBRESALIENTE';
+    colorClass = 'text-green-600';
+} else if (total >= 80) {
+    clasificacion = 'CAFE ESPECIAL';
+    colorClass = 'text-blue-600';
+} else if (total >= 70) {
+    clasificacion = 'MUY BUENO';
+    colorClass = 'text-yellow-600';
+} else {
+    clasificacion = 'PROMEDIO';
+    colorClass = 'text-red-600';
+}
+
+const clasificacionDiv = document.getElementById('clasificacion');
+clasificacionDiv.textContent = clasificacion;
+clasificacionDiv.className = 'text-xl font-semibold mt-2 ' + colorClass;
+}
+window.addEventListener('DOMContentLoaded', function() {
+calcularTotal();
+});
+</script>
+<style>
+.score-btn {
+    padding: 3px 6px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    background-color: #f3f4f6;
+    font-size: 9px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.score-btn:hover {
+    background-color: #fbbf24;
+    color: white;
+}
+</style>
+{% endblock %}

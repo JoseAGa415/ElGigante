@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Catación - Beneficio de Café{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-bold text-red-600 mb-4">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            Confirmar Eliminación
+        </h2>
+        
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <p class="text-gray-700">
+                ¿Está seguro que desea eliminar esta catación? Esta acción no se puede deshacer.
+            </p>
+        </div>
+
+        <div class="bg-gray-50 p-4 rounded-lg mb-6">
+            <h3 class="font-bold text-gray-800 mb-2">Información de la Catación:</h3>
+            <ul class="space-y-2 text-sm text-gray-700">
+                <li><strong>Código:</strong> {{ catacion.codigo_muestra }}</li>
+                <li><strong>Tipo:</strong> {{ catacion.get_tipo_muestra_display }}</li>
+                <li><strong>Fecha:</strong> {{ catacion.fecha_catacion|date:"d/m/Y H:i" }}</li>
+                <li><strong>Puntaje:</strong> {{ catacion.puntaje_total }} - {{ catacion.clasificacion }}</li>
+                <li><strong>Catador:</strong> {{ catacion.catador.username }}</li>
+            </ul>
+        </div>
+
+        <form method="post" class="flex justify-end space-x-4">
+            {% csrf_token %}
+            <a href="{% url 'lista_cataciones' %}" 
+               class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                Cancelar
+            </a>
+            <button type="submit" 
+                    class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                <i class="fas fa-trash mr-2"></i>Eliminar Catación
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Procesado - {{ procesado.numero_trilla }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+            <i class="fas fa-edit mr-3 text-blue-600"></i>
+            Editar Procesado/Trilla #{{ procesado.numero_trilla }}
+        </h2>
+        <p class="text-gray-600 mt-2">Dar seguimiento al proceso de trilla del lote <strong>{{ procesado.lote.codigo }}</strong></p>
+    </div>
+
+    <!-- Formulario -->
+    <form method="post" class="bg-white rounded-lg shadow-md p-6 space-y-6">
+        {% csrf_token %}
+        
+        <!-- Número de Trilla (solo lectura) -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                Número de Trilla
+            </label>
+            <input type="text" value="{{ procesado.numero_trilla }}" readonly
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed">
+        </div>
+
+        <!-- Tipo de Café y Estado del Proceso -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Tipo de Café
+                </label>
+                <input type="text" value="{{ procesado.lote.tipo_cafe }}" readonly
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-amber-50 font-semibold text-amber-800 cursor-not-allowed">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Estado del Proceso <span class="text-red-500">*</span>
+                </label>
+                <select name="estado_proceso" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
+                    <option value="en_proceso">En Proceso</option>
+                    <option value="completado">Completado</option>
+                    <option value="pendiente">Pendiente</option>
+                </select>
+                <p class="text-xs text-gray-500 mt-1">Actualiza el estado según el avance del procesado</p>
+            </div>
+        </div>
+
+        <!-- Información del Lote -->
+        <div class="bg-gray-50 p-4 rounded-lg">
+            <h3 class="font-bold text-gray-700 mb-2">Información del Lote</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                    <span class="text-gray-600">Código:</span>
+                    <span class="font-semibold ml-2">{{ procesado.lote.codigo }}</span>
+                </div>
+                <div>
+                    <span class="text-gray-600">Bodega:</span>
+                    <span class="font-semibold ml-2">{{ procesado.lote.bodega.codigo }}</span>
+                </div>
+                <div>
+                    <span class="text-gray-600">Fecha inicial:</span>
+                    <span class="font-semibold ml-2">{{ procesado.fecha|date:"d/m/Y" }}</span>
+                </div>
+                <div>
+                    <span class="text-gray-600">Proveedor:</span>
+                    <span class="font-semibold ml-2">{{ procesado.lote.proveedor }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pesos -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Peso Inicial <span class="text-red-500">*</span>
+                </label>
+                <div class="flex gap-2">
+                    <input type="number" step="0.01" name="peso_inicial_kg" id="peso-inicial" required
+                           value="{{ procesado.peso_inicial_kg|floatformat:2 }}"
+                           class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600"
+                           oninput="calcularRendimiento()">
+                    <select name="unidad_peso_inicial" class="w-32 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
+                        <option value="kg" {% if procesado.unidad_peso_inicial == 'kg' %}selected{% endif %}>kg</option>
+                        <option value="libras" {% if procesado.unidad_peso_inicial == 'libras' %}selected{% endif %}>libras</option>
+                        <option value="gramos" {% if procesado.unidad_peso_inicial == 'gramos' %}selected{% endif %}>gramos</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Peso Final <span class="text-red-500">*</span>
+                </label>
+                <div class="flex gap-2">
+                    <input type="number" step="0.01" name="peso_final_kg" id="peso-final" required
+                           value="{{ procesado.peso_final_kg|floatformat:2 }}"
+                           class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600"
+                           oninput="calcularRendimiento()">
+                    <select name="unidad_peso_final" class="w-32 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
+                        <option value="kg" {% if procesado.unidad_peso_final == 'kg' %}selected{% endif %}>kg</option>
+                        <option value="libras" {% if procesado.unidad_peso_final == 'libras' %}selected{% endif %}>libras</option>
+                        <option value="gramos" {% if procesado.unidad_peso_final == 'gramos' %}selected{% endif %}>gramos</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clasificación de Café -->
+        <div>
+            <h3 class="font-bold text-gray-700 mb-3">Clasificación de Café</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Café de Primera</label>
+                    <div class="flex gap-2">
+                        <input type="number" step="0.01" name="cafe_primera" value="{{ procesado.cafe_primera|floatformat:2 }}"
+                               class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
+                        <select name="unidad_cafe_primera" class="w-32 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
+                            <option value="kg" {% if procesado.unidad_cafe_primera == 'kg' %}selected{% endif %}>kg</option>
+                            <option value="libras" {% if procesado.unidad_cafe_primera == 'libras' %}selected{% endif %}>libras</option>
+                            <option value="gramos" {% if procesado.unidad_cafe_primera == 'gramos' %}selected{% endif %}>gramos</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Café de Segunda</label>
+                    <div class="flex gap-2">
+                        <input type="number" step="0.01" name="cafe_segunda" value="{{ procesado.cafe_segunda|floatformat:2 }}"
+                               class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
+                        <select name="unidad_cafe_segunda" class="w-32 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
+                            <option value="kg" {% if procesado.unidad_cafe_segunda == 'kg' %}selected{% endif %}>kg</option>
+                            <option value="libras" {% if procesado.unidad_cafe_segunda == 'libras' %}selected{% endif %}>libras</option>
+                            <option value="gramos" {% if procesado.unidad_cafe_segunda == 'gramos' %}selected{% endif %}>gramos</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Indicador de Rendimiento -->
+        <div id="rendimiento-display" class="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+            <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-blue-700">Rendimiento Actual:</span>
+                <span class="text-2xl font-bold text-blue-900" id="rendimiento-valor">{{ procesado.rendimiento|floatformat:2 }}%</span>
+            </div>
+        </div>
+
+        <!-- Mermas -->
+        <div>
+            <h3 class="font-bold text-gray-700 mb-3">Mermas del Proceso</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Catadura (kg)</label>
+                    <input type="number" step="0.01" name="catadura" value="{{ procesado.catadura|floatformat:2 }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Rechazo Electrónica (kg)</label>
+                    <input type="number" step="0.01" name="rechazo_electronica" value="{{ procesado.rechazo_electronica|floatformat:2 }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Bajo Zaranda (kg)</label>
+                    <input type="number" step="0.01" name="bajo_zaranda" value="{{ procesado.bajo_zaranda|floatformat:2 }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Barridos (kg)</label>
+                    <input type="number" step="0.01" name="barridos" value="{{ procesado.barridos|floatformat:2 }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600">
+                </div>
+            </div>
+        </div>
+
+        <!-- Observaciones -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Observaciones / Notas de Seguimiento</label>
+            <textarea name="observaciones" rows="4"
+                      placeholder="Agrega notas sobre el progreso del procesado..."
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600">{{ procesado.observaciones }}</textarea>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex justify-end space-x-4">
+            <a href="{% url 'detalle_procesado' procesado.id %}" 
+               class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                Cancelar
+            </a>
+            <button type="submit" 
+                    class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                <i class="fas fa-save mr-2"></i>Actualizar Procesado
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+function calcularRendimiento() {
+    const pesoInicial = parseFloat(document.getElementById('peso-inicial').value) || 0;
+    const pesoFinal = parseFloat(document.getElementById('peso-final').value) || 0;
+    
+    if (pesoInicial > 0 && pesoFinal > 0) {
+        const rendimiento = (pesoFinal / pesoInicial * 100).toFixed(2);
+        document.getElementById('rendimiento-valor').textContent = rendimiento + '%';
+        
+        const display = document.getElementById('rendimiento-display');
+        if (rendimiento >= 80) {
+            display.className = 'bg-green-50 border border-green-200 p-4 rounded-lg';
+            document.getElementById('rendimiento-valor').className = 'text-2xl font-bold text-green-900';
+        } else if (rendimiento >= 70) {
+            display.className = 'bg-yellow-50 border border-yellow-200 p-4 rounded-lg';
+            document.getElementById('rendimiento-valor').className = 'text-2xl font-bold text-yellow-900';
+        } else {
+            display.className = 'bg-red-50 border border-red-200 p-4 rounded-lg';
+            document.getElementById('rendimiento-valor').className = 'text-2xl font-bold text-red-900';
+        }
+    }
+}
+
+// Calcular rendimiento al cargar la página
+window.addEventListener('DOMContentLoaded', calcularRendimiento);
+</script>
+{% endblock %}

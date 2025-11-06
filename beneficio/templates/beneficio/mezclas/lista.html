@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista de Mezclas{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-3xl font-bold text-gray-800">
+            <i class="fas fa-layer-group mr-2 text-orange-600"></i>
+            Mezclas de Café
+        </h2>
+        <a href="{% url 'crear_mezcla' %}" class="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white px-6 py-3 rounded-lg transition shadow-lg">
+            <i class="fas fa-plus mr-2"></i>Nueva Mezcla
+        </a>
+    </div>
+
+    <!-- Tabla de Mezclas -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gradient-to-r from-orange-600 to-orange-700 text-white">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                            <i class="fas fa-hashtag mr-1"></i>Número
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                            <i class="fas fa-info-circle mr-1"></i>Descripción
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                            <i class="fas fa-calendar mr-1"></i>Fecha
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                            <i class="fas fa-weight mr-1"></i>Peso Total
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                            <i class="fas fa-boxes mr-1"></i>Componentes
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                            <i class="fas fa-user mr-1"></i>Responsable
+                        </th>
+                        <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">
+                            <i class="fas fa-cog mr-1"></i>Acciones
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for mezcla in mezclas %}
+                    <tr class="hover:bg-orange-50 transition">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center text-white font-bold">
+                                    {{ mezcla.numero }}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-medium text-gray-900">{{ mezcla.descripcion|truncatewords:10 }}</div>
+                            {% if mezcla.destino %}
+                            <div class="text-xs text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i>{{ mezcla.destino }}</div>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ mezcla.fecha|date:"d/m/Y" }}</div>
+                            <div class="text-xs text-gray-500">{{ mezcla.fecha|date:"H:i" }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">
+                                {{ mezcla.peso_total_kg|floatformat:2 }} kg
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <i class="fas fa-layer-group mr-2 text-orange-600"></i>
+                                <span class="text-sm text-gray-900">{{ mezcla.detalles.count }} componente{{ mezcla.detalles.count|pluralize }}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ mezcla.responsable.get_full_name|default:mezcla.responsable.username }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <a href="{% url 'detalle_mezcla' mezcla.id %}" 
+                               class="text-orange-600 hover:text-orange-900 mr-3" 
+                               title="Ver detalles">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            
+                            <a href="{% url 'editar_mezcla' mezcla.id %}" 
+                               class="text-blue-600 hover:text-blue-900 mr-3" 
+                               title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            
+                            <form method="POST" action="{% url 'eliminar_mezcla' mezcla.id %}" 
+                                  class="inline" 
+                                  onsubmit="return confirm('¿Estás seguro de eliminar esta mezcla?');">
+                                {% csrf_token %}
+                                <button type="submit" 
+                                        class="text-red-600 hover:text-red-900" 
+                                        title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+                            <div class="flex flex-col items-center justify-center py-8">
+                                <i class="fas fa-layer-group text-6xl mb-4 text-gray-300"></i>
+                                <p class="text-lg font-medium text-gray-600">No hay mezclas registradas</p>
+                                <a href="{% url 'crear_mezcla' %}" class="mt-4 text-orange-600 hover:text-orange-800 font-semibold">
+                                    <i class="fas fa-plus mr-1"></i>Crear la primera
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow-lg p-6 text-white transform hover:scale-105 transition">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium opacity-90">Total Mezclas</p>
+                    <p class="text-3xl font-bold mt-2">{{ mezclas.count }}</p>
+                </div>
+                <div class="bg-white bg-opacity-20 rounded-full p-4">
+                    <i class="fas fa-layer-group text-3xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white transform hover:scale-105 transition">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium opacity-90">Peso Total</p>
+                    <p class="text-3xl font-bold mt-2">
+                        {% widthratio mezclas|length 1 1 as total %}
+                        {{ total|default:0 }}
+                    </p>
+                    <p class="text-xs opacity-80">kilogramos</p>
+                </div>
+                <div class="bg-white bg-opacity-20 rounded-full p-4">
+                    <i class="fas fa-weight text-3xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white transform hover:scale-105 transition">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium opacity-90">Promedio Componentes</p>
+                    <p class="text-3xl font-bold mt-2">
+                        {% if mezclas.count > 0 %}
+                            {{ mezclas.count|default:0 }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </p>
+                    <p class="text-xs opacity-80">por mezcla</p>
+                </div>
+                <div class="bg-white bg-opacity-20 rounded-full p-4">
+                    <i class="fas fa-boxes text-3xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
