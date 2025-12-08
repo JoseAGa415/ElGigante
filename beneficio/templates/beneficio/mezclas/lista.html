@@ -90,7 +90,12 @@
                                title="Editar">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            
+                            <!-- Botón Continuar Mezcla -->
+                            <a href="{% url 'continuar_mezcla' mezcla.id %}" 
+                            class="text-yellow-600 hover:text-yellow-800 text-lg" 
+                            title="Continuar mezcla">
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
                             <form method="POST" action="{% url 'eliminar_mezcla' mezcla.id %}" 
                                   class="inline" 
                                   onsubmit="return confirm('¿Estás seguro de eliminar esta mezcla?');">

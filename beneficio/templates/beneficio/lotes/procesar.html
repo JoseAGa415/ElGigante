@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Procesar Recibo {{ recibo.numero_recibo }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Información del Recibo -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-6">
+                <i class="fas fa-cogs text-green-600"></i>
+                Procesar Recibo {{ recibo.numero_recibo }}
+            </h1>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <p class="text-xs text-blue-600 font-semibold uppercase">Lote</p>
+                    <p class="text-xl font-bold text-gray-900">{{ lote.codigo }}</p>
+                    <p class="text-sm text-gray-600">{{ lote.tipo_cafe }}</p>
+                </div>
+                <div class="bg-purple-50 p-4 rounded-lg">
+                    <p class="text-xs text-purple-600 font-semibold uppercase">Peso Total Recibo</p>
+                    <p class="text-xl font-bold text-gray-900">{{ recibo.peso }} {{ recibo.get_unidad_display }}</p>
+                    <p class="text-sm text-gray-600">({{ recibo.convertir_a_kg|floatformat:2 }} kg)</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <p class="text-xs text-green-600 font-semibold uppercase">Disponible para Procesar</p>
+                    <p class="text-2xl font-bold text-green-600">{{ recibo.peso_disponible }} {{ recibo.get_unidad_display }}</p>
+                </div>
+                <div class="bg-yellow-50 p-4 rounded-lg">
+                    <p class="text-xs text-yellow-600 font-semibold uppercase">Ya Procesado</p>
+                    <p class="text-xl font-bold text-gray-900">{{ recibo.peso_procesado }} {{ recibo.get_unidad_display }}</p>
+                    <p class="text-sm text-gray-600">{{ recibo.porcentaje_procesado|floatformat:0 }}%</p>
+                </div>
+            </div>
+        </div>
+        
+        <form method="post" class="bg-white rounded-xl shadow-lg p-8 space-y-6">
+            {% csrf_token %}
+            
+            <!-- Resto del formulario de procesado normal -->
+            <!-- Copia el contenido del formulario de crear.html de procesados -->
+            
+            <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
+                <div class="flex">
+                    <i class="fas fa-info-circle text-yellow-600 text-xl mr-3"></i>
+                    <div>
+                        <p class="text-sm text-yellow-800">
+                            <strong>Importante:</strong> Este procesado quedará vinculado al recibo <strong>{{ recibo.numero_recibo }}</strong>.
+                            El sistema automáticamente llevará control de cuánto has procesado de este recibo específico.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Incluir aquí todos los campos del formulario de procesado -->
+            <!-- ... (campos de hora, pesos, mermas, etc.) ... -->
+            
+            <div class="flex justify-end space-x-4 pt-6 border-t">
+                <a href="{% url 'detalle_lote' lote.pk %}" 
+                   class="px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium text-gray-700">
+                    Cancelar
+                </a>
+                <button type="submit" 
+                        class="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition font-medium shadow-lg hover:shadow-xl">
+                    <i class="fas fa-save mr-2"></i>
+                    Registrar Procesado
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Nueva Venta - {{ nombre_tipo }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8 px-4">
+    <div class="max-w-4xl mx-auto">
+        
+        <!-- HEADER -->
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-xl p-6 mb-6 text-white">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold">Nueva Venta</h1>
+                    <p class="text-blue-100">{{ nombre_tipo }}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-blue-100">Disponible</p>
+                    <p class="text-3xl font-bold">{{ peso_disponible|floatformat:2 }} kg</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MENSAJES -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="p-4 rounded-lg mb-6 {% if message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                    {{ message|safe }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" id="formVenta">
+            {% csrf_token %}
+
+            <!-- DATOS DE LA VENTA -->
+            <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800">Datos de la Venta</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- UNIDAD DE MEDIDA -->
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-2">Unidad de Medida *</label>
+                        <select name="unidad_medida" id="unidad_medida" required
+                                class="w-full border-2 border-gray-300 rounded-lg p-3 font-semibold focus:border-blue-500 outline-none">
+                            <option value="">Seleccionar...</option>
+                            <option value="kg">Kilogramos (kg)</option>
+                            <option value="gramos">Gramos (g)</option>
+                            <option value="libras">Libras (lb)</option>
+                            <option value="quintales">Quintales (qq)</option>
+                            <option value="bolsas">Bolsas</option>
+                            <option value="sacos">Sacos</option>
+                        </select>
+                    </div>
+
+                    <!-- CANTIDAD -->
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-2">Cantidad *</label>
+                        <input type="number" name="cantidad" id="cantidad" step="any" min="0.01" required
+                               class="w-full border-2 border-gray-300 rounded-lg p-3 text-lg font-bold focus:border-blue-500 outline-none"
+                               placeholder="0.00">
+                        <p class="text-xs text-gray-500 mt-1">Ingresa la cantidad en la unidad seleccionada</p>
+                    </div>
+
+                    <!-- PESO POR UNIDAD (para bolsas) -->
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-2">Peso por Unidad (libras)</label>
+                        <input type="number" name="peso_por_unidad" id="peso_por_unidad" step="0.01" min="0.01"
+                               class="w-full border-2 border-gray-300 rounded-lg p-3 font-semibold focus:border-blue-500 outline-none"
+                               placeholder="1.00">
+                        <p class="text-xs text-gray-500 mt-1">Solo para bolsas (opcional, default: 1 lb)</p>
+                    </div>
+
+                    <!-- PRECIO POR QUINTAL -->
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-2">Precio por Quintal (Q) *</label>
+                        <input type="number" name="precio_quintal" id="precio_quintal" step="0.01" min="0" required
+                               class="w-full border-2 border-gray-300 rounded-lg p-3 text-lg font-bold focus:border-blue-500 outline-none"
+                               placeholder="1500.00">
+                    </div>
+
+                    <!-- COMPRADOR -->
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-2">Comprador</label>
+                        <select name="comprador" class="w-full border-2 border-gray-300 rounded-lg p-3 font-semibold focus:border-blue-500 outline-none">
+                            <option value="">Ninguno</option>
+                            {% for comprador in compradores %}
+                                <option value="{{ comprador.id }}">{{ comprador.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- ESTADO -->
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-2">Estado</label>
+                        <select name="estado" class="w-full border-2 border-gray-300 rounded-lg p-3 font-semibold focus:border-blue-500 outline-none">
+                            <option value="completada" selected>Completada</option>
+                            <option value="pendiente">Pendiente</option>
+                            <option value="en_proceso">En Proceso</option>
+                            <option value="cancelada">Cancelada</option>
+                        </select>
+                    </div>
+
+                    <!-- FACTURA -->
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-2">Número de Factura</label>
+                        <input type="text" name="numero_factura" class="w-full border-2 border-gray-300 rounded-lg p-3 font-semibold focus:border-blue-500 outline-none" placeholder="FAC-00123">
+                    </div>
+
+                    <!-- CONTRATO -->
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-2">Número de Contrato</label>
+                        <input type="text" name="numero_contrato" class="w-full border-2 border-gray-300 rounded-lg p-3 font-semibold focus:border-blue-500 outline-none" placeholder="CON-00456">
+                    </div>
+
+                    <!-- FECHA ENTREGA -->
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-2">Fecha de Entrega</label>
+                        <input type="date" name="fecha_entrega" class="w-full border-2 border-gray-300 rounded-lg p-3 font-semibold focus:border-blue-500 outline-none">
+                    </div>
+
+                    <!-- TRANSPORTISTA -->
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-2">Transportista</label>
+                        <input type="text" name="transportista" class="w-full border-2 border-gray-300 rounded-lg p-3 font-semibold focus:border-blue-500 outline-none" placeholder="Transportes ABC">
+                    </div>
+
+                    <!-- PLACA -->
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-2">Número de Placa</label>
+                        <input type="text" name="numero_placa" class="w-full border-2 border-gray-300 rounded-lg p-3 font-semibold focus:border-blue-500 outline-none" placeholder="P-123ABC">
+                    </div>
+
+                    <!-- OBSERVACIONES -->
+                    <div class="md:col-span-2">
+                        <label class="block font-bold text-gray-700 mb-2">Observaciones</label>
+                        <textarea name="observaciones" rows="3" class="w-full border-2 border-gray-300 rounded-lg p-3 font-semibold focus:border-blue-500 outline-none resize-none" placeholder="Notas adicionales..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HIDDEN FIELD -->
+            <input type="hidden" name="peso_kg" id="peso_kg">
+
+            <!-- BOTONES -->
+            <div class="flex gap-4">
+                <a href="{% url 'eventos_lista' %}" class="flex-1 bg-gray-400 hover:bg-gray-500 text-white font-bold py-4 px-6 rounded-lg text-center text-lg">
+                    Cancelar
+                </a>
+                <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg text-lg">
+                    Registrar Venta
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+const PESO_DISPONIBLE = {{ peso_disponible }};
+
+// CONVERSIÓN A KILOGRAMOS
+const FACTORES = {
+    'kg': 1,
+    'gramos': 0.001,
+    'libras': 0.453592,
+    'quintales': 45.36,
+    'bolsas': 0.453592,  // 1 bolsa = 1 lb por defecto
+    'sacos': 46
+};
+
+document.getElementById('formVenta').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const unidad = document.getElementById('unidad_medida').value;
+    const cantidad = parseFloat(document.getElementById('cantidad').value) || 0;
+    const pesoPorUnidad = parseFloat(document.getElementById('peso_por_unidad').value) || 1;
+    const precio = parseFloat(document.getElementById('precio_quintal').value) || 0;
+    
+    console.log('='.repeat(80));
+    console.log('VALIDANDO FORMULARIO');
+    console.log('Unidad:', unidad);
+    console.log('Cantidad:', cantidad);
+    console.log('Peso por unidad:', pesoPorUnidad);
+    console.log('Precio:', precio);
+    
+    // Validar campos requeridos
+    if (!unidad || unidad === '') {
+        alert('⚠️ Debes seleccionar una unidad de medida');
+        console.error('❌ Unidad vacía');
+        return false;
+    }
+    
+    if (isNaN(cantidad) || cantidad <= 0) {
+        alert('⚠️ La cantidad debe ser un número mayor a 0');
+        console.error('❌ Cantidad inválida:', cantidad);
+        return false;
+    }
+    
+    if (isNaN(precio) || precio <= 0) {
+        alert('⚠️ El precio debe ser un número mayor a 0');
+        console.error('❌ Precio inválido:', precio);
+        return false;
+    }
+    
+    // Calcular peso en kg
+    let pesoKg = 0;
+    
+    if (unidad === 'bolsas') {
+        pesoKg = cantidad * pesoPorUnidad * FACTORES['libras'];
+        console.log(`Bolsas: ${cantidad} × ${pesoPorUnidad} lb × ${FACTORES['libras']} = ${pesoKg} kg`);
+    } else {
+        pesoKg = cantidad * FACTORES[unidad];
+        console.log(`${unidad}: ${cantidad} × ${FACTORES[unidad]} = ${pesoKg} kg`);
+    }
+    
+    console.log('Peso calculado en kg:', pesoKg.toFixed(4));
+    
+    // Validar peso disponible
+    if (pesoKg > PESO_DISPONIBLE) {
+        alert(`⚠️ EXCEDE EL PESO DISPONIBLE\n\nIntentaste: ${pesoKg.toFixed(2)} kg\nDisponible: ${PESO_DISPONIBLE.toFixed(2)} kg`);
+        return false;
+    }
+    
+    if (pesoKg <= 0) {
+        alert('⚠️ El peso calculado no puede ser 0');
+        return false;
+    }
+    
+    // CRÍTICO: Guardar peso en kg en hidden field
+    const pesoKgFinal = pesoKg.toFixed(4);
+    document.getElementById('peso_kg').value = pesoKgFinal;
+    
+    console.log('✅ peso_kg guardado:', pesoKgFinal);
+    console.log('✅ Enviando formulario...');
+    console.log('='.repeat(80));
+    
+    // Enviar el formulario
+    this.submit();
+});
+
+console.log('✅ JavaScript cargado - Disponible:', PESO_DISPONIBLE, 'kg');
+</script>
+
+{% endblock %}

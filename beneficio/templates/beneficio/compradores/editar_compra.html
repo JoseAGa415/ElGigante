@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Editar Compra #{{ compra.id }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <form method="post" class="bg-white rounded-xl shadow-lg p-8 space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                    <i class="fas fa-edit text-blue-600"></i>
+                    Editar Compra #{{ compra.id }}
+                </h1>
+                <p class="mt-2 text-lg text-gray-600">
+                    Modificando la compra de: 
+                    <strong class="text-amber-700">{{ compra.comprador.nombre }}</strong>
+                </p>
+            </div>
+
+            <hr>
+
+            <h2 class="text-xl font-semibold text-gray-800">Detalles de la Transacción</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Fecha de Compra <span class="text-red-500">*</span>
+                    </label>
+                    <input type="datetime-local" 
+                           name="fecha_compra"
+                           value="{{ compra.fecha_compra|date:'Y-m-d\TH:i' }}"
+                           required
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Descripción (Opcional)
+                    </label>
+                    <input type="text" 
+                           name="descripcion" 
+                           value="{{ compra.descripcion|default:'' }}"
+                           placeholder="Ej: Venta de café especial"
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Cantidad <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" 
+                           step="0.01"
+                           name="cantidad" 
+                           value="{{ compra.cantidad|stringformat:'.2f' }}"
+                           required
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Unidad <span class="text-red-500">*</span>
+                    </label>
+                    <select name="unidad" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                        <option value="qq" {% if compra.unidad == 'qq' %}selected{% endif %}>Quintales (qq)</option>
+                        <option value="kg" {% if compra.unidad == 'kg' %}selected{% endif %}>Kilogramos (kg)</option>
+                        <option value="lb" {% if compra.unidad == 'lb' %}selected{% endif %}>Libras (lb)</option>
+                        <option value="saco" {% if compra.unidad == 'saco' %}selected{% endif %}>Sacos</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Precio Unitario (Q) <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" 
+                           step="0.01"
+                           name="precio_unitario" 
+                           value="{{ compra.precio_unitario|stringformat:'.2f' }}"
+                           required
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                </div>
+            </div>
+
+            <h2 class="text-xl font-semibold text-gray-800 pt-4 border-t">Información de Pago</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        No. Factura (Opcional)
+                    </label>
+                    <input type="text" 
+                           name="numero_factura" 
+                           value="{{ compra.numero_factura|default:'' }}"
+                           placeholder="Ej: F-1234"
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Método de Pago (Opcional)
+                    </label>
+                    <input type="text" 
+                           name="metodo_pago" 
+                           value="{{ compra.metodo_pago|default:'' }}"
+                           placeholder="Ej: Transferencia, Efectivo"
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Estado de Pago
+                    </label>
+                    <select name="estado_pago" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                        <option value="pendiente" {% if compra.estado_pago == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                        <option value="parcial" {% if compra.estado_pago == 'parcial' %}selected{% endif %}>Pago Parcial</option>
+                        <option value="pagado" {% if compra.estado_pago == 'pagado' %}selected{% endif %}>Pagado</option>
+                    </select>
+                </div>
+            </div>
+
+            <h2 class="text-xl font-semibold text-gray-800 pt-4 border-t">Vincular Producto (Opcional)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Lote
+                    </label>
+                    <select name="lote_id" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                        <option value="">-- Ninguno --</option>
+                        {% for lote in lotes %}
+                        <option value="{{ lote.pk }}" {% if compra.lote.pk == lote.pk %}selected{% endif %}>
+                            {{ lote.codigo }} - {{ lote.tipo_cafe }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Procesado (Trilla)
+                    </label>
+                    <select name="procesado_id" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                        <option value="">-- Ninguno --</option>
+                        {% for procesado in procesados %}
+                        <option value="{{ procesado.pk }}" {% if compra.procesado.pk == procesado.pk %}selected{% endif %}>
+                            Trilla #{{ procesado.numero_trilla }} (Lote: {{ procesado.lote.codigo }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Mezcla
+                    </label>
+                    <select name="mezcla_id" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                        <option value="">-- Ninguno --</option>
+                        {% for mezcla in mezclas %}
+                        <option value="{{ mezcla.pk }}" {% if compra.mezcla.pk == mezcla.pk %}selected{% endif %}>
+                            Mezcla #{{ mezcla.numero }} - {{ mezcla.destino }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="flex justify-end space-x-4 pt-6 border-t">
+                <a href="{% url 'detalle_comprador' compra.comprador.pk %}" 
+                   class="px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium text-gray-700">
+                    Cancelar
+                </a>
+                <button type="submit" 
+                        class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-lg hover:shadow-xl">
+                    <i class="fas fa-save mr-2"></i>
+                    Actualizar Compra
+                </button>
+            </div>
+            
+        </form>
+    </div>
+</div>
+{% endblock %}

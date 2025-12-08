@@ -1,0 +1,328 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Nueva Exportación{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    
+    <!-- HEADER MORADO -->
+    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl shadow-lg p-6 mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-white mb-2">✈️ Registrar Nueva Exportación</h1>
+                <p class="text-purple-100">Completa los datos de la exportación del producto seleccionado</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRODUCTO SELECCIONADO -->
+    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 mb-8 border-l-4 border-blue-500">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">📦 Producto Seleccionado</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <span class="text-sm text-gray-600">Tipo:</span>
+                <p class="font-semibold text-gray-800">{{ nombre_tipo }}</p>
+            </div>
+            <div>
+                <span class="text-sm text-gray-600">Código:</span>
+                <p class="font-semibold text-gray-800">
+                {% if tipo_producto == 'procesado' %}
+                    T-{{ producto.numero_trilla }}
+                {% elif tipo_producto == 'reproceso' %}
+                    R-{{ producto.numero }}
+                {% elif tipo_producto == 'mezcla' %}
+                    M-{{ producto.numero }}
+                {% else %}
+                    N/A
+                {% endif %}
+                </p>
+            </div>
+            <div>
+                <span class="text-sm text-gray-600">Peso Disponible:</span>
+                <p class="text-2xl font-bold text-green-600">{{ peso_disponible|floatformat:2 }} kg</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- FORMULARIO -->
+    <form method="POST" id="formExportacion" class="bg-white rounded-xl shadow-lg p-8">
+        {% csrf_token %}
+
+        <!-- DATOS DE EXPORTACIÓN -->
+        <div class="mb-8">
+            <h3 class="text-xl font-bold text-gray-800 mb-6">📊 Datos de la Exportación</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- Unidad de Medida -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        🔢 Unidad de Medida *
+                    </label>
+                    <select name="unidad_medida" id="unidad_medida" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <option value="">Seleccionar...</option>
+                        <option value="kg">Kilogramos (kg)</option>
+                        <option value="gramos">Gramos (g)</option>
+                        <option value="libras">Libras (lb)</option>
+                        <option value="quintales">Quintales (qq)</option>
+                        <option value="bolsas">Bolsas (personalizables)</option>
+                        <option value="sacos">Sacos (46 kg c/u)</option>
+                    </select>
+                </div>
+
+                <!-- Cantidad -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        📦 Cantidad *
+                    </label>
+                    <input type="number" name="cantidad" id="cantidad" step="any" min="0" required
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                           placeholder="0.00">
+                    <p class="text-xs text-gray-500 mt-1">Ingresa la cantidad en la unidad seleccionada</p>
+                </div>
+
+                <!-- Peso por Unidad (solo para bolsas) -->
+                <div id="div_peso_unidad" style="display: none;">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        ⚖️ Peso por Unidad (libras)
+                    </label>
+                    <input type="number" name="peso_por_unidad" id="peso_por_unidad" step="any" value="1.00"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                    <p class="text-xs text-gray-500 mt-1">Solo para bolsas (opcional, default: 1 lb)</p>
+                </div>
+
+                <!-- Precio por Quintal -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        💰 Precio por Quintal (Q) *
+                    </label>
+                    <input type="number" name="precio_quintal" id="precio_quintal" step="0.01" min="0" required
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                           placeholder="1500.00">
+                </div>
+
+            </div>
+        </div>
+
+        <!-- INFORMACIÓN DE DESTINO -->
+        <div class="mb-8 border-t pt-8">
+            <h3 class="text-xl font-bold text-gray-800 mb-6">🌍 Información de Destino</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- Comprador -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">🏢 Comprador</label>
+                    <select name="comprador" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        <option value="">Selecciona un comprador (opcional)</option>
+                        {% for comprador in compradores %}
+                        <option value="{{ comprador.id }}">{{ comprador.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- País de Destino -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">🌎 País de Destino *</label>
+                    <input type="text" name="pais_destino" required
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                           placeholder="Ej: Estados Unidos">
+                </div>
+
+                <!-- Ciudad de Destino -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">🏙️ Ciudad de Destino</label>
+                    <input type="text" name="ciudad_destino"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                           placeholder="Ej: Miami">
+                </div>
+
+                <!-- Estado -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">📋 Estado</label>
+                    <select name="estado" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        <option value="preparacion">En Preparación</option>
+                        <option value="documentacion">Documentación</option>
+                        <option value="transito">En Tránsito</option>
+                        <option value="entregada">Entregada</option>
+                        <option value="cancelada">Cancelada</option>
+                    </select>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- DOCUMENTACIÓN (OPCIONAL) -->
+        <div class="mb-8 border-t pt-8">
+            <h3 class="text-xl font-bold text-gray-800 mb-6">📄 Documentación (Opcional)</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Número de Contenedor</label>
+                    <input type="text" name="numero_contenedor" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Número de BL</label>
+                    <input type="text" name="numero_bl" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Número de Factura</label>
+                    <input type="text" name="numero_factura" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Certificado de Origen</label>
+                    <input type="text" name="certificado_origen" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                </div>
+            </div>
+        </div>
+
+        <!-- LOGÍSTICA (OPCIONAL) -->
+        <div class="mb-8 border-t pt-8">
+            <h3 class="text-xl font-bold text-gray-800 mb-6">🚢 Logística (Opcional)</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tipo de Envío</label>
+                    <select name="tipo_envio" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        <option value="maritimo">Marítimo</option>
+                        <option value="aereo">Aéreo</option>
+                        <option value="terrestre">Terrestre</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Naviera/Transportista</label>
+                    <input type="text" name="naviera_transportista" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Fecha de Embarque</label>
+                    <input type="date" name="fecha_embarque" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Fecha Arribo Estimada</label>
+                    <input type="date" name="fecha_arribo_estimada" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Puerto de Embarque</label>
+                    <input type="text" name="puerto_embarque" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Puerto de Destino</label>
+                    <input type="text" name="puerto_destino" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                </div>
+            </div>
+        </div>
+
+        <!-- OBSERVACIONES -->
+        <div class="mb-8 border-t pt-8">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">📝 Observaciones</label>
+            <textarea name="observaciones" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                      placeholder="Información adicional sobre la exportación..."></textarea>
+        </div>
+
+        <!-- HIDDEN FIELD -->
+        <input type="hidden" name="peso_kg" id="peso_kg">
+
+        <!-- BOTONES -->
+        <div class="flex gap-4">
+            <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-4 rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all transform hover:scale-105 shadow-lg">
+                ✈️ Registrar Exportación
+            </button>
+            <a href="{% url 'eventos_lista' %}" class="px-6 py-4 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
+                Cancelar
+            </a>
+        </div>
+
+    </form>
+</div>
+
+<script>
+const PESO_DISPONIBLE = parseFloat('{{ peso_disponible }}');
+
+// Factores de conversión
+const FACTORES = {
+    'kg': 1,
+    'gramos': 0.001,
+    'libras': 0.453592,
+    'quintales': 45.36,
+    'bolsas': 0.453592,
+    'sacos': 46
+};
+
+// Mostrar/ocultar campo de peso por unidad
+document.getElementById('unidad_medida').addEventListener('change', function() {
+    const divPeso = document.getElementById('div_peso_unidad');
+    divPeso.style.display = this.value === 'bolsas' ? 'block' : 'none';
+});
+
+// Validación y conversión en submit
+document.getElementById('formExportacion').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const unidad = document.getElementById('unidad_medida').value;
+    const cantidad = parseFloat(document.getElementById('cantidad').value) || 0;
+    const pesoPorUnidad = parseFloat(document.getElementById('peso_por_unidad').value) || 1;
+    const precio = parseFloat(document.getElementById('precio_quintal').value) || 0;
+    
+    console.log('='.repeat(80));
+    console.log('VALIDANDO EXPORTACIÓN');
+    console.log('Unidad:', unidad);
+    console.log('Cantidad:', cantidad);
+    console.log('Peso por unidad:', pesoPorUnidad);
+    console.log('Precio:', precio);
+    
+    // Validaciones
+    if (!unidad) {
+        alert('⚠️ Debes seleccionar una unidad de medida');
+        return false;
+    }
+    
+    if (isNaN(cantidad) || cantidad <= 0) {
+        alert('⚠️ La cantidad debe ser mayor a 0');
+        return false;
+    }
+    
+    if (isNaN(precio) || precio <= 0) {
+        alert('⚠️ El precio debe ser mayor a 0');
+        return false;
+    }
+    
+    // Calcular peso en kg
+    let pesoKg = 0;
+    
+    if (unidad === 'bolsas') {
+        pesoKg = cantidad * pesoPorUnidad * FACTORES['libras'];
+        console.log(`Bolsas: ${cantidad} × ${pesoPorUnidad} lb × ${FACTORES['libras']} = ${pesoKg} kg`);
+    } else {
+        pesoKg = cantidad * FACTORES[unidad];
+        console.log(`${unidad}: ${cantidad} × ${FACTORES[unidad]} = ${pesoKg} kg`);
+    }
+    
+    console.log('✅ Peso calculado:', pesoKg.toFixed(4), 'kg');
+    
+    // Validar peso
+    if (pesoKg <= 0) {
+        alert('⚠️ El peso a exportar debe ser mayor a 0');
+        return false;
+    }
+    
+    if (pesoKg > PESO_DISPONIBLE) {
+        alert(`⚠️ EXCEDE EL PESO DISPONIBLE\n\nIntentaste: ${pesoKg.toFixed(2)} kg\nDisponible: ${PESO_DISPONIBLE.toFixed(2)} kg`);
+        return false;
+    }
+    
+    // Guardar peso en kg
+    document.getElementById('peso_kg').value = pesoKg.toFixed(4);
+    
+    console.log('✅ Enviando formulario...');
+    console.log('='.repeat(80));
+    
+    // Enviar
+    this.submit();
+});
+
+console.log('✅ JavaScript cargado - Disponible:', PESO_DISPONIBLE, 'kg');
+</script>
+
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Eliminar Reproceso{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <form method="post" class="bg-white rounded-xl shadow-lg p-8 space-y-6">
+            {% csrf_token %}
+            
+            <!-- Encabezado -->
+            <div>
+                <h1 class="text-3xl font-bold text-red-600 flex items-center gap-3">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Confirmar Eliminación
+                </h1>
+                <p class="mt-2 text-lg text-gray-600">
+                    Estás a punto de eliminar permanentemente un reproceso.
+                </p>
+            </div>
+
+            <!-- Advertencia -->
+            <div class="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-info-circle text-yellow-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-yellow-800">
+                            <strong>¡Advertencia!</strong> Esta acción es permanente y no se puede deshacer. 
+                            Toda la información de pesos y mermas de este reproceso se borrará.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información del Reproceso -->
+            <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                <h3 class="font-bold text-gray-800 mb-3">Reproceso a Eliminar:</h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Número:</span>
+                        <span class="font-semibold">Reproceso #{{ reproceso.numero }}</span>
+                    </div>
+                    {% if reproceso.nombre %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Nombre:</span>
+                        <span class="font-semibold">{{ reproceso.nombre }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Origen:</span>
+                        <span class="font-semibold">Trilla {{ reproceso.procesado.numero_trilla }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Fecha:</span>
+                        <span class="font-semibold">{{ reproceso.fecha|date:"d/m/Y" }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Peso Final:</span>
+                        <span class="font-semibold text-green-600">{{ reproceso.peso_final_kg }} {{ reproceso.unidad_peso_final }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="flex justify-end space-x-4 pt-4 border-t">
+                <a href="{% url 'lista_reprocesos' %}" 
+                   class="px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium text-gray-700">
+                    Cancelar
+                </a>
+                <button type="submit" 
+                        class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium shadow-lg hover:shadow-xl">
+                    <i class="fas fa-trash mr-2"></i>
+                    Sí, Eliminar Permanentemente
+                </button>
+            </div>
+            
+        </form>
+    </div>
+</div>
+{% endblock %}

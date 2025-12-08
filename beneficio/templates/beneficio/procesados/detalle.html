@@ -124,6 +124,11 @@
                     <button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
                         <i class="fas fa-print mr-2"></i>Imprimir
                     </button>
+
+                    <a href="{% url 'crear_reproceso' procesado.id %}" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">
+                        <i class="fas fa-sync mr-2"></i>Crear Reproceso
+                    </a>
+                    
                     <a href="{% url 'lista_procesados' %}" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">
                         <i class="fas fa-arrow-left mr-2"></i>Volver
                     </a>
@@ -297,6 +302,17 @@
         <div class="text-center text-gray-500 text-sm mb-8 no-print">
             <p>Sistema de Gestión de Beneficio de Café - {{ procesado.fecha|date:"Y" }}</p>
         </div>
+        {% if procesado.recibo %}
+<div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500 mb-4">
+    <p class="text-sm text-blue-800">
+        <i class="fas fa-receipt mr-2"></i>
+        <strong>Origen:</strong> Procesado desde recibo 
+        <a href="{% url 'detalle_lote' procesado.lote.pk %}" class="font-bold underline">
+            {{ procesado.recibo.numero_recibo }}
+        </a>
+    </p>
+</div>
+{% endif %}
     </div>
 </body>
 </html>

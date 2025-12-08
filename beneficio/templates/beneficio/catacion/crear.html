@@ -13,19 +13,20 @@
         <p class="text-gray-600 mt-2">Evaluación sensorial completa según estándares SCA</p>
     </div>
 
-    <form method="post" class="space-y-6">
+    <form method="post" class="space-y-6" id="catacionForm">
         {% csrf_token %}
         
         <!-- Información Básica -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Código de Muestra <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" name="codigo_muestra" required
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600">
-                </div>
+<div class="bg-white rounded-lg shadow-md p-6">
+    <!-- Mensaje informativo -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+        <p class="text-sm text-blue-800">
+            <i class="fas fa-info-circle mr-2"></i>
+            El código de catación se generará automáticamente según el tipo de muestra seleccionado
+        </p>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -431,215 +432,237 @@
                               class="w-full px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
                 </div>
 
-                <!-- COLUMNA DERECHA: EVALUACIÓN AFECTIVA (PUNTAJES) -->
-                <div class="space-y-3">
-                    <div class="bg-gray-800 text-white px-3 py-2 rounded">
-                        <h3 class="font-bold text-sm">PARTE 2: EVALUACIÓN AFECTIVA</h3>
-                    </div>
-
-                    <!-- Fragancia -->
-                    <div class="border border-gray-300 p-2 rounded">
-                        <label class="font-bold text-xs">Fragancia</label>
-                        <div class="flex gap-1 mt-1 flex-wrap">
-                            <button type="button" onclick="selectScore(this, 'fragancia', 0)" class="score-btn">0</button>
-                            <button type="button" onclick="selectScore(this, 'fragancia', 1)" class="score-btn">1</button>
-                            <button type="button" onclick="selectScore(this, 'fragancia', 2)" class="score-btn">2</button>
-                            <button type="button" onclick="selectScore(this, 'fragancia', 3)" class="score-btn">3</button>
-                            <button type="button" onclick="selectScore(this, 'fragancia', 4)" class="score-btn">4</button>
-                            <button type="button" onclick="selectScore(this, 'fragancia', 5)" class="score-btn">5</button>
-                            <button type="button" onclick="selectScore(this, 'fragancia', 6)" class="score-btn">6</button>
-                            <button type="button" onclick="selectScore(this, 'fragancia', 7)" class="score-btn">7</button>
-                            <button type="button" onclick="selectScore(this, 'fragancia', 8)" class="score-btn">8</button>
-                            <button type="button" onclick="selectScore(this, 'fragancia', 9)" class="score-btn">9</button>
-                            <button type="button" onclick="selectScore(this, 'fragancia', 10)" class="score-btn">10</button>
-                            <input type="number" name="fragancia" id="fragancia" value="0" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-amber-50 ml-1">
-                        </div>
-                        <textarea name="notas_fragancia" rows="1" placeholder="Notas..." class="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
-                    </div>
-
-                    <!-- Aroma -->
-                    <div class="border border-gray-300 p-2 rounded">
-                        <label class="font-bold text-xs">Aroma</label>
-                        <div class="flex gap-1 mt-1 flex-wrap">
-                            <button type="button" onclick="selectScore(this, 'aroma', 0)" class="score-btn">0</button>
-                            <button type="button" onclick="selectScore(this, 'aroma', 1)" class="score-btn">1</button>
-                            <button type="button" onclick="selectScore(this, 'aroma', 2)" class="score-btn">2</button>
-                            <button type="button" onclick="selectScore(this, 'aroma', 3)" class="score-btn">3</button>
-                            <button type="button" onclick="selectScore(this, 'aroma', 4)" class="score-btn">4</button>
-                            <button type="button" onclick="selectScore(this, 'aroma', 5)" class="score-btn">5</button>
-                            <button type="button" onclick="selectScore(this, 'aroma', 6)" class="score-btn">6</button>
-                            <button type="button" onclick="selectScore(this, 'aroma', 7)" class="score-btn">7</button>
-                            <button type="button" onclick="selectScore(this, 'aroma', 8)" class="score-btn">8</button>
-                            <button type="button" onclick="selectScore(this, 'aroma', 9)" class="score-btn">9</button>
-                            <button type="button" onclick="selectScore(this, 'aroma', 10)" class="score-btn">10</button>
-                            <input type="number" name="aroma" id="aroma" value="0" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-amber-50 ml-1">
-                        </div>
-                        <textarea name="notas_aroma" rows="1" placeholder="Notas..." class="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
-                    </div>
-
-                    <!-- Sabor -->
-                    <div class="border border-gray-300 p-2 rounded">
-                        <label class="font-bold text-xs">Sabor</label>
-                        <div class="flex gap-1 mt-1 flex-wrap">
-                            <button type="button" onclick="selectScore(this, 'sabor', 0)" class="score-btn">0</button>
-                            <button type="button" onclick="selectScore(this, 'sabor', 1)" class="score-btn">1</button>
-                            <button type="button" onclick="selectScore(this, 'sabor', 2)" class="score-btn">2</button>
-                            <button type="button" onclick="selectScore(this, 'sabor', 3)" class="score-btn">3</button>
-                            <button type="button" onclick="selectScore(this, 'sabor', 4)" class="score-btn">4</button>
-                            <button type="button" onclick="selectScore(this, 'sabor', 5)" class="score-btn">5</button>
-                            <button type="button" onclick="selectScore(this, 'sabor', 6)" class="score-btn">6</button>
-                            <button type="button" onclick="selectScore(this, 'sabor', 7)" class="score-btn">7</button>
-                            <button type="button" onclick="selectScore(this, 'sabor', 8)" class="score-btn">8</button>
-                            <button type="button" onclick="selectScore(this, 'sabor', 9)" class="score-btn">9</button>
-                            <button type="button" onclick="selectScore(this, 'sabor', 10)" class="score-btn">10</button>
-<input type="number" name="sabor" id="sabor" value="0" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-amber-50 ml-1">
-</div>
-<textarea name="notas_sabor_afectivo" rows="1" placeholder="Notas..." class="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
-</div>
-<!-- Sabor Residual -->
-                <div class="border border-gray-300 p-2 rounded">
-                    <label class="font-bold text-xs">Sabor Residual</label>
-                    <div class="flex gap-1 mt-1 flex-wrap">
-                            <button type="button" onclick="selectScore(this, 'sabor_residual', 0)" class="score-btn">0</button>
-                            <button type="button" onclick="selectScore(this, 'sabor_residual', 1)" class="score-btn">1</button>
-                            <button type="button" onclick="selectScore(this, 'sabor_residual', 2)" class="score-btn">2</button>
-                            <button type="button" onclick="selectScore(this, 'sabor_residual', 3)" class="score-btn">3</button>
-                            <button type="button" onclick="selectScore(this, 'sabor_residual', 4)" class="score-btn">4</button>
-                            <button type="button" onclick="selectScore(this, 'sabor_residual', 5)" class="score-btn">5</button>
-                            <button type="button" onclick="selectScore(this, 'sabor_residual', 6)" class="score-btn">6</button>
-                            <button type="button" onclick="selectScore(this, 'sabor_residual', 7)" class="score-btn">7</button>
-                            <button type="button" onclick="selectScore(this, 'sabor_residual', 8)" class="score-btn">8</button>
-                            <button type="button" onclick="selectScore(this, 'sabor_residual', 9)" class="score-btn">9</button>
-                            <button type="button" onclick="selectScore(this, 'sabor_residual', 10)" class="score-btn">10</button>
-                        <input type="number" name="sabor_residual" id="sabor_residual" value="0" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-amber-50 ml-1">
-                    </div>
-                    <textarea name="notas_residual_afectivo" rows="1" placeholder="Notas..." class="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
-                </div>
-
-                <!-- Acidez -->
-                <div class="border border-gray-300 p-2 rounded">
-                    <label class="font-bold text-xs">Acidez</label>
-                    <div class="flex gap-1 mt-1 flex-wrap">
-                            <button type="button" onclick="selectScore(this, 'acidez', 0)" class="score-btn">0</button>
-                            <button type="button" onclick="selectScore(this, 'acidez', 1)" class="score-btn">1</button>
-                            <button type="button" onclick="selectScore(this, 'acidez', 2)" class="score-btn">2</button>
-                            <button type="button" onclick="selectScore(this, 'acidez', 3)" class="score-btn">3</button>
-                            <button type="button" onclick="selectScore(this, 'acidez', 4)" class="score-btn">4</button>
-                            <button type="button" onclick="selectScore(this, 'acidez', 5)" class="score-btn">5</button>
-                            <button type="button" onclick="selectScore(this, 'acidez', 6)" class="score-btn">6</button>
-                            <button type="button" onclick="selectScore(this, 'acidez', 7)" class="score-btn">7</button>
-                            <button type="button" onclick="selectScore(this, 'acidez', 8)" class="score-btn">8</button>
-                            <button type="button" onclick="selectScore(this, 'acidez', 9)" class="score-btn">9</button>
-                            <button type="button" onclick="selectScore(this, 'acidez', 10)" class="score-btn">10</button>
-                        <input type="number" name="acidez" id="acidez" value="0" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-amber-50 ml-1">
-                    </div>
-                    <textarea name="notas_acidez_afectivo" rows="1" placeholder="Notas..." class="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
-                </div>
-
-                <!-- Cuerpo -->
-                <div class="border border-gray-300 p-2 rounded">
-                    <label class="font-bold text-xs">Cuerpo</label>
-                    <div class="flex gap-1 mt-1 flex-wrap">
-                            <button type="button" onclick="selectScore(this, 'cuerpo', 0)" class="score-btn">0</button>
-                            <button type="button" onclick="selectScore(this, 'cuerpo', 1)" class="score-btn">1</button>
-                            <button type="button" onclick="selectScore(this, 'cuerpo', 2)" class="score-btn">2</button>
-                            <button type="button" onclick="selectScore(this, 'cuerpo', 3)" class="score-btn">3</button>
-                            <button type="button" onclick="selectScore(this, 'cuerpo', 4)" class="score-btn">4</button>
-                            <button type="button" onclick="selectScore(this, 'cuerpo', 5)" class="score-btn">5</button>
-                            <button type="button" onclick="selectScore(this, 'cuerpo', 6)" class="score-btn">6</button>
-                            <button type="button" onclick="selectScore(this, 'cuerpo', 7)" class="score-btn">7</button>
-                            <button type="button" onclick="selectScore(this, 'cuerpo', 8)" class="score-btn">8</button>
-                            <button type="button" onclick="selectScore(this, 'cuerpo', 9)" class="score-btn">9</button>
-                            <button type="button" onclick="selectScore(this, 'cuerpo', 10)" class="score-btn">10</button>
-                        <input type="number" name="cuerpo" id="cuerpo" value="0" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-amber-50 ml-1">
-                    </div>
-                    <textarea name="notas_cuerpo_afectivo" rows="1" placeholder="Notas..." class="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
-                </div>
-
-                <!-- Uniformidad -->
-                <div class="border border-gray-300 p-2 rounded">
-                    <label class="font-bold text-xs">Uniformidad (5 tazas)</label>
-                    <div class="flex gap-2 mt-2 items-center">
-                        <button type="button" onclick="toggleTaza(this, 'uniformidad', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">1</button>
-                        <button type="button" onclick="toggleTaza(this, 'uniformidad', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">2</button>
-                        <button type="button" onclick="toggleTaza(this, 'uniformidad', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">3</button>
-                        <button type="button" onclick="toggleTaza(this, 'uniformidad', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">4</button>
-                        <button type="button" onclick="toggleTaza(this, 'uniformidad', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">5</button>
-                        <input type="number" name="uniformidad" id="uniformidad" value="10" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-green-50 ml-2">
-                    </div>
-                    <textarea name="notas_uniformidad" rows="1" placeholder="Notas..." class="w-full mt-2 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
-                </div>
-
-                <!-- Taza Limpia -->
-                <div class="border border-gray-300 p-2 rounded">
-                    <label class="font-bold text-xs">Taza Limpia (5 tazas)</label>
-                    <div class="flex gap-2 mt-2 items-center">
-                        <button type="button" onclick="toggleTaza(this, 'taza_limpia', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">1</button>
-                        <button type="button" onclick="toggleTaza(this, 'taza_limpia', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">2</button>
-                        <button type="button" onclick="toggleTaza(this, 'taza_limpia', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">3</button>
-                        <button type="button" onclick="toggleTaza(this, 'taza_limpia', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">4</button>
-                        <button type="button" onclick="toggleTaza(this, 'taza_limpia', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">5</button>
-                        <input type="number" name="taza_limpia" id="taza_limpia" value="10" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-green-50 ml-2">
-                    </div>
-                    <textarea name="notas_taza_limpia" rows="1" placeholder="Notas..." class="w-full mt-2 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
-                </div>
-
-                <!-- Dulzor -->
-                <div class="border border-gray-300 p-2 rounded">
-                    <label class="font-bold text-xs">Dulzor (5 tazas)</label>
-                    <div class="flex gap-2 mt-2 items-center">
-                        <button type="button" onclick="toggleTaza(this, 'dulzor', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">1</button>
-                        <button type="button" onclick="toggleTaza(this, 'dulzor', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">2</button>
-                        <button type="button" onclick="toggleTaza(this, 'dulzor', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">3</button>
-                        <button type="button" onclick="toggleTaza(this, 'dulzor', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">4</button>
-                        <button type="button" onclick="toggleTaza(this, 'dulzor', 10)" class="w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold">5</button>
-                        <input type="number" name="dulzor" id="dulzor" value="10" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-green-50 ml-2">
-                    </div>
-                    <textarea name="notas_dulzor_afectivo" rows="1" placeholder="Notas..." class="w-full mt-2 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
-                </div>
-
-                <!-- Balance -->
-                <div class="border border-gray-300 p-2 rounded">
-                    <label class="font-bold text-xs">Balance</label>
-                    <div class="flex gap-1 mt-1 flex-wrap">
-                            <button type="button" onclick="selectScore(this, 'balance', 0)" class="score-btn">0</button>
-                            <button type="button" onclick="selectScore(this, 'balance', 1)" class="score-btn">1</button>
-                            <button type="button" onclick="selectScore(this, 'balance', 2)" class="score-btn">2</button>
-                            <button type="button" onclick="selectScore(this, 'balance', 3)" class="score-btn">3</button>
-                            <button type="button" onclick="selectScore(this, 'balance', 4)" class="score-btn">4</button>
-                            <button type="button" onclick="selectScore(this, 'balance', 5)" class="score-btn">5</button>
-                            <button type="button" onclick="selectScore(this, 'balance', 6)" class="score-btn">6</button>
-                            <button type="button" onclick="selectScore(this, 'balance', 7)" class="score-btn">7</button>
-                            <button type="button" onclick="selectScore(this, 'balance', 8)" class="score-btn">8</button>
-                            <button type="button" onclick="selectScore(this, 'balance', 9)" class="score-btn">9</button>
-                            <button type="button" onclick="selectScore(this, 'balance', 10)" class="score-btn">10</button>
-                        <input type="number" name="balance" id="balance" value="0" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-amber-50 ml-1">
-                    </div>
-                    <textarea name="notas_balance" rows="1" placeholder="Notas..." class="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
-                </div>
-
-                <!-- Impresión Global -->
-                <div class="border border-gray-300 p-2 rounded">
-                    <label class="font-bold text-xs">Impresión Global</label>
-                    <div class="flex gap-1 mt-1 flex-wrap">
-                            <button type="button" onclick="selectScore(this, 'general', 0)" class="score-btn">0</button>
-                            <button type="button" onclick="selectScore(this, 'general', 1)" class="score-btn">1</button>
-                            <button type="button" onclick="selectScore(this, 'general', 2)" class="score-btn">2</button>
-                            <button type="button" onclick="selectScore(this, 'general', 3)" class="score-btn">3</button>
-                            <button type="button" onclick="selectScore(this, 'general', 4)" class="score-btn">4</button>
-                            <button type="button" onclick="selectScore(this, 'general', 5)" class="score-btn">5</button>
-                            <button type="button" onclick="selectScore(this, 'general', 6)" class="score-btn">6</button>
-                            <button type="button" onclick="selectScore(this, 'general', 7)" class="score-btn">7</button>
-                            <button type="button" onclick="selectScore(this, 'general', 8)" class="score-btn">8</button>
-                            <button type="button" onclick="selectScore(this, 'general', 9)" class="score-btn">9</button>
-                            <button type="button" onclick="selectScore(this, 'general', 10)" class="score-btn">10</button>
-                        <input type="number" name="general" id="general" value="0" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-amber-50 ml-1">
-                    </div>
-                    <textarea name="notas_general" rows="1" placeholder="Notas..." class="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
-                </div>
-            </div>
-        </div>
+<!-- COLUMNA DERECHA: EVALUACIÓN AFECTIVA (PUNTAJES) -->
+<div class="space-y-3">
+    <div class="bg-gray-800 text-white px-3 py-2 rounded">
+        <h3 class="font-bold text-sm">PARTE 2: EVALUACIÓN AFECTIVA</h3>
     </div>
+
+    <!-- Fragancia -->
+    <div class="border border-gray-300 p-2 rounded">
+        <label class="font-bold text-xs">Fragancia</label>
+        <div class="flex gap-1 mt-1 flex-wrap">
+            <button type="button" class="score-btn" data-field="fragancia" data-value="0">0</button>
+            <button type="button" class="score-btn" data-field="fragancia" data-value="1">1</button>
+            <button type="button" class="score-btn" data-field="fragancia" data-value="2">2</button>
+            <button type="button" class="score-btn" data-field="fragancia" data-value="3">3</button>
+            <button type="button" class="score-btn" data-field="fragancia" data-value="4">4</button>
+            <button type="button" class="score-btn" data-field="fragancia" data-value="5">5</button>
+            <button type="button" class="score-btn" data-field="fragancia" data-value="6">6</button>
+            <button type="button" class="score-btn" data-field="fragancia" data-value="7">7</button>
+            <button type="button" class="score-btn" data-field="fragancia" data-value="8">8</button>
+            <button type="button" class="score-btn" data-field="fragancia" data-value="9">9</button>
+            <button type="button" class="score-btn" data-field="fragancia" data-value="10">10</button>
+            <input type="number" name="fragancia" id="fragancia" value="0" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-amber-50 ml-1">
+        </div>
+        <textarea name="notas_fragancia" rows="1" placeholder="Notas..." class="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+    </div>
+
+    <!-- Aroma -->
+    <div class="border border-gray-300 p-2 rounded">
+        <label class="font-bold text-xs">Aroma</label>
+        <div class="flex gap-1 mt-1 flex-wrap">
+            <button type="button" class="score-btn" data-field="aroma" data-value="0">0</button>
+            <button type="button" class="score-btn" data-field="aroma" data-value="1">1</button>
+            <button type="button" class="score-btn" data-field="aroma" data-value="2">2</button>
+            <button type="button" class="score-btn" data-field="aroma" data-value="3">3</button>
+            <button type="button" class="score-btn" data-field="aroma" data-value="4">4</button>
+            <button type="button" class="score-btn" data-field="aroma" data-value="5">5</button>
+            <button type="button" class="score-btn" data-field="aroma" data-value="6">6</button>
+            <button type="button" class="score-btn" data-field="aroma" data-value="7">7</button>
+            <button type="button" class="score-btn" data-field="aroma" data-value="8">8</button>
+            <button type="button" class="score-btn" data-field="aroma" data-value="9">9</button>
+            <button type="button" class="score-btn" data-field="aroma" data-value="10">10</button>
+            <input type="number" name="aroma" id="aroma" value="0" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-amber-50 ml-1">
+        </div>
+        <textarea name="notas_aroma" rows="1" placeholder="Notas..." class="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+    </div>
+
+    <!-- Sabor -->
+    <div class="border border-gray-300 p-2 rounded">
+        <label class="font-bold text-xs">Sabor</label>
+        <div class="flex gap-1 mt-1 flex-wrap">
+            <button type="button" class="score-btn" data-field="sabor" data-value="0">0</button>
+            <button type="button" class="score-btn" data-field="sabor" data-value="1">1</button>
+            <button type="button" class="score-btn" data-field="sabor" data-value="2">2</button>
+            <button type="button" class="score-btn" data-field="sabor" data-value="3">3</button>
+            <button type="button" class="score-btn" data-field="sabor" data-value="4">4</button>
+            <button type="button" class="score-btn" data-field="sabor" data-value="5">5</button>
+            <button type="button" class="score-btn" data-field="sabor" data-value="6">6</button>
+            <button type="button" class="score-btn" data-field="sabor" data-value="7">7</button>
+            <button type="button" class="score-btn" data-field="sabor" data-value="8">8</button>
+            <button type="button" class="score-btn" data-field="sabor" data-value="9">9</button>
+            <button type="button" class="score-btn" data-field="sabor" data-value="10">10</button>
+            <input type="number" name="sabor" id="sabor" value="0" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-amber-50 ml-1">
+        </div>
+        <textarea name="notas_sabor_afectivo" rows="1" placeholder="Notas..." class="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+    </div>
+
+    <!-- Sabor Residual -->
+    <div class="border border-gray-300 p-2 rounded">
+        <label class="font-bold text-xs">Sabor Residual</label>
+        <div class="flex gap-1 mt-1 flex-wrap">
+            <button type="button" class="score-btn" data-field="sabor_residual" data-value="0">0</button>
+            <button type="button" class="score-btn" data-field="sabor_residual" data-value="1">1</button>
+            <button type="button" class="score-btn" data-field="sabor_residual" data-value="2">2</button>
+            <button type="button" class="score-btn" data-field="sabor_residual" data-value="3">3</button>
+            <button type="button" class="score-btn" data-field="sabor_residual" data-value="4">4</button>
+            <button type="button" class="score-btn" data-field="sabor_residual" data-value="5">5</button>
+            <button type="button" class="score-btn" data-field="sabor_residual" data-value="6">6</button>
+            <button type="button" class="score-btn" data-field="sabor_residual" data-value="7">7</button>
+            <button type="button" class="score-btn" data-field="sabor_residual" data-value="8">8</button>
+            <button type="button" class="score-btn" data-field="sabor_residual" data-value="9">9</button>
+            <button type="button" class="score-btn" data-field="sabor_residual" data-value="10">10</button>
+            <input type="number" name="sabor_residual" id="sabor_residual" value="0" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-amber-50 ml-1">
+        </div>
+        <textarea name="notas_residual_afectivo" rows="1" placeholder="Notas..." class="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+    </div>
+
+    <!-- Acidez -->
+    <div class="border border-gray-300 p-2 rounded">
+        <label class="font-bold text-xs">Acidez</label>
+        <div class="flex gap-1 mt-1 flex-wrap">
+            <button type="button" class="score-btn" data-field="acidez" data-value="0">0</button>
+            <button type="button" class="score-btn" data-field="acidez" data-value="1">1</button>
+            <button type="button" class="score-btn" data-field="acidez" data-value="2">2</button>
+            <button type="button" class="score-btn" data-field="acidez" data-value="3">3</button>
+            <button type="button" class="score-btn" data-field="acidez" data-value="4">4</button>
+            <button type="button" class="score-btn" data-field="acidez" data-value="5">5</button>
+            <button type="button" class="score-btn" data-field="acidez" data-value="6">6</button>
+            <button type="button" class="score-btn" data-field="acidez" data-value="7">7</button>
+            <button type="button" class="score-btn" data-field="acidez" data-value="8">8</button>
+            <button type="button" class="score-btn" data-field="acidez" data-value="9">9</button>
+            <button type="button" class="score-btn" data-field="acidez" data-value="10">10</button>
+            <input type="number" name="acidez" id="acidez" value="0" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-amber-50 ml-1">
+        </div>
+        <textarea name="notas_acidez_afectivo" rows="1" placeholder="Notas..." class="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+    </div>
+
+    <!-- Cuerpo -->
+    <div class="border border-gray-300 p-2 rounded">
+        <label class="font-bold text-xs">Cuerpo</label>
+        <div class="flex gap-1 mt-1 flex-wrap">
+            <button type="button" class="score-btn" data-field="cuerpo" data-value="0">0</button>
+            <button type="button" class="score-btn" data-field="cuerpo" data-value="1">1</button>
+            <button type="button" class="score-btn" data-field="cuerpo" data-value="2">2</button>
+            <button type="button" class="score-btn" data-field="cuerpo" data-value="3">3</button>
+            <button type="button" class="score-btn" data-field="cuerpo" data-value="4">4</button>
+            <button type="button" class="score-btn" data-field="cuerpo" data-value="5">5</button>
+            <button type="button" class="score-btn" data-field="cuerpo" data-value="6">6</button>
+            <button type="button" class="score-btn" data-field="cuerpo" data-value="7">7</button>
+            <button type="button" class="score-btn" data-field="cuerpo" data-value="8">8</button>
+            <button type="button" class="score-btn" data-field="cuerpo" data-value="9">9</button>
+            <button type="button" class="score-btn" data-field="cuerpo" data-value="10">10</button>
+            <input type="number" name="cuerpo" id="cuerpo" value="0" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-amber-50 ml-1">
+        </div>
+        <textarea name="notas_cuerpo_afectivo" rows="1" placeholder="Notas..." class="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+    </div>
+
+    <!-- Uniformidad -->
+    <div class="border border-gray-300 p-2 rounded">
+        <label class="font-bold text-xs">Uniformidad (5 tazas)</label>
+        <div class="flex gap-2 mt-2 items-center">
+            <button type="button" class="taza-btn w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold" data-field="uniformidad">1</button>
+            <button type="button" class="taza-btn w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold" data-field="uniformidad">2</button>
+            <button type="button" class="taza-btn w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold" data-field="uniformidad">3</button>
+            <button type="button" class="taza-btn w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold" data-field="uniformidad">4</button>
+            <button type="button" class="taza-btn w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold" data-field="uniformidad">5</button>
+            <input type="number" name="uniformidad" id="uniformidad" value="10" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-green-50 ml-2">
+        </div>
+        <textarea name="notas_uniformidad" rows="1" placeholder="Notas..." class="w-full mt-2 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+    </div>
+
+    <!-- Taza Limpia -->
+    <div class="border border-gray-300 p-2 rounded">
+        <label class="font-bold text-xs">Taza Limpia (5 tazas)</label>
+        <div class="flex gap-2 mt-2 items-center">
+            <button type="button" class="taza-btn w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold" data-field="taza_limpia">1</button>
+            <button type="button" class="taza-btn w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold" data-field="taza_limpia">2</button>
+            <button type="button" class="taza-btn w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold" data-field="taza_limpia">3</button>
+            <button type="button" class="taza-btn w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold" data-field="taza_limpia">4</button>
+            <button type="button" class="taza-btn w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold" data-field="taza_limpia">5</button>
+            <input type="number" name="taza_limpia" id="taza_limpia" value="10" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-green-50 ml-2">
+        </div>
+        <textarea name="notas_taza_limpia" rows="1" placeholder="Notas..." class="w-full mt-2 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+    </div>
+
+    <!-- Dulzor -->
+    <div class="border border-gray-300 p-2 rounded">
+        <label class="font-bold text-xs">Dulzor (5 tazas)</label>
+        <div class="flex gap-2 mt-2 items-center">
+            <button type="button" class="taza-btn w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold" data-field="dulzor">1</button>
+            <button type="button" class="taza-btn w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold" data-field="dulzor">2</button>
+            <button type="button" class="taza-btn w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold" data-field="dulzor">3</button>
+            <button type="button" class="taza-btn w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold" data-field="dulzor">4</button>
+            <button type="button" class="taza-btn w-10 h-10 border-2 border-gray-400 rounded-full hover:bg-green-200 transition text-xs font-bold" data-field="dulzor">5</button>
+            <input type="number" name="dulzor" id="dulzor" value="10" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-green-50 ml-2">
+        </div>
+        <textarea name="notas_dulzor_afectivo" rows="1" placeholder="Notas..." class="w-full mt-2 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+    </div>
+
+    <!-- Balance -->
+    <div class="border border-gray-300 p-2 rounded">
+        <label class="font-bold text-xs">Balance</label>
+        <div class="flex gap-1 mt-1 flex-wrap">
+            <button type="button" class="score-btn" data-field="balance" data-value="0">0</button>
+            <button type="button" class="score-btn" data-field="balance" data-value="1">1</button>
+            <button type="button" class="score-btn" data-field="balance" data-value="2">2</button>
+            <button type="button" class="score-btn" data-field="balance" data-value="3">3</button>
+            <button type="button" class="score-btn" data-field="balance" data-value="4">4</button>
+            <button type="button" class="score-btn" data-field="balance" data-value="5">5</button>
+            <button type="button" class="score-btn" data-field="balance" data-value="6">6</button>
+            <button type="button" class="score-btn" data-field="balance" data-value="7">7</button>
+            <button type="button" class="score-btn" data-field="balance" data-value="8">8</button>
+            <button type="button" class="score-btn" data-field="balance" data-value="9">9</button>
+            <button type="button" class="score-btn" data-field="balance" data-value="10">10</button>
+            <input type="number" name="balance" id="balance" value="0" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-amber-50 ml-1">
+        </div>
+        <textarea name="notas_balance" rows="1" placeholder="Notas..." class="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+    </div>
+
+    <!-- Impresión Global -->
+    <div class="border border-gray-300 p-2 rounded">
+        <label class="font-bold text-xs">Impresión Global</label>
+        <div class="flex gap-1 mt-1 flex-wrap">
+            <button type="button" class="score-btn" data-field="general" data-value="0">0</button>
+            <button type="button" class="score-btn" data-field="general" data-value="1">1</button>
+            <button type="button" class="score-btn" data-field="general" data-value="2">2</button>
+            <button type="button" class="score-btn" data-field="general" data-value="3">3</button>
+            <button type="button" class="score-btn" data-field="general" data-value="4">4</button>
+            <button type="button" class="score-btn" data-field="general" data-value="5">5</button>
+            <button type="button" class="score-btn" data-field="general" data-value="6">6</button>
+            <button type="button" class="score-btn" data-field="general" data-value="7">7</button>
+            <button type="button" class="score-btn" data-field="general" data-value="8">8</button>
+            <button type="button" class="score-btn" data-field="general" data-value="9">9</button>
+            <button type="button" class="score-btn" data-field="general" data-value="10">10</button>
+            <input type="number" name="general" id="general" value="0" readonly class="w-12 px-1 py-1 border rounded text-center text-xs font-bold bg-amber-50 ml-1">
+        </div>
+        <textarea name="notas_general" rows="1" placeholder="Notas..." class="w-full mt-1 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+    </div>
+    <!-- Checkboxes de tipo de defecto -->
+        <div class="mt-3 space-y-1">
+            <label class="flex items-center text-xs">
+                <input type="checkbox" name="defecto_mohoso" class="mr-2 w-3 h-3">
+                <span class="text-gray-700">Mohoso</span>
+            </label>
+            <label class="flex items-center text-xs">
+                <input type="checkbox" name="defecto_fenolico" class="mr-2 w-3 h-3">
+                <span class="text-gray-700">Fenólico</span>
+            </label>
+            <label class="flex items-center text-xs">
+                <input type="checkbox" name="defecto_papa" class="mr-2 w-3 h-3">
+                <span class="text-gray-700">Papa</span>
+            </label>
+        </div>
+        
+        <textarea name="notas_tazas_defectuosas" rows="1" placeholder="Descripción de defectos..." class="w-full mt-2 px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+    </div>
+</div>
+
+            </div>
+            
+        </div>
+        
 
     <!-- DEFECTOS -->
     <div class="bg-white rounded-lg shadow-md p-6">
@@ -704,94 +727,669 @@
                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600"></textarea>
     </div>
 
+<!-- ========== PERFIL SENSORIAL CON RADAR DINÁMICO ========== -->
+<div class="bg-white rounded-lg shadow-md p-6">
+    <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+        <i class="fas fa-chart-radar mr-2 text-amber-600"></i>
+        Perfil Sensorial
+    </h3>
+    
+    <!-- DIAGRAMA RADAR CENTRADO Y MÁS GRANDE -->
+    <div class="flex justify-center mb-8">
+        <div class="w-full max-w-3xl" style="height: 600px;">
+            <canvas id="radarChart"></canvas>
+        </div>
+    </div>
 
-    <!-- DIAGRAMA RADAR DE PERFIL SENSORIAL -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">
-                <i class="fas fa-chart-radar mr-2 text-amber-600"></i>
-                Perfil Sensorial
-            </h3>
+    <!-- INFORMACIÓN ADICIONAL ABAJO -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- NOTAS -->
+        <div class="lg:col-span-4 bg-gradient-to-br from-blue-900 to-blue-800 text-white p-4 rounded-lg">
+            <h4 class="font-bold text-sm mb-2">NOTAS</h4>
+            <textarea name="notas_perfil" rows="2" 
+                      placeholder="Ej: CÍTRICO LIMÓN, CARAMELO, CHOCOLATE, FRUTOS ROJOS, PERA, MANZANA"
+                      class="w-full px-3 py-2 border border-blue-300 rounded text-sm text-gray-800"></textarea>
+        </div>
+
+        <!-- PRODUCTOR -->
+        <div class="bg-gray-50 p-3 rounded-lg border">
+            <label class="block text-xs font-bold text-gray-700 mb-2">PRODUCTOR</label>
+            <input type="text" name="productor" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+        </div>
+
+        <!-- ALTITUD -->
+        <div class="bg-gray-50 p-3 rounded-lg border">
+            <label class="block text-xs font-bold text-gray-700 mb-2">ALTITUD</label>
+            <input type="text" name="altitud" placeholder="1600-1800 MSNM"
+                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+        </div>
+
+        <!-- REGIÓN -->
+        <div class="bg-gray-50 p-3 rounded-lg border">
+            <label class="block text-xs font-bold text-gray-700 mb-2">REGIÓN</label>
+            <input type="text" name="region" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+        </div>
+
+        <!-- VARIEDAD -->
+        <div class="bg-gray-50 p-3 rounded-lg border">
+            <label class="block text-xs font-bold text-gray-700 mb-2">VARIEDAD</label>
+            <input type="text" name="variedad" placeholder="CATUAI"
+                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+        </div>
+
+        <!-- PROCESO -->
+        <div class="bg-gray-50 p-3 rounded-lg border">
+            <label class="block text-xs font-bold text-gray-700 mb-2">PROCESO</label>
+            <input type="text" name="proceso" placeholder="LAVADO"
+                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+        </div>
+
+        <!-- SECADO -->
+        <div class="bg-gray-50 p-3 rounded-lg border">
+            <label class="block text-xs font-bold text-gray-700 mb-2">SECADO</label>
+            <input type="text" name="secado" placeholder="PATIOS 12 DÍAS"
+                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+        </div>
+
+        <!-- FERMENTACIÓN -->
+        <div class="bg-gray-50 p-3 rounded-lg border">
+            <label class="block text-xs font-bold text-gray-700 mb-2">HORAS FERMENTACIÓN</label>
+            <input type="text" name="horas_fermentacion" placeholder="40 HORAS"
+                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+        </div>
+
+        <!-- FINCA -->
+        <div class="bg-gray-50 p-3 rounded-lg border">
+            <label class="block text-xs font-bold text-gray-700 mb-2">FINCA</label>
+            <input type="text" name="finca" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+        </div>
+    </div>
+</div>
+
+<!-- DIAGRAMA DE GRANULOMETRÍA -->
+<div class="bg-white rounded-lg shadow-md p-6">
+    <h3 class="text-xl font-bold text-gray-800 mb-6 text-center">
+        <i class="fas fa-chart-area mr-2 text-blue-600"></i>
+        Granulometría
+    </h3>
+    
+    <!-- Gráfico CENTRADO Y GRANDE -->
+    <div class="flex justify-center mb-8">
+        <div class="w-full max-w-3xl h-96">
+            <canvas id="granulometriaChart" style="max-width: 100%; height: 100%;"></canvas>
+        </div>
+    </div>
+
+    <!-- Información Adicional ABAJO -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Peso Muestra -->
+        <div class="bg-blue-50 p-3 rounded-lg border">
+            <label class="block text-xs font-bold text-gray-700 mb-2">PESO MUESTRA (g)</label>
+            <input type="number" name="peso_muestra_granulometria" id="peso_muestra_gran" 
+                   value="350" step="0.1"
+                   oninput="calcularGranulometria()"
+                   class="w-full px-2 py-1 border border-gray-300 rounded text-sm text-center font-bold">
+        </div>
+        
+        <!-- Actividad de Agua -->
+        <div class="bg-blue-50 p-3 rounded-lg border">
+            <label class="block text-xs font-bold text-gray-700 mb-2">ACTIVIDAD DE AGUA</label>
+            <input type="number" name="actividad_agua" id="actividad_agua" 
+                   value="0.5" step="0.01" min="0" max="1"
+                   class="w-full px-2 py-1 border border-gray-300 rounded text-sm text-center font-bold">
+        </div>
+
+        <!-- Selector de Color (COLUMNA COMPLETA) -->
+        <div class="lg:col-span-3 bg-gray-50 p-3 rounded-lg border">
+            <label class="block text-xs font-bold text-gray-700 mb-2">COLOR</label>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                <label class="flex items-center">
+                    <input type="checkbox" name="color_azul_verde" class="mr-1"> Azul verde
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" name="color_verde_azulado" class="mr-1"> Verde azulado
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" name="color_verde" class="mr-1"> Verde
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" name="color_verdoso" class="mr-1"> Verdoso
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" name="color_verde_amarillento" class="mr-1"> Verde amarillento
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" name="color_amarillo_palido" class="mr-1"> Amarillo pálido
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" name="color_amarillento" class="mr-1"> Amarillento
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" name="color_marron" class="mr-1"> Marrón
+                </label>
+            </div>
+        </div>
+    </div>
+
+<!-- Tabla de Tamaños COMPLETA -->
+<div class="mt-6 border rounded-lg overflow-hidden">
+    <div class="bg-blue-900 text-white px-4 py-2">
+        <h4 class="font-bold text-sm">TAMAÑO (No. Z/M)</h4>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-xs">
+            <thead class="bg-blue-100 sticky top-0">
+                <tr>
+                    <th class="p-2 border font-bold">Medida</th>
+                    <th class="p-2 border text-center font-bold">10</th>
+                    <th class="p-2 border text-center font-bold">11</th>
+                    <th class="p-2 border text-center font-bold">12</th>
+                    <th class="p-2 border text-center font-bold">13</th>
+                    <th class="p-2 border text-center font-bold">14</th>
+                    <th class="p-2 border text-center font-bold">15</th>
+                    <th class="p-2 border text-center font-bold">16</th>
+                    <th class="p-2 border text-center font-bold">17</th>
+                    <th class="p-2 border text-center font-bold">18</th>
+                    <th class="p-2 border text-center font-bold">19</th>
+                    <th class="p-2 border text-center font-bold">20</th>
+                    <th class="p-2 border text-center font-bold">21</th>
+                    <th class="p-2 border bg-blue-200 text-center font-bold">TOTAL</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="hover:bg-gray-50">
+                    <td class="p-2 border font-bold bg-gray-50">GRAMOS</td>
+                    <td class="p-2 border"><input type="number" name="gran_10" id="gran_10" value="" min="0" step="0.1" oninput="calcularGranulometria()" class="w-full px-1 py-1 text-center border-0 text-xs font-bold" placeholder="0"></td>
+                    <td class="p-2 border"><input type="number" name="gran_11" id="gran_11" value="" min="0" step="0.1" oninput="calcularGranulometria()" class="w-full px-1 py-1 text-center border-0 text-xs font-bold" placeholder="0"></td>
+                    <td class="p-2 border"><input type="number" name="gran_12" id="gran_12" value="" min="0" step="0.1" oninput="calcularGranulometria()" class="w-full px-1 py-1 text-center border-0 text-xs font-bold" placeholder="0"></td>
+                    <td class="p-2 border"><input type="number" name="gran_13" id="gran_13" value="" min="0" step="0.1" oninput="calcularGranulometria()" class="w-full px-1 py-1 text-center border-0 text-xs font-bold" placeholder="0"></td>
+                    <td class="p-2 border"><input type="number" name="gran_14" id="gran_14" value="" min="0" step="0.1" oninput="calcularGranulometria()" class="w-full px-1 py-1 text-center border-0 text-xs font-bold" placeholder="0"></td>
+                    <td class="p-2 border"><input type="number" name="gran_15" id="gran_15" value="" min="0" step="0.1" oninput="calcularGranulometria()" class="w-full px-1 py-1 text-center border-0 text-xs font-bold" placeholder="0"></td>
+                    <td class="p-2 border"><input type="number" name="gran_16" id="gran_16" value="" min="0" step="0.1" oninput="calcularGranulometria()" class="w-full px-1 py-1 text-center border-0 text-xs font-bold" placeholder="0"></td>
+                    <td class="p-2 border"><input type="number" name="gran_17" id="gran_17" value="" min="0" step="0.1" oninput="calcularGranulometria()" class="w-full px-1 py-1 text-center border-0 text-xs font-bold" placeholder="0"></td>
+                    <td class="p-2 border"><input type="number" name="gran_18" id="gran_18" value="" min="0" step="0.1" oninput="calcularGranulometria()" class="w-full px-1 py-1 text-center border-0 text-xs font-bold" placeholder="0"></td>
+                    <td class="p-2 border"><input type="number" name="gran_19" id="gran_19" value="" min="0" step="0.1" oninput="calcularGranulometria()" class="w-full px-1 py-1 text-center border-0 text-xs font-bold" placeholder="0"></td>
+                    <td class="p-2 border"><input type="number" name="gran_20" id="gran_20" value="" min="0" step="0.1" oninput="calcularGranulometria()" class="w-full px-1 py-1 text-center border-0 text-xs font-bold" placeholder="0"></td>
+                    <td class="p-2 border"><input type="number" name="gran_21" id="gran_21" value="" min="0" step="0.1" oninput="calcularGranulometria()" class="w-full px-1 py-1 text-center border-0 text-xs font-bold" placeholder="0"></td>
+                    <td class="p-2 border bg-blue-100 font-bold text-center" id="gran_total">0.0</td>
+                </tr>
+                <tr class="bg-gray-50 hover:bg-gray-100">
+                    <td class="p-2 border font-bold bg-gray-100">%</td>
+                    <td class="p-2 border text-center font-bold text-xs" id="pct_10">0</td>
+                    <td class="p-2 border text-center font-bold text-xs" id="pct_11">0</td>
+                    <td class="p-2 border text-center font-bold text-xs" id="pct_12">0</td>
+                    <td class="p-2 border text-center font-bold text-xs" id="pct_13">0</td>
+                    <td class="p-2 border text-center font-bold text-xs" id="pct_14">0</td>
+                    <td class="p-2 border text-center font-bold text-xs" id="pct_15">0</td>
+                    <td class="p-2 border text-center font-bold text-xs" id="pct_16">0</td>
+                    <td class="p-2 border text-center font-bold text-xs" id="pct_17">0</td>
+                    <td class="p-2 border text-center font-bold text-xs" id="pct_18">0</td>
+                    <td class="p-2 border text-center font-bold text-xs" id="pct_19">0</td>
+                    <td class="p-2 border text-center font-bold text-xs" id="pct_20">0</td>
+                    <td class="p-2 border text-center font-bold text-xs" id="pct_21">0</td>
+                    <td class="p-2 border bg-blue-100 font-bold text-center">100</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- DEFECTOS FÍSICOS -->
+<div class="lg:col-span-3 bg-gray-50 p-4 rounded-lg border mt-4">
+    <h4 class="font-bold text-sm mb-3 text-gray-800">DEFECTOS FÍSICOS</h4>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- CATEGORÍA 1 -->
+        <div class="border border-gray-300 rounded-lg p-3 bg-white">
+            <h5 class="font-bold text-xs mb-2 bg-red-800 text-white px-2 py-1 rounded">CATEGORÍA 1</h5>
             
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Gráfico Radar -->
-                <div class="flex items-center justify-center">
-                    <div class="w-full max-w-md">
-                        <canvas id="radarChart"></canvas>
-                    </div>
+            <div class="space-y-2 text-xs">
+                <!-- Negro total (1:1) -->
+                <div class="grid grid-cols-3 gap-2 items-center">
+                    <label class="font-semibold text-gray-700">Negro total (1:1)</label>
+                    <input type="number" name="defecto_negro_total_count" min="0" value="0" 
+                           oninput="calcularDefectosCat1()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Cuenta">
+                    <input type="number" name="defecto_negro_total_full" min="0" value="0" 
+                           oninput="calcularDefectosCat1()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Completo">
                 </div>
 
-                <!-- Información Adicional -->
-                <div class="space-y-4">
-                    <div class="bg-gradient-to-br from-blue-900 to-blue-800 text-white p-6 rounded-lg">
-                        <h4 class="font-bold text-lg mb-4">NOTAS</h4>
-                        <textarea name="notas_perfil" rows="3" 
-                                  placeholder="Ej: CÍTRICO LIMÓN, CARAMELO, CHOCOLATE, FRUTOS ROJOS, PERA, MANZANA"
-                                  class="w-full px-3 py-2 border border-blue-300 rounded text-sm text-gray-800"></textarea>
-                    </div>
+                <!-- Ácido total (1:1) -->
+                <div class="grid grid-cols-3 gap-2 items-center">
+                    <label class="font-semibold text-gray-700">Ácido total (1:1)</label>
+                    <input type="number" name="defecto_acido_total_count" min="0" value="0" 
+                           oninput="calcularDefectosCat1()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Cuenta">
+                    <input type="number" name="defecto_acido_total_full" min="0" value="0" 
+                           oninput="calcularDefectosCat1()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Completo">
+                </div>
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-gray-50 p-4 rounded-lg border">
-                            <label class="block text-sm font-bold text-gray-700 mb-2">PRODUCTOR:</label>
-                            <input type="text" name="productor" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
-                        </div>
+                <!-- Pergamino (5:1) -->
+                <div class="grid grid-cols-3 gap-2 items-center">
+                    <label class="font-semibold text-gray-700">Pergamino (5:1)</label>
+                    <input type="number" name="defecto_pergamino_count" min="0" value="0" 
+                           oninput="calcularDefectosCat1()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Cuenta">
+                    <input type="number" name="defecto_pergamino_full" min="0" value="0" 
+                           oninput="calcularDefectosCat1()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Completo">
+                </div>
 
-                        <div class="bg-gray-50 p-4 rounded-lg border">
-                            <label class="block text-sm font-bold text-gray-700 mb-2">ALTITUD:</label>
-                            <input type="text" name="altitud" placeholder="Ej: 1,600 - 1800 MSNM"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
-                        </div>
+                <!-- Daño (5:1) -->
+                <div class="grid grid-cols-3 gap-2 items-center">
+                    <label class="font-semibold text-gray-700">Daño (5:1)</label>
+                    <input type="number" name="defecto_dano_count" min="0" value="0" 
+                           oninput="calcularDefectosCat1()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Cuenta">
+                    <input type="number" name="defecto_dano_full" min="0" value="0" 
+                           oninput="calcularDefectosCat1()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Completo">
+                </div>
 
-                        <div class="bg-gray-50 p-4 rounded-lg border">
-                            <label class="block text-sm font-bold text-gray-700 mb-2">REGIÓN:</label>
-                            <input type="text" name="region" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
-                        </div>
+                <!-- Materia extraña (1:1) -->
+                <div class="grid grid-cols-3 gap-2 items-center">
+                    <label class="font-semibold text-gray-700">Materia extraña (1:1)</label>
+                    <input type="number" name="defecto_materia_extrana_count" min="0" value="0" 
+                           oninput="calcularDefectosCat1()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Cuenta">
+                    <input type="number" name="defecto_materia_extrana_full" min="0" value="0" 
+                           oninput="calcularDefectosCat1()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Completo">
+                </div>
 
-                        <div class="bg-gray-50 p-4 rounded-lg border">
-                            <label class="block text-sm font-bold text-gray-700 mb-2">VARIEDAD:</label>
-                            <input type="text" name="variedad" placeholder="Ej: CATUAI"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
-                        </div>
+                <!-- Daño severo por (5:1) -->
+                <div class="grid grid-cols-3 gap-2 items-center">
+                    <label class="font-semibold text-gray-700">Daño severo por (5:1)</label>
+                    <input type="number" name="defecto_dano_severo_count" min="0" value="0" 
+                           oninput="calcularDefectosCat1()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Cuenta">
+                    <input type="number" name="defecto_dano_severo_full" min="0" value="0" 
+                           oninput="calcularDefectosCat1()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Completo">
+                </div>
+            </div>
 
-                        <div class="bg-gray-50 p-4 rounded-lg border">
-                            <label class="block text-sm font-bold text-gray-700 mb-2">PROCESO:</label>
-                            <input type="text" name="proceso" placeholder="Ej: LAVADO"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
-                        </div>
-
-                        <div class="bg-gray-50 p-4 rounded-lg border">
-                            <label class="block text-sm font-bold text-gray-700 mb-2">SECADO:</label>
-                            <input type="text" name="secado" placeholder="Ej: PATIOS AL SOL 12 DÍAS"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
-                        </div>
-
-                        <div class="bg-gray-50 p-4 rounded-lg border col-span-2">
-                            <label class="block text-sm font-bold text-gray-700 mb-2">HORAS DE FERMENTACIÓN:</label>
-                            <input type="text" name="horas_fermentacion" placeholder="Ej: 40 HORAS"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
-                        </div>
-
-                        <div class="bg-gray-50 p-4 rounded-lg border col-span-2">
-                            <label class="block text-sm font-bold text-gray-700 mb-2">FINCA:</label>
-                            <input type="text" name="finca" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
-                        </div>
-                    </div>
+            <!-- Total Categoría 1 -->
+            <div class="mt-3 pt-3 border-t border-gray-300">
+                <div class="flex justify-between items-center bg-red-50 px-3 py-2 rounded">
+                    <label class="font-bold text-xs text-red-900">Total de defectos de categoría 1:</label>
+                    <input type="number" name="total_defectos_cat1" id="total_defectos_cat1" value="0" readonly
+                           class="w-20 px-2 py-1 border border-red-300 rounded text-center font-bold bg-white">
                 </div>
             </div>
         </div>
 
-        <!-- Notas del Catador -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-                <i class="fas fa-comment-dots mr-2 text-amber-600"></i>Notas Finales del Catador
-            </label>
-            <textarea name="notas_catador" rows="4"
-                      placeholder="Observaciones generales, recomendaciones, perfil de taza completo..."
-                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600"></textarea>
+        <!-- CATEGORÍA 2 -->
+        <div class="border border-gray-300 rounded-lg p-3 bg-white">
+            <h5 class="font-bold text-xs mb-2 bg-yellow-600 text-white px-2 py-1 rounded">CATEGORÍA 2</h5>
+            
+            <div class="space-y-2 text-xs">
+                <!-- Negro parcial (3:1) -->
+                <div class="grid grid-cols-3 gap-2 items-center">
+                    <label class="font-semibold text-gray-700">Negro parcial (3:1)</label>
+                    <input type="number" name="defecto_negro_parcial_count" min="0" value="0" 
+                           oninput="calcularDefectosCat2()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Cuenta">
+                    <input type="number" name="defecto_negro_parcial_full" min="0" value="0" 
+                           oninput="calcularDefectosCat2()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Completo">
+                </div>
+
+                <!-- Ácido parcial (3:1) -->
+                <div class="grid grid-cols-3 gap-2 items-center">
+                    <label class="font-semibold text-gray-700">Ácido parcial (3:1)</label>
+                    <input type="number" name="defecto_acido_parcial_count" min="0" value="0" 
+                           oninput="calcularDefectosCat2()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Cuenta">
+                    <input type="number" name="defecto_acido_parcial_full" min="0" value="0" 
+                           oninput="calcularDefectosCat2()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Completo">
+                </div>
+
+                <!-- Cereza seca (1:1) -->
+                <div class="grid grid-cols-3 gap-2 items-center">
+                    <label class="font-semibold text-gray-700">Cereza seca (1:1)</label>
+                    <input type="number" name="defecto_cereza_seca_count" min="0" value="0" 
+                           oninput="calcularDefectosCat2()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Cuenta">
+                    <input type="number" name="defecto_cereza_seca_full" min="0" value="0" 
+                           oninput="calcularDefectosCat2()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Completo">
+                </div>
+
+                <!-- Daño por hongos (1:1) -->
+                <div class="grid grid-cols-3 gap-2 items-center">
+                    <label class="font-semibold text-gray-700">Daño por hongos (1:1)</label>
+                    <input type="number" name="defecto_hongos_count" min="0" value="0" 
+                           oninput="calcularDefectosCat2()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Cuenta">
+                    <input type="number" name="defecto_hongos_full" min="0" value="0" 
+                           oninput="calcularDefectosCat2()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Completo">
+                </div>
+
+                <!-- Flotador -->
+                <div class="grid grid-cols-3 gap-2 items-center">
+                    <label class="font-semibold text-gray-700">Flotador</label>
+                    <input type="number" name="defecto_flotador_count" min="0" value="0" 
+                           oninput="calcularDefectosCat2()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Cuenta">
+                    <input type="number" name="defecto_flotador_full" min="0" value="0" 
+                           oninput="calcularDefectosCat2()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Completo">
+                </div>
+
+                <!-- Inmaduro/Verde (5:1) -->
+                <div class="grid grid-cols-3 gap-2 items-center">
+                    <label class="font-semibold text-gray-700">Inmaduro/Verde (5:1)</label>
+                    <input type="number" name="defecto_inmaduro_count" min="0" value="0" 
+                           oninput="calcularDefectosCat2()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Cuenta">
+                    <input type="number" name="defecto_inmaduro_full" min="0" value="0" 
+                           oninput="calcularDefectosCat2()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Completo">
+                </div>
+
+                <!-- Insectos (5:1) -->
+                <div class="grid grid-cols-3 gap-2 items-center">
+                    <label class="font-semibold text-gray-700">Insectos (5:1)</label>
+                    <input type="number" name="defecto_insectos_count" min="0" value="0" 
+                           oninput="calcularDefectosCat2()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Cuenta">
+                    <input type="number" name="defecto_insectos_full" min="0" value="0" 
+                           oninput="calcularDefectosCat2()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Completo">
+                </div>
+
+                <!-- Marchitado -->
+                <div class="grid grid-cols-3 gap-2 items-center">
+                    <label class="font-semibold text-gray-700">Marchitado</label>
+                    <input type="number" name="defecto_marchitado_count" min="0" value="0" 
+                           oninput="calcularDefectosCat2()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Cuenta">
+                    <input type="number" name="defecto_marchitado_full" min="0" value="0" 
+                           oninput="calcularDefectosCat2()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Completo">
+                </div>
+
+                <!-- Concha (5:1) -->
+                <div class="grid grid-cols-3 gap-2 items-center">
+                    <label class="font-semibold text-gray-700">Concha (5:1)</label>
+                    <input type="number" name="defecto_concha_count" min="0" value="0" 
+                           oninput="calcularDefectosCat2()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Cuenta">
+                    <input type="number" name="defecto_concha_full" min="0" value="0" 
+                           oninput="calcularDefectosCat2()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Completo">
+                </div>
+                <!-- Rotos, astillados o cortados (5:1) -->
+                <div class="grid grid-cols-3 gap-2 items-center">
+                    <label class="font-semibold text-gray-700">Rotos, astillados (5:1)</label>
+                    <input type="number" name="defecto_rotos_count" min="0" value="0" 
+                        oninput="calcularDefectosCat2()"
+                        class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Cuenta">
+                    <input type="number" name="defecto_rotos_full" min="0" value="0" 
+                        oninput="calcularDefectosCat2()"
+                        class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Completo">
+                </div>
+                <!-- Cáscara/Cáscara (5:1) -->
+                <div class="grid grid-cols-3 gap-2 items-center">
+                    <label class="font-semibold text-gray-700">Cáscara (5:1)</label>
+                    <input type="number" name="defecto_cascara_count" min="0" value="0" 
+                           oninput="calcularDefectosCat2()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Cuenta">
+                    <input type="number" name="defecto_cascara_full" min="0" value="0" 
+                           oninput="calcularDefectosCat2()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Completo">
+                </div>
+
+                <!-- Daños leves por insectos (10:1) -->
+                <div class="grid grid-cols-3 gap-2 items-center">
+                    <label class="font-semibold text-gray-700">Daños leves insectos (10:1)</label>
+                    <input type="number" name="defecto_dano_leve_count" min="0" value="0" 
+                           oninput="calcularDefectosCat2()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Cuenta">
+                    <input type="number" name="defecto_dano_leve_full" min="0" value="0" 
+                           oninput="calcularDefectosCat2()"
+                           class="px-2 py-1 border border-gray-300 rounded text-center" placeholder="Completo">
+                </div>
+            </div>
+
+            <!-- Total Categoría 2 -->
+            <div class="mt-3 pt-3 border-t border-gray-300">
+                <div class="flex justify-between items-center bg-yellow-50 px-3 py-2 rounded">
+                    <label class="font-bold text-xs text-yellow-900">Total de defectos de categoría 2:</label>
+                    <input type="number" name="total_defectos_cat2" id="total_defectos_cat2" value="0" readonly
+                           class="w-20 px-2 py-1 border border-yellow-300 rounded text-center font-bold bg-white">
+                </div>
+            </div>
         </div>
+    </div>
+
+    <!-- TOTAL GREEN DEFECTS -->
+    <div class="mt-4 bg-gradient-to-r from-green-700 to-green-600 text-white p-4 rounded-lg">
+        <div class="flex justify-between items-center">
+            <label class="font-bold text-lg">TOTAL GREEN DEFECTS (Defectos verdes totales):</label>
+            <input type="number" name="total_green_defects" id="total_green_defects" value="0" readonly
+                   class="w-24 px-3 py-2 border-2 border-white rounded text-center font-bold text-2xl bg-white text-gray-900">
+        </div>
+    </div>
+</div>
+    <!-- Observaciones -->
+            <div class="bg-gray-50 p-3 rounded-lg border mt-4">
+                <label class="block text-xs font-bold text-gray-700 mb-1">OBSERVACIONES</label>
+                <textarea name="observaciones_granulometria" rows="2" 
+                          placeholder="Ej: Buen tamaño y color, libre de olores extraños"
+                          class="w-full px-2 py-1 border border-gray-300 rounded text-xs"></textarea>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+        <!-- Botones -->
+    <div class="flex justify-end space-x-4 pb-6">
+        <a href="{% url 'lista_cataciones' %}" 
+           class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+            <i class="fas fa-times mr-2"></i>Cancelar
+        </a>
+        <button type="submit" 
+                class="px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-lg hover:from-amber-600 hover:to-amber-700 transition">
+            <i class="fas fa-save mr-2"></i>Guardar Catación
+        </button>
+    </div>
+    </form>
+</div>
+
+<style>
+.score-btn {
+    padding: 3px 6px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    background-color: #f3f4f6;
+    font-size: 9px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.score-btn:hover {
+    background-color: #fbbf24;
+    color: white;
+}
+</style>
+
 <script>
+// ===== GESTIÓN DE BOTONES DE PUNTUACIÓN (0-10) =====
+document.querySelectorAll('.score-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const field = this.dataset.field;
+        const value = this.dataset.value;
+        
+        // Remover selección anterior
+        document.querySelectorAll(`[data-field="${field}"]`).forEach(b => {
+            if (b.classList.contains('score-btn')) {
+                b.classList.remove('bg-amber-500', 'text-white');
+                b.classList.add('bg-gray-100');
+            }
+        });
+        
+        // Marcar botón actual
+        this.classList.remove('bg-gray-100');
+        this.classList.add('bg-amber-500', 'text-white');
+        
+        // Guardar valor
+        document.getElementById(field).value = value;
+        function calcularTotal() {
+    const fragancia = parseFloat(document.getElementById('fragancia').value) || 0;
+    const aroma = parseFloat(document.getElementById('aroma').value) || 0;
+    const sabor = parseFloat(document.getElementById('sabor').value) || 0;
+    const saborResidual = parseFloat(document.getElementById('sabor_residual').value) || 0;
+    const acidez = parseFloat(document.getElementById('acidez').value) || 0;
+    const cuerpo = parseFloat(document.getElementById('cuerpo').value) || 0;
+    const balance = parseFloat(document.getElementById('balance').value) || 0;
+    const uniformidad = parseFloat(document.getElementById('uniformidad').value) || 0;
+    const tazaLimpia = parseFloat(document.getElementById('taza_limpia').value) || 0;
+    const dulzor = parseFloat(document.getElementById('dulzor').value) || 0;
+    const general = parseFloat(document.getElementById('general').value) || 0;
+    
+    // Defectos de taza (Intensidad 2 y 4)
+    const defectos = parseFloat(document.querySelector('input[name="total_defectos"]')?.value || 0);
+    
+    // Defectos físicos (Green Defects) - cada defecto equivalente resta 0.25 puntos
+    const greenDefects = parseFloat(document.getElementById('total_green_defects')?.value || 0);
+    const penalizacionGreenDefects = greenDefects * 0.25;
+    
+    // CÁLCULO FINAL
+    const total = fragancia + aroma + sabor + saborResidual + acidez + cuerpo + balance + 
+                  uniformidad + tazaLimpia + dulzor + general - defectos - penalizacionGreenDefects;
+    
+    document.getElementById('puntaje-final').textContent = total.toFixed(2);
+    document.getElementById('puntaje_total').value = total.toFixed(2);
+    
+    let clasificacion = '';
+    let colorClass = '';
+    
+    if (total >= 90) {
+        clasificacion = 'EXCEPCIONAL - Specialty 90+';
+        colorClass = 'text-purple-600';
+    } else if (total >= 85) {
+        clasificacion = 'EXCELENTE - Specialty 85-89';
+        colorClass = 'text-green-600';
+    } else if (total >= 80) {
+        clasificacion = 'MUY BUENO - Specialty 80-84';
+        colorClass = 'text-blue-600';
+    } else if (total >= 75) {
+        clasificacion = 'BUENO - Premium 75-79';
+        colorClass = 'text-yellow-600';
+    } else {
+        clasificacion = 'COMERCIAL';
+        colorClass = 'text-red-600';
+    }
+    
+    const clasificacionDiv = document.getElementById('clasificacion');
+    clasificacionDiv.textContent = clasificacion;
+    clasificacionDiv.className = 'text-xl font-semibold mt-2 ' + colorClass;
+    
+    // Actualizar radar si existe
+    if (typeof actualizarRadar === 'function') {
+        actualizarRadar();
+    }
+}
+    });
+});
+
+// ===== GESTIÓN DE TAZAS (1-5) =====
+document.querySelectorAll('.taza-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const field = this.dataset.field;
+        const numerotaza = this.textContent;
+        const parent = this.parentElement;
+        const tasaBtns = parent.querySelectorAll('.taza-btn');
+        
+        // Limpiar todas las tazas
+        tasaBtns.forEach(b => {
+            b.classList.remove('bg-green-500', 'text-white', 'border-green-500');
+            b.classList.add('border-gray-400');
+        });
+        
+        // Marcar tazas hasta la actual
+        let activados = 0;
+        tasaBtns.forEach(b => {
+            if (parseInt(b.textContent) <= parseInt(numerotaza)) {
+                b.classList.add('bg-green-500', 'text-white', 'border-green-500');
+                b.classList.remove('border-gray-400');
+                activados++;
+            }
+        });
+        
+        // Calcular puntaje: 10 - (tazas_seleccionadas * 2)
+        const puntaje = 10 - (activados * 2);
+        document.getElementById(field).value = puntaje;
+        
+        calcularTotal();
+    });
+});
+
+// ===== FUNCIÓN ÚNICA DE CÁLCULO DEL TOTAL =====
+function calcularTotal() {
+    const fragancia = parseFloat(document.getElementById('fragancia').value) || 0;
+    const aroma = parseFloat(document.getElementById('aroma').value) || 0;
+    const sabor = parseFloat(document.getElementById('sabor').value) || 0;
+    const saborResidual = parseFloat(document.getElementById('sabor_residual').value) || 0;
+    const acidez = parseFloat(document.getElementById('acidez').value) || 0;
+    const cuerpo = parseFloat(document.getElementById('cuerpo').value) || 0;
+    const balance = parseFloat(document.getElementById('balance').value) || 0;
+    const uniformidad = parseFloat(document.getElementById('uniformidad').value) || 0;
+    const tazaLimpia = parseFloat(document.getElementById('taza_limpia').value) || 0;
+    const dulzor = parseFloat(document.getElementById('dulzor').value) || 0;
+    const general = parseFloat(document.getElementById('general').value) || 0;
+    const defectos = parseFloat(document.querySelector('input[name="total_defectos"]')?.value || 0);
+    
+    const total = fragancia + aroma + sabor + saborResidual + acidez + cuerpo + balance + uniformidad + tazaLimpia + dulzor + general - defectos;
+    
+    document.getElementById('puntaje-final').textContent = total.toFixed(2);
+    document.getElementById('puntaje_total').value = total.toFixed(2);
+    
+    let clasificacion = '';
+    let colorClass = '';
+    
+    if (total >= 90) {
+        clasificacion = 'EXCEPCIONAL - Specialty 90+';
+        colorClass = 'text-purple-600';
+    } else if (total >= 85) {
+        clasificacion = 'EXCELENTE - Specialty 85-89';
+        colorClass = 'text-green-600';
+    } else if (total >= 80) {
+        clasificacion = 'MUY BUENO - Specialty 80-84';
+        colorClass = 'text-blue-600';
+    } else if (total >= 75) {
+        clasificacion = 'BUENO - Premium 75-79';
+        colorClass = 'text-yellow-600';
+    } else {
+        clasificacion = 'COMERCIAL';
+        colorClass = 'text-red-600';
+    }
+    
+    const clasificacionDiv = document.getElementById('clasificacion');
+    clasificacionDiv.textContent = clasificacion;
+    clasificacionDiv.className = 'text-xl font-semibold mt-2 ' + colorClass;
+    
+    // Actualizar radar si existe
+    if (typeof actualizarRadar === 'function') {
+        actualizarRadar();
+    }
+}
+
+// ===== FUNCIONES DE OTROS MÓDULOS =====
 function actualizarOpciones() {
     const tipoMuestra = document.getElementById('tipo_muestra').value;
     
@@ -811,108 +1409,26 @@ function actualizarOpciones() {
     }
 }
 
-function selectScore(btn, atributo, valor) {
-    const parent = btn.parentElement;
-    const buttons = parent.querySelectorAll('.score-btn');
-    buttons.forEach(b => {
-        b.classList.remove('bg-amber-500', 'text-white');
-        b.classList.add('bg-gray-100');
-    });
-    
-    btn.classList.remove('bg-gray-100');
-    btn.classList.add('bg-amber-500', 'text-white');
-    
-    document.getElementById(atributo).value = valor;
-    calcularTotal();
-    actualizarRadar();
-}
-
-function toggleTaza(btn, atributo, maxPuntos) {
-    const isActive = btn.classList.contains('bg-green-500');
-    
-    if (isActive) {
-        btn.classList.remove('bg-green-500', 'text-white', 'border-green-500');
-        btn.classList.add('border-gray-400');
-    } else {
-        btn.classList.add('bg-green-500', 'text-white', 'border-green-500');
-        btn.classList.remove('border-gray-400');
-    }
-    
-    const parent = btn.parentElement;
-    const buttons = parent.querySelectorAll('button');
-    let activados = 0;
-    buttons.forEach(b => {
-        if (b.classList.contains('bg-green-500')) {
-            activados++;
-        }
-    });
-    
-    const puntaje = maxPuntos - (activados * 2);
-    document.getElementById(atributo).value = puntaje;
-    calcularTotal();
-    actualizarRadar();
-}
-
 function calcularDefectos() {
     const def2 = parseInt(document.querySelector('[name="defectos_intensidad_2"]').value) || 0;
     const def4 = parseInt(document.querySelector('[name="defectos_intensidad_4"]').value) || 0;
-    
     const totalDef2 = def2 * 2;
     const totalDef4 = def4 * 4;
     const totalDefectos = totalDef2 + totalDef4;
-    
+
     document.getElementById('total-def-2').textContent = totalDef2;
     document.getElementById('total-def-4').textContent = totalDef4;
     document.getElementById('total_defectos').value = totalDefectos;
-    
+
     calcularTotal();
 }
 
-function calcularTotal() {
-    const fragancia = parseFloat(document.getElementById('fragancia').value) || 0;
-    const aroma = parseFloat(document.getElementById('aroma').value) || 0;
-    const sabor = parseFloat(document.getElementById('sabor').value) || 0;
-    const saborResidual = parseFloat(document.getElementById('sabor_residual').value) || 0;
-    const acidez = parseFloat(document.getElementById('acidez').value) || 0;
-    const cuerpo = parseFloat(document.getElementById('cuerpo').value) || 0;
-    const balance = parseFloat(document.getElementById('balance').value) || 0;
-    const uniformidad = parseFloat(document.getElementById('uniformidad').value) || 0;
-    const tazaLimpia = parseFloat(document.getElementById('taza_limpia').value) || 0;
-    const dulzor = parseFloat(document.getElementById('dulzor').value) || 0;
-    const general = parseFloat(document.getElementById('general').value) || 0;
-    const defectos = parseFloat(document.getElementById('total_defectos').value) || 0;
-    
-    const total = fragancia + aroma + sabor + saborResidual + acidez + cuerpo + balance + uniformidad + tazaLimpia + dulzor + general - defectos;
-    
-    document.getElementById('puntaje-final').textContent = total.toFixed(2);
-    document.getElementById('puntaje_total').value = total.toFixed(2);
-    
-    let clasificacion = '';
-    let colorClass = '';
-    
-    if (total >= 90) {
-        clasificacion = 'EXCEPCIONAL';
-        colorClass = 'text-purple-600';
-    } else if (total >= 85) {
-        clasificacion = 'SOBRESALIENTE';
-        colorClass = 'text-green-600';
-    } else if (total >= 80) {
-        clasificacion = 'CAFE ESPECIAL';
-        colorClass = 'text-blue-600';
-    } else if (total >= 70) {
-        clasificacion = 'MUY BUENO';
-        colorClass = 'text-yellow-600';
-    } else {
-        clasificacion = 'PROMEDIO';
-        colorClass = 'text-red-600';
-    }
-    
-    const clasificacionDiv = document.getElementById('clasificacion');
-    clasificacionDiv.textContent = clasificacion;
-    clasificacionDiv.className = 'text-xl font-semibold mt-2 ' + colorClass;
+function actualizarBarraIntensidad(slider, barraId) {
+    const porcentaje = (slider.value / slider.max) * 100;
+    document.getElementById(barraId).style.width = porcentaje + '%';
 }
 
-// Gráfico Radar
+// ===== GRÁFICO RADAR =====
 let radarChart;
 
 function inicializarRadar() {
@@ -996,7 +1512,6 @@ function inicializarRadar() {
         }
     });
     
-    // Aplicar fondo azul oscuro al canvas
     ctx.style.backgroundColor = '#1e3a8a';
     ctx.style.borderRadius = '8px';
     ctx.style.padding = '20px';
@@ -1009,7 +1524,7 @@ function actualizarRadar() {
     const saborResidual = parseFloat(document.getElementById('sabor_residual').value) || 0;
     const acidez = parseFloat(document.getElementById('acidez').value) || 0;
     const cuerpo = parseFloat(document.getElementById('cuerpo').value) || 0;
-    const dulzor = parseFloat(document.getElementById('dulzor').value) / 10; // Convertir de escala 10 a escala 10
+    const dulzor = parseFloat(document.getElementById('dulzor').value) / 10;
     const general = parseFloat(document.getElementById('general').value) || 0;
     
     if (radarChart) {
@@ -1027,177 +1542,328 @@ function actualizarRadar() {
     }
 }
 
-window.addEventListener('DOMContentLoaded', function() {
-    calcularTotal();
-    inicializarRadar();
-});
+// ===== GRÁFICO DE GRANULOMETRÍA =====
+let granulometriaChart;
 
-function actualizarBarraIntensidad(slider, barraId) {
-    const porcentaje = (slider.value / slider.max) * 100;
-    document.getElementById(barraId).style.width = porcentaje + '%';
-}
-</script>
-
-<style>
-.score-btn {
-    padding: 3px 6px;
-    border: 1px solid #d1d5db;
-    border-radius: 4px;
-    background-color: #f3f4f6;
-    font-size: 9px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.score-btn:hover {
-    background-color: #fbbf24;
-    color: white;
-}
-</style>
-    <!-- Botones -->
-    <div class="flex justify-end space-x-4 pb-6">
-        <a href="{% url 'lista_cataciones' %}" 
-           class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
-            <i class="fas fa-times mr-2"></i>Cancelar
-        </a>
-        <button type="submit" 
-                class="px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-lg hover:from-amber-600 hover:to-amber-700 transition shadow-lg">
-            <i class="fas fa-save mr-2"></i>Guardar Catación
-        </button>
-    </div>
-</form>
-    </div>
-<script>
-function actualizarOpciones() {
-    const tipoMuestra = document.getElementById('tipo_muestra').value;
+function inicializarGranulometria() {
+    const ctx = document.getElementById('granulometriaChart');
     
-    document.getElementById('div-lote').style.display = 'none';
-    document.getElementById('div-procesado').style.display = 'none';
-    document.getElementById('div-reproceso').style.display = 'none';
-    document.getElementById('div-mezcla').style.display = 'none';
-    
-    if (tipoMuestra === 'lote') {
-        document.getElementById('div-lote').style.display = 'block';
-    } else if (tipoMuestra === 'procesado') {
-        document.getElementById('div-procesado').style.display = 'block';
-    } else if (tipoMuestra === 'reproceso') {
-        document.getElementById('div-reproceso').style.display = 'block';
-    } else if (tipoMuestra === 'mezcla') {
-        document.getElementById('div-mezcla').style.display = 'block';
-    }
-}
-
-function selectScore(btn, atributo, valor) {
-    const parent = btn.parentElement;
-    const buttons = parent.querySelectorAll('.score-btn');
-    buttons.forEach(b => {
-        b.classList.remove('bg-amber-500', 'text-white');
-        b.classList.add('bg-gray-100');
+    granulometriaChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21'],
+            datasets: [{
+                label: 'Distribución Granulométrica',
+                data: [0, 0, 0, 2, 4, 9, 13, 33, 29, 9, 1, 0],
+                fill: true,
+                backgroundColor: 'rgba(30, 58, 138, 0.7)',
+                borderColor: 'rgb(30, 58, 138)',
+                borderWidth: 3,
+                tension: 0.4,
+                pointBackgroundColor: 'rgb(30, 58, 138)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 35,
+                    ticks: {
+                        stepSize: 5,
+                        font: {
+                            size: 11,
+                            weight: 'bold'
+                        },
+                        color: '#ffffff'
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.2)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        font: {
+                            size: 11,
+                            weight: 'bold'
+                        },
+                        color: '#ffffff'
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.2)'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: true,
+                    text: 'GRANULOMETRÍA',
+                    color: '#ffffff',
+                    font: {
+                        size: 16,
+                        weight: 'bold'
+                    },
+                    padding: 10
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(30, 58, 138, 0.9)',
+                    titleFont: {
+                        size: 13,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 12
+                    },
+                    padding: 10,
+                    cornerRadius: 8
+                }
+            }
+        }
     });
     
-    btn.classList.remove('bg-gray-100');
-    btn.classList.add('bg-amber-500', 'text-white');
+    ctx.style.backgroundColor = '#1e3a8a';
+    ctx.style.borderRadius = '8px';
+    ctx.style.padding = '20px';
+}
+
+function calcularGranulometria() {
+    const valores = [];
+    let total = 0;
     
-    document.getElementById(atributo).value = valor;
-    calcularTotal();
-}
-
-function toggleTaza(btn, atributo, maxPuntos) {
-const isActive = btn.classList.contains('bg-green-500');
-if (isActive) {
-    btn.classList.remove('bg-green-500', 'text-white', 'border-green-500');
-    btn.classList.add('border-gray-400');
-} else {
-    btn.classList.add('bg-green-500', 'text-white', 'border-green-500');
-    btn.classList.remove('border-gray-400');
-}
-
-const parent = btn.parentElement;
-const buttons = parent.querySelectorAll('button');
-let activados = 0;
-buttons.forEach(b => {
-    if (b.classList.contains('bg-green-500')) {
-        activados++;
+    for (let i = 10; i <= 21; i++) {
+        const valor = parseFloat(document.getElementById(`gran_${i}`).value) || 0;
+        valores.push(valor);
+        total += valor;
     }
+    
+    document.getElementById('gran_total').textContent = total.toFixed(1);
+    
+    // Calcular porcentajes
+    for (let i = 10; i <= 21; i++) {
+        const valor = parseFloat(document.getElementById(`gran_${i}`).value) || 0;
+        const porcentaje = total > 0 ? ((valor / total) * 100).toFixed(0) : 0;
+        document.getElementById(`pct_${i}`).textContent = porcentaje;
+    }
+    
+    // Actualizar gráfico
+    if (granulometriaChart) {
+        granulometriaChart.data.datasets[0].data = valores;
+        granulometriaChart.update();
+    }
+}
+
+// ===== INICIALIZACIÓN AL CARGAR LA PÁGINA =====
+document.addEventListener('DOMContentLoaded', function() {
+    calcularTotal();
+    inicializarRadar();
+    inicializarGranulometria();
 });
-
-const puntaje = maxPuntos - (activados * 2);
-document.getElementById(atributo).value = puntaje;
-calcularTotal();
-}
-function calcularDefectos() {
-const def2 = parseInt(document.querySelector('[name="defectos_intensidad_2"]').value) || 0;
-const def4 = parseInt(document.querySelector('[name="defectos_intensidad_4"]').value) || 0;
-const totalDef2 = def2 * 2;
-const totalDef4 = def4 * 4;
-const totalDefectos = totalDef2 + totalDef4;
-
-document.getElementById('total-def-2').textContent = totalDef2;
-document.getElementById('total-def-4').textContent = totalDef4;
-document.getElementById('total_defectos').value = totalDefectos;
-
-calcularTotal();
-}
-function calcularTotal() {
-const fragancia = parseFloat(document.getElementById('fragancia').value) || 0;
-const aroma = parseFloat(document.getElementById('aroma').value) || 0;
-const sabor = parseFloat(document.getElementById('sabor').value) || 0;
-const saborResidual = parseFloat(document.getElementById('sabor_residual').value) || 0;
-const acidez = parseFloat(document.getElementById('acidez').value) || 0;
-const cuerpo = parseFloat(document.getElementById('cuerpo').value) || 0;
-const balance = parseFloat(document.getElementById('balance').value) || 0;
-const uniformidad = parseFloat(document.getElementById('uniformidad').value) || 0;
-const tazaLimpia = parseFloat(document.getElementById('taza_limpia').value) || 0;
-const dulzor = parseFloat(document.getElementById('dulzor').value) || 0;
-const general = parseFloat(document.getElementById('general').value) || 0;
-const defectos = parseFloat(document.getElementById('total_defectos').value) || 0;
-const total = fragancia + aroma + sabor + saborResidual + acidez + cuerpo + balance + uniformidad + tazaLimpia + dulzor + general - defectos;
-
-document.getElementById('puntaje-final').textContent = total.toFixed(2);
-document.getElementById('puntaje_total').value = total.toFixed(2);
-
-let clasificacion = '';
-let colorClass = '';
-
-if (total >= 90) {
-    clasificacion = 'EXCEPCIONAL';
-    colorClass = 'text-purple-600';
-} else if (total >= 85) {
-    clasificacion = 'SOBRESALIENTE';
-    colorClass = 'text-green-600';
-} else if (total >= 80) {
-    clasificacion = 'CAFE ESPECIAL';
-    colorClass = 'text-blue-600';
-} else if (total >= 70) {
-    clasificacion = 'MUY BUENO';
-    colorClass = 'text-yellow-600';
-} else {
-    clasificacion = 'PROMEDIO';
-    colorClass = 'text-red-600';
-}
-
-const clasificacionDiv = document.getElementById('clasificacion');
-clasificacionDiv.textContent = clasificacion;
-clasificacionDiv.className = 'text-xl font-semibold mt-2 ' + colorClass;
-}
-window.addEventListener('DOMContentLoaded', function() {
-calcularTotal();
+// ===== GESTIÓN DE TAZAS DEFECTUOSAS =====
+document.querySelectorAll('.taza-defecto-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const field = this.dataset.field;
+        const numerotaza = parseInt(this.textContent);
+        const parent = this.parentElement;
+        const tazaBtns = parent.querySelectorAll('.taza-defecto-btn');
+        
+        // Limpiar todas las tazas
+        tazaBtns.forEach(b => {
+            b.classList.remove('bg-red-500', 'text-white', 'border-red-500');
+            b.classList.add('border-gray-400');
+        });
+        
+        // Marcar tazas hasta la actual
+        let activados = 0;
+        tazaBtns.forEach(b => {
+            if (parseInt(b.textContent) <= numerotaza) {
+                b.classList.add('bg-red-500', 'text-white', 'border-red-500');
+                b.classList.remove('border-gray-400');
+                activados++;
+            }
+        });
+        
+        // Guardar número de tazas defectuosas
+        document.getElementById(field).value = activados;
+    });
 });
 </script>
-<style>
-.score-btn {
-    padding: 3px 6px;
-    border: 1px solid #d1d5db;
-    border-radius: 4px;
-    background-color: #f3f4f6;
-    font-size: 9px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
+<script>
+function calcularDefectosCat1() {
+    let total = 0;
+    
+    // Negro total (1:1)
+    const negroCount = parseFloat(document.querySelector('[name="defecto_negro_total_count"]').value) || 0;
+    const negroFull = parseFloat(document.querySelector('[name="defecto_negro_total_full"]').value) || 0;
+    total += (negroCount * 1) + (negroFull * 1);
+    
+    // Ácido total (1:1)
+    const acidoCount = parseFloat(document.querySelector('[name="defecto_acido_total_count"]').value) || 0;
+    const acidoFull = parseFloat(document.querySelector('[name="defecto_acido_total_full"]').value) || 0;
+    total += (acidoCount * 1) + (acidoFull * 1);
+    
+    // Pergamino (5:1)
+    const pergaCount = parseFloat(document.querySelector('[name="defecto_pergamino_count"]').value) || 0;
+    const pergaFull = parseFloat(document.querySelector('[name="defecto_pergamino_full"]').value) || 0;
+    total += (pergaCount / 5) + (pergaFull * 1);
+    
+    // Daño (5:1)
+    const danoCount = parseFloat(document.querySelector('[name="defecto_dano_count"]').value) || 0;
+    const danoFull = parseFloat(document.querySelector('[name="defecto_dano_full"]').value) || 0;
+    total += (danoCount / 5) + (danoFull * 1);
+    
+    // Materia extraña (1:1)
+    const materiaCount = parseFloat(document.querySelector('[name="defecto_materia_extrana_count"]').value) || 0;
+    const materiaFull = parseFloat(document.querySelector('[name="defecto_materia_extrana_full"]').value) || 0;
+    total += (materiaCount * 1) + (materiaFull * 1);
+    
+    // Daño severo (5:1)
+    const severoCount = parseFloat(document.querySelector('[name="defecto_dano_severo_count"]').value) || 0;
+    const severoFull = parseFloat(document.querySelector('[name="defecto_dano_severo_full"]').value) || 0;
+    total += (severoCount / 5) + (severoFull * 1);
+    
+    document.getElementById('total_defectos_cat1').value = total.toFixed(2);
+    calcularTotalGreenDefects();
 }
-.score-btn:hover {
-    background-color: #fbbf24;
-    color: white;
+
+function calcularDefectosCat2() {
+    let total = 0;
+    
+    // Negro parcial (3:1)
+    const negroParcialCount = parseFloat(document.querySelector('[name="defecto_negro_parcial_count"]').value) || 0;
+    const negroParcialFull = parseFloat(document.querySelector('[name="defecto_negro_parcial_full"]').value) || 0;
+    total += (negroParcialCount / 3) + (negroParcialFull * 1);
+    
+    // Ácido parcial (3:1)
+    const acidoParcialCount = parseFloat(document.querySelector('[name="defecto_acido_parcial_count"]').value) || 0;
+    const acidoParcialFull = parseFloat(document.querySelector('[name="defecto_acido_parcial_full"]').value) || 0;
+    total += (acidoParcialCount / 3) + (acidoParcialFull * 1);
+    
+    // Cereza seca (1:1)
+    const cerezaCount = parseFloat(document.querySelector('[name="defecto_cereza_seca_count"]').value) || 0;
+    const cerezaFull = parseFloat(document.querySelector('[name="defecto_cereza_seca_full"]').value) || 0;
+    total += (cerezaCount * 1) + (cerezaFull * 1);
+    
+    // Hongos (1:1)
+    const hongosCount = parseFloat(document.querySelector('[name="defecto_hongos_count"]').value) || 0;
+    const hongosFull = parseFloat(document.querySelector('[name="defecto_hongos_full"]').value) || 0;
+    total += (hongosCount * 1) + (hongosFull * 1);
+    
+    // Flotador
+    const flotadorCount = parseFloat(document.querySelector('[name="defecto_flotador_count"]').value) || 0;
+    const flotadorFull = parseFloat(document.querySelector('[name="defecto_flotador_full"]').value) || 0;
+    total += (flotadorCount * 1) + (flotadorFull * 1);
+    
+    // Inmaduro (5:1)
+    const inmaduroCount = parseFloat(document.querySelector('[name="defecto_inmaduro_count"]').value) || 0;
+    const inmaduroFull = parseFloat(document.querySelector('[name="defecto_inmaduro_full"]').value) || 0;
+    total += (inmaduroCount / 5) + (inmaduroFull * 1);
+    
+    // Insectos (5:1)
+    const insectosCount = parseFloat(document.querySelector('[name="defecto_insectos_count"]').value) || 0;
+    const insectosFull = parseFloat(document.querySelector('[name="defecto_insectos_full"]').value) || 0;
+    total += (insectosCount / 5) + (insectosFull * 1);
+    
+    // Marchitado
+    const marchitadoCount = parseFloat(document.querySelector('[name="defecto_marchitado_count"]').value) || 0;
+    const marchitadoFull = parseFloat(document.querySelector('[name="defecto_marchitado_full"]').value) || 0;
+    total += (marchitadoCount * 1) + (marchitadoFull * 1);
+    
+    // Concha (5:1)
+    const conchaCount = parseFloat(document.querySelector('[name="defecto_concha_count"]').value) || 0;
+    const conchaFull = parseFloat(document.querySelector('[name="defecto_concha_full"]').value) || 0;
+    total += (conchaCount / 5) + (conchaFull * 1);
+    
+    // Cáscara (5:1)
+    const cascaraCount = parseFloat(document.querySelector('[name="defecto_cascara_count"]').value) || 0;
+    const cascaraFull = parseFloat(document.querySelector('[name="defecto_cascara_full"]').value) || 0;
+    total += (cascaraCount / 5) + (cascaraFull * 1);
+    
+    // Daños leves (10:1)
+    const leveCount = parseFloat(document.querySelector('[name="defecto_dano_leve_count"]').value) || 0;
+    const leveFull = parseFloat(document.querySelector('[name="defecto_dano_leve_full"]').value) || 0;
+    total += (leveCount / 10) + (leveFull * 1);
+    
+    // Rotos, astillados (5:1)
+    const rotosCount = parseFloat(document.querySelector('[name="defecto_rotos_count"]').value) || 0;
+    const rotosFull = parseFloat(document.querySelector('[name="defecto_rotos_full"]').value) || 0;
+    total += (rotosCount / 5) + (rotosFull * 1);
+    
+    document.getElementById('total_defectos_cat2').value = total.toFixed(2);
+    calcularTotalGreenDefects();
 }
-</style>
+
+function calcularTotalGreenDefects() {
+    const cat1 = parseFloat(document.getElementById('total_defectos_cat1').value) || 0;
+    const cat2 = parseFloat(document.getElementById('total_defectos_cat2').value) || 0;
+    const total = cat1 + cat2;
+    document.getElementById('total_green_defects').value = total.toFixed(2);
+    calcularTotal();
+}
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 {% endblock %}

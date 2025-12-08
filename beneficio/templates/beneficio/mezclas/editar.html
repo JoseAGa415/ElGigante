@@ -1,0 +1,437 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Mezcla #{{ mezcla.numero }} - Beneficio de Café{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg shadow-lg p-6 text-white">
+        <h2 class="text-3xl font-bold flex items-center">
+            <i class="fas fa-blender mr-3"></i>
+            Editar Mezcla #{{ mezcla.numero }}
+        </h2>
+        <p class="mt-2 text-green-50">Modificar componentes y detalles de la mezcla</p>
+    </div>
+
+    <form method="post" id="form-mezcla" class="space-y-6">
+        {% csrf_token %}
+        <input type="hidden" name="componentes" id="componentes-data">
+        
+        <!-- Información Básica -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-edit text-green-600 mr-2"></i>
+                Información de la Mezcla
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Nombre <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" 
+                           name="destino" 
+                           value="{{ mezcla.destino }}"
+                           required
+                           placeholder="Ej: natural batch1, BA batch2..."
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+                    <input type="text" 
+                           name="descripcion"
+                           value="{{ mezcla.descripcion }}"
+                           placeholder="Opcional..."
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600">
+                </div>
+                <!-- NUEVO CAMPO: Batchadas por día -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-layer-group text-purple-600 mr-1"></i>
+                        Batchadas por Día
+                    </label>
+                    <input type="number" 
+                           name="batchadas_dia" 
+                           min="1"
+                           value="{{ mezcla.batchadas_dia|default:'1' }}"
+                           placeholder="1"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
+                    <p class="text-xs text-gray-500 mt-1">Cantidad de veces que se repite esta mezcla al día</p>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Fecha de Mezcla <span class="text-red-500">*</span>
+                    </label>
+                    <input type="datetime-local" 
+                           name="fecha" 
+                           value="{{ mezcla.fecha|date:'Y-m-d\TH:i' }}"
+                           required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-warehouse text-amber-600 mr-2"></i>
+                        Bodega de Almacenamiento <span class="text-red-500">*</span>
+                    </label>
+                    <select name="bodega_destino" 
+                            required
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                        <option value="">Seleccione bodega...</option>
+                        {% for bodega in bodegas %}
+                        <option value="{{ bodega.id }}" {% if mezcla.bodega_destino and mezcla.bodega_destino.id == bodega.id %}selected{% endif %}>
+                            Bodega {{ bodega.codigo }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN: INFORMACIÓN DEL PERSONAL -->
+        <div class="bg-gradient-to-r from-purple-50 to-indigo-50 p-6 rounded-lg border-2 border-purple-300">
+            <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
+                <i class="fas fa-users text-purple-600"></i>
+                Información del Personal
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-user-tie text-blue-600 mr-1"></i>
+                        Persona Encargada <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" 
+                           name="encargado_mezcla"
+                           value="{{ mezcla.encargado_mezcla }}"
+                           required
+                           placeholder="Nombre del encargado"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 font-semibold">
+                    <p class="text-xs text-gray-500 mt-1">Persona responsable de la mezcla</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-users text-green-600 mr-1"></i>
+                        Cantidad de Personal <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" 
+                           name="personas_trabajando"
+                           value="{{ mezcla.personas_trabajando }}"
+                           min="1"
+                           required
+                           placeholder="0"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 font-semibold text-lg">
+                    <p class="text-xs text-gray-500 mt-1">Número de personas que trabajaron ese día</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Componentes (EDITABLES) -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-layer-group text-blue-600 mr-2"></i>
+                    Componentes de la Mezcla (máx. 15)
+                </h3>
+                <button type="button" 
+                        onclick="agregarComponente()" 
+                        id="btn-agregar" 
+                        class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+                    <i class="fas fa-plus mr-2"></i>Agregar Componente
+                </button>
+            </div>
+
+            <div id="componentes-container" class="space-y-4">
+                <!-- Los componentes existentes se cargarán aquí via JavaScript -->
+            </div>
+
+            <div class="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border-2 border-blue-300">
+                <h4 class="font-bold text-blue-900 mb-4 text-lg flex items-center">
+                    <i class="fas fa-calculator text-blue-600 mr-2"></i>
+                    Resumen Total
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Total Componentes</p>
+                        <p class="text-3xl font-bold text-blue-900" id="total-componentes">0</p>
+                        <p class="text-xs text-gray-500 mt-1">de 15 máximo</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Peso Total</p>
+                        <p class="text-3xl font-bold text-green-700" id="peso-total">0.00 kg</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Estado</p>
+                        <p class="text-sm font-semibold" id="estado-mezcla">
+                            <span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-800">
+                                Pendiente guardar
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="flex justify-between items-center">
+            <a href="{% url 'detalle_mezcla' mezcla.pk %}" 
+               class="px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium">
+                <i class="fas fa-times mr-2"></i>Cancelar
+            </a>
+            <button type="submit" 
+                    class="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition font-medium shadow-lg hover:shadow-xl">
+                <i class="fas fa-save mr-2"></i>Guardar Cambios
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+const opciones = {{ opciones_json|safe }};
+const componentesExistentes = {{ componentes_existentes|safe }};
+let componentesCount = 0;
+const MAX_COMPONENTES = 15;
+
+// Cargar componentes existentes al iniciar
+window.addEventListener('DOMContentLoaded', function() {
+    componentesExistentes.forEach((comp, index) => {
+        agregarComponenteExistente(comp, index + 1);
+    });
+    actualizarResumen();
+});
+
+function agregarComponenteExistente(componente, numero) {
+    componentesCount++;
+    const container = document.getElementById('componentes-container');
+    
+    const html = `
+        <div class="flex gap-4 items-start border-2 border-blue-200 bg-blue-50 p-4 rounded-lg hover:shadow-md transition" id="componente-${componentesCount}">
+            <div class="flex-shrink-0 pt-7">
+                <span class="flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 text-white font-bold">
+                    ${numero}
+                </span>
+            </div>
+            <div class="flex-1">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-box text-blue-600 mr-1"></i>
+                    Componente ${numero}
+                </label>
+                <select class="lote-select w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 bg-white" 
+                        onchange="actualizarResumen()">
+                    <option value="">Seleccione (Lote, Procesado o Reproceso)...</option>
+                    ${opciones.map(o => `
+                        <option value="${o.lote_id}" 
+                                data-peso="${o.peso_disponible}"
+                                ${o.lote_id == componente.lote_id ? 'selected' : ''}>
+                            ${o.tipo} | ${o.codigo} - ${o.descripcion} (${o.peso_disponible} kg)
+                        </option>
+                    `).join('')}
+                </select>
+            </div>
+            <div class="w-48">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-weight text-green-600 mr-1"></i>
+                    Peso (kg)
+                </label>
+                <input type="number" 
+                       step="0.01" 
+                       value="${componente.peso}"
+                       class="peso-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 font-bold text-lg"
+                       placeholder="0.00" 
+                       onchange="actualizarResumen()">
+            </div>
+            <div class="w-32">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-percent text-purple-600 mr-1"></i>
+                    %
+                </label>
+                <input type="text" 
+                       class="porcentaje-display w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-center font-bold text-purple-700"
+                       readonly
+                       value="0%">
+            </div>
+            <div class="pt-7">
+                <button type="button" 
+                        onclick="eliminarComponente(${componentesCount})" 
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition shadow-md"
+                        title="Eliminar componente">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', html);
+}
+
+function agregarComponente() {
+    const totalActual = document.querySelectorAll('[id^="componente-"]').length;
+    
+    if (totalActual >= MAX_COMPONENTES) {
+        alert(`❌ Máximo ${MAX_COMPONENTES} componentes por mezcla.`);
+        return;
+    }
+    
+    componentesCount++;
+    const numero = totalActual + 1;
+    const container = document.getElementById('componentes-container');
+    
+    const html = `
+        <div class="flex gap-4 items-start border-2 border-green-300 bg-green-50 p-4 rounded-lg hover:shadow-md transition" id="componente-${componentesCount}">
+            <div class="flex-shrink-0 pt-7">
+                <span class="flex items-center justify-center w-10 h-10 rounded-full bg-green-600 text-white font-bold">
+                    <i class="fas fa-plus"></i>
+                </span>
+            </div>
+            <div class="flex-1">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-box text-green-600 mr-1"></i>
+                    Nuevo Componente ${numero}
+                </label>
+                <select class="lote-select w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 bg-white" 
+                        onchange="actualizarResumen()">
+                    <option value="">Seleccione (Lote, Procesado o Reproceso)...</option>
+                    ${opciones.map(o => `
+                        <option value="${o.lote_id}" data-peso="${o.peso_disponible}">
+                            ${o.tipo} | ${o.codigo} - ${o.descripcion} (${o.peso_disponible} kg)
+                        </option>
+                    `).join('')}
+                </select>
+            </div>
+            <div class="w-48">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-weight text-green-600 mr-1"></i>
+                    Peso (kg)
+                </label>
+                <input type="number" 
+                       step="0.01" 
+                       class="peso-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 font-bold text-lg"
+                       placeholder="0.00" 
+                       onchange="actualizarResumen()">
+            </div>
+            <div class="w-32">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-percent text-purple-600 mr-1"></i>
+                    %
+                </label>
+                <input type="text" 
+                       class="porcentaje-display w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-center font-bold text-purple-700"
+                       readonly
+                       value="0%">
+            </div>
+            <div class="pt-7">
+                <button type="button" 
+                        onclick="eliminarComponente(${componentesCount})" 
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition shadow-md"
+                        title="Eliminar componente">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', html);
+    actualizarBotonAgregar();
+    actualizarResumen();
+}
+
+function eliminarComponente(id) {
+    if (confirm('¿Seguro que deseas eliminar este componente?')) {
+        document.getElementById(`componente-${id}`).remove();
+        actualizarBotonAgregar();
+        actualizarResumen();
+        renumerarComponentes();
+    }
+}
+
+function renumerarComponentes() {
+    const componentes = document.querySelectorAll('[id^="componente-"]');
+    componentes.forEach((comp, index) => {
+        const numero = index + 1;
+        const numeroSpan = comp.querySelector('.rounded-full');
+        if (numeroSpan && !numeroSpan.querySelector('i')) {
+            numeroSpan.textContent = numero;
+        }
+    });
+}
+
+function actualizarBotonAgregar() {
+    const btn = document.getElementById('btn-agregar');
+    const totalActual = document.querySelectorAll('[id^="componente-"]').length;
+    
+    if (totalActual >= MAX_COMPONENTES) {
+        btn.disabled = true;
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+        btn.innerHTML = '<i class="fas fa-ban mr-2"></i>Límite Alcanzado';
+    } else {
+        btn.disabled = false;
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        btn.innerHTML = '<i class="fas fa-plus mr-2"></i>Agregar Componente';
+    }
+}
+
+function actualizarResumen() {
+    const selects = document.querySelectorAll('.lote-select');
+    const inputs = document.querySelectorAll('.peso-input');
+    const porcentajes = document.querySelectorAll('.porcentaje-display');
+    
+    let total = 0;
+    let pesoTotal = 0;
+    
+    // Calcular peso total
+    selects.forEach((select, index) => {
+        if (select.value && inputs[index].value) {
+            total++;
+            pesoTotal += parseFloat(inputs[index].value) || 0;
+        }
+    });
+    
+    // Calcular porcentajes
+    selects.forEach((select, index) => {
+        if (select.value && inputs[index].value && pesoTotal > 0) {
+            const peso = parseFloat(inputs[index].value) || 0;
+            const porcentaje = (peso / pesoTotal * 100).toFixed(1);
+            porcentajes[index].value = porcentaje + '%';
+        } else {
+            porcentajes[index].value = '0%';
+        }
+    });
+    
+    document.getElementById('total-componentes').textContent = total;
+    document.getElementById('peso-total').textContent = pesoTotal.toFixed(2) + ' kg';
+    
+    // Actualizar estado
+    const estadoEl = document.getElementById('estado-mezcla');
+    if (total === 0) {
+        estadoEl.innerHTML = '<span class="px-3 py-1 rounded-full bg-red-100 text-red-800">⚠️ Sin componentes</span>';
+    } else {
+        estadoEl.innerHTML = '<span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-800">📝 Pendiente guardar</span>';
+    }
+}
+
+document.getElementById('form-mezcla').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const selects = document.querySelectorAll('.lote-select');
+    const inputs = document.querySelectorAll('.peso-input');
+    const componentes = [];
+    
+    selects.forEach((select, index) => {
+        if (select.value && inputs[index].value) {
+            componentes.push({
+                lote_id: select.value,
+                peso: inputs[index].value
+            });
+        }
+    });
+    
+    if (componentes.length === 0) {
+        alert('❌ Debe agregar al menos un componente a la mezcla');
+        return;
+    }
+    
+    document.getElementById('componentes-data').value = JSON.stringify(componentes);
+    this.submit();
+});
+</script>
+{% endblock %}

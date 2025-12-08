@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalle Venta {{ venta.codigo_venta }}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg shadow-lg p-6 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-3xl font-bold flex items-center">
+                    <i class="fas fa-file-invoice-dollar mr-3"></i>
+                    Venta {{ venta.codigo_venta }}
+                </h2>
+                <p class="mt-2 text-yellow-100">Detalles completos de la venta</p>
+            </div>
+            <div class="flex gap-3">
+                <a href="{% url 'ventas_lista' %}" 
+                   class="px-4 py-2 bg-white text-yellow-600 rounded-lg hover:bg-yellow-50 transition font-medium">
+                    <i class="fas fa-list mr-2"></i>Ver Todas
+                </a>
+                <a href="{% url 'eventos_lista' %}" 
+                   class="px-4 py-2 bg-white text-orange-600 rounded-lg hover:bg-orange-50 transition font-medium">
+                    <i class="fas fa-arrow-left mr-2"></i>Eventos
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estado y Fecha -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 
+            {% if venta.estado == 'completada' %}border-green-500
+            {% elif venta.estado == 'en_proceso' %}border-yellow-500
+            {% elif venta.estado == 'pendiente' %}border-blue-500
+            {% else %}border-red-500{% endif %}">
+            <p class="text-sm text-gray-600 uppercase font-semibold mb-2">Estado</p>
+            <span class="px-4 py-2 rounded-full text-sm font-bold inline-block
+                {% if venta.estado == 'completada' %}bg-green-100 text-green-800
+                {% elif venta.estado == 'en_proceso' %}bg-yellow-100 text-yellow-800
+                {% elif venta.estado == 'pendiente' %}bg-blue-100 text-blue-800
+                {% else %}bg-red-100 text-red-800{% endif %}">
+                {% if venta.estado == 'completada' %}<i class="fas fa-check-circle"></i>
+                {% elif venta.estado == 'en_proceso' %}<i class="fas fa-spinner"></i>
+                {% elif venta.estado == 'pendiente' %}<i class="fas fa-clock"></i>
+                {% else %}<i class="fas fa-times-circle"></i>{% endif %}
+                {{ venta.get_estado_display }}
+            </span>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+            <p class="text-sm text-gray-600 uppercase font-semibold mb-2">Fecha de Venta</p>
+            <p class="text-2xl font-bold text-gray-800">{{ venta.fecha_venta|date:"d/m/Y" }}</p>
+            <p class="text-sm text-gray-500">{{ venta.fecha_venta|date:"H:i" }}</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-500">
+            <p class="text-sm text-gray-600 uppercase font-semibold mb-2">Creado Por</p>
+            <p class="text-lg font-semibold text-gray-800">
+                <i class="fas fa-user-circle text-purple-600"></i> 
+                {{ venta.creado_por.get_full_name|default:venta.creado_por.username }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Información del Producto -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center border-b border-gray-200 pb-3">
+            <i class="fas fa-box text-yellow-600 mr-2"></i>
+            Producto Vendido
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Tipo de Producto</p>
+                <span class="px-3 py-1 rounded text-sm font-semibold
+                    {% if venta.tipo_producto == 'procesado' %}bg-amber-100 text-amber-800
+                    {% elif venta.tipo_producto == 'reproceso' %}bg-purple-100 text-purple-800
+                    {% else %}bg-green-100 text-green-800{% endif %}">
+                    <i class="fas 
+                        {% if venta.tipo_producto == 'procesado' %}fa-cogs
+                        {% elif venta.tipo_producto == 'reproceso' %}fa-sync
+                        {% else %}fa-blender{% endif %} mr-1"></i>
+                    {{ venta.get_tipo_producto_display }}
+                </span>
+            </div>
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Identificación</p>
+                <p class="font-semibold text-gray-800">{{ venta.producto_descripcion }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Peso Vendido</p>
+                <p class="text-2xl font-bold text-yellow-600">{{ venta.peso_vendido_kg|floatformat:2 }} kg</p>
+                <p class="text-sm text-gray-500">({{ venta.quintales_vendidos|floatformat:2 }} quintales)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información del Comprador -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center border-b border-gray-200 pb-3">
+            <i class="fas fa-user-tie text-yellow-600 mr-2"></i>
+            Información del Comprador
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Nombre del Comprador</p>
+                <p class="font-semibold text-gray-800 text-lg">
+                    {{ venta.comprador.nombre|default:"No especificado" }}
+                </p>
+            </div>
+            {% if venta.comprador %}
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Información de Contacto</p>
+                {% if venta.comprador.telefono %}
+                <p class="text-gray-700">
+                    <i class="fas fa-phone text-green-600"></i> {{ venta.comprador.telefono }}
+                </p>
+                {% endif %}
+                {% if venta.comprador.email %}
+                <p class="text-gray-700">
+                    <i class="fas fa-envelope text-blue-600"></i> {{ venta.comprador.email }}
+                </p>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Información Comercial -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center border-b border-gray-200 pb-3">
+            <i class="fas fa-dollar-sign text-yellow-600 mr-2"></i>
+            Información Comercial
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-blue-50 rounded-lg p-4">
+                <p class="text-sm text-gray-600 mb-1">Precio por Quintal</p>
+                <p class="text-2xl font-bold text-blue-600">Q {{ venta.precio_quintal|floatformat:2 }}</p>
+            </div>
+            <div class="bg-green-50 rounded-lg p-4">
+                <p class="text-sm text-gray-600 mb-1">Precio Total</p>
+                <p class="text-3xl font-bold text-green-600">Q {{ venta.precio_total|floatformat:2 }}</p>
+            </div>
+            <div class="bg-purple-50 rounded-lg p-4">
+                <p class="text-sm text-gray-600 mb-1">Precio por kg</p>
+                <p class="text-2xl font-bold text-purple-600">
+                    Q {{ venta.precio_total|floatformat:2 }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Documentación -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center border-b border-gray-200 pb-3">
+            <i class="fas fa-file-alt text-yellow-600 mr-2"></i>
+            Documentación
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Número de Factura</p>
+                <p class="font-semibold text-gray-800">
+                    {% if venta.numero_factura %}
+                        <i class="fas fa-receipt text-blue-600"></i> {{ venta.numero_factura }}
+                    {% else %}
+                        <span class="text-gray-400">No especificado</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Número de Contrato</p>
+                <p class="font-semibold text-gray-800">
+                    {% if venta.numero_contrato %}
+                        <i class="fas fa-file-contract text-green-600"></i> {{ venta.numero_contrato }}
+                    {% else %}
+                        <span class="text-gray-400">No especificado</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logística -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center border-b border-gray-200 pb-3">
+            <i class="fas fa-truck text-yellow-600 mr-2"></i>
+            Información de Logística
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Fecha de Entrega</p>
+                <p class="font-semibold text-gray-800">
+                    {% if venta.fecha_entrega %}
+                        <i class="fas fa-calendar text-blue-600"></i> {{ venta.fecha_entrega|date:"d/m/Y" }}
+                    {% else %}
+                        <span class="text-gray-400">No especificada</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Transportista</p>
+                <p class="font-semibold text-gray-800">
+                    {% if venta.transportista %}
+                        <i class="fas fa-user text-green-600"></i> {{ venta.transportista }}
+                    {% else %}
+                        <span class="text-gray-400">No especificado</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Número de Placa</p>
+                <p class="font-semibold text-gray-800">
+                    {% if venta.numero_placa %}
+                        <i class="fas fa-car text-purple-600"></i> {{ venta.numero_placa }}
+                    {% else %}
+                        <span class="text-gray-400">No especificado</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Observaciones -->
+    {% if venta.observaciones %}
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center border-b border-gray-200 pb-3">
+            <i class="fas fa-comment-alt text-yellow-600 mr-2"></i>
+            Observaciones
+        </h3>
+        <div class="bg-gray-50 rounded-lg p-4">
+            <p class="text-gray-700 whitespace-pre-wrap">{{ venta.observaciones }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Auditoría -->
+    <div class="bg-gray-50 rounded-lg p-4 text-sm text-gray-600">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <i class="fas fa-calendar-plus text-blue-600"></i>
+                <strong>Creado:</strong> {{ venta.created_at|date:"d/m/Y H:i" }}
+            </div>
+            <div>
+                <i class="fas fa-calendar-check text-green-600"></i>
+                <strong>Última actualización:</strong> {{ venta.updated_at|date:"d/m/Y H:i" }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

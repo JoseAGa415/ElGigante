@@ -2,7 +2,9 @@ from django.contrib import admin
 from beneficio.models import (
     TipoCafe, Bodega, Lote, Procesado, 
     Reproceso, Mezcla, DetalleMezcla,
-    Catacion, DefectoCatacion
+    Catacion, DefectoCatacion, Compra, Comprador,
+    MantenimientoPlanta, HistorialMantenimiento, 
+    ReciboCafe
 )
 
 @admin.register(TipoCafe)
@@ -59,3 +61,37 @@ class CatacionAdmin(admin.ModelAdmin):
 class DefectoCatacionAdmin(admin.ModelAdmin):
     list_display = ['catacion', 'categoria', 'tipo_defecto', 'cantidad', 'equivalente_defectos']
     list_filter = ['categoria']
+
+@admin.register(Comprador)
+class CompradorAdmin(admin.ModelAdmin):
+    list_display = ['nombre', 'empresa', 'telefono', 'total_compras', 'monto_total_comprado', 'activo']
+    list_filter = ['activo', 'created_at']
+    search_fields = ['nombre', 'empresa', 'email']
+    date_hierarchy = 'created_at'
+
+@admin.register(Compra)
+class CompraAdmin(admin.ModelAdmin):
+    list_display = ['comprador', 'fecha_compra', 'cantidad', 'unidad', 'precio_unitario', 'monto_total', 'estado_pago']
+    list_filter = ['estado_pago', 'unidad', 'fecha_compra']
+    search_fields = ['comprador__nombre', 'numero_factura', 'descripcion']
+    date_hierarchy = 'fecha_compra'
+    readonly_fields = ['monto_total']
+
+@admin.register(MantenimientoPlanta)
+class MantenimientoPlantaAdmin(admin.ModelAdmin):
+    list_display = ['horas_acumuladas', 'limite_horas', 'porcentaje_uso', 'estado', 'horas_restantes']
+    readonly_fields = ['horas_acumuladas', 'porcentaje_uso', 'horas_restantes']
+
+@admin.register(HistorialMantenimiento)
+class HistorialMantenimientoAdmin(admin.ModelAdmin):
+    list_display = ['fecha_mantenimiento', 'tipo_mantenimiento', 'horas_acumuladas', 'realizado_por', 'costo']
+    list_filter = ['tipo_mantenimiento', 'fecha_mantenimiento']
+    date_hierarchy = 'fecha_mantenimiento'
+
+@admin.register(ReciboCafe)
+class ReciboCafeAdmin(admin.ModelAdmin):
+    list_display = ['numero_recibo', 'lote', 'fecha_recibo', 'peso', 'unidad', 'proveedor', 'monto_total']
+    list_filter = ['fecha_recibo', 'unidad']
+    search_fields = ['numero_recibo', 'lote__codigo', 'proveedor']
+    date_hierarchy = 'fecha_recibo'
+    readonly_fields = ['numero_recibo', 'monto_total']

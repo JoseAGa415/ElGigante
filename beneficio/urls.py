@@ -26,7 +26,8 @@ urlpatterns = [
     path('procesados/<int:pk>/', views.detalle_procesado, name='detalle_procesado'),
     path('procesados/<int:pk>/editar/', views.editar_procesado, name='editar_procesado'),
     path('procesados/<int:pk>/eliminar/', views.eliminar_procesado, name='eliminar_procesado'),
-    path('procesados/<int:pk>/continuar/', views.continuar_procesado, name='continuar_procesado'),
+    path('procesados/<int:procesado_id>/continuar/', views.continuar_procesado, name='continuar_procesado'),
+    path('recibos/<int:recibo_id>/procesar/', views.crear_procesado_desde_recibo, name='procesar_desde_recibo'),
     
     # Reprocesos
     path('reprocesos/', views.lista_reprocesos, name='lista_reprocesos'),
@@ -35,9 +36,13 @@ urlpatterns = [
     path('reprocesos/<int:pk>/reprocesar/', views.reprocesar_reproceso, name='reprocesar_reproceso'),
     path('procesados/<int:procesado_id>/reprocesar/', views.crear_reproceso, name='crear_reproceso'),
     
+    # --- ¡ESTA LÍNEA FALTABA! ---
+    path('reprocesos/<int:pk>/eliminar/', views.eliminar_reproceso, name='eliminar_reproceso'),
+    
     # Mezclas
     path('mezclas/', views.lista_mezclas, name='lista_mezclas'),
     path('mezclas/crear/', views.crear_mezcla, name='crear_mezcla'),
+    path('mezclas/<int:mezcla_id>/continuar/', views.continuar_mezcla, name='continuar_mezcla'),
     path('mezclas/<int:pk>/', views.detalle_mezcla, name='detalle_mezcla'),
     path('mezclas/<int:pk>/editar/', views.editar_mezcla, name='editar_mezcla'),
     path('mezclas/<int:pk>/eliminar/', views.eliminar_mezcla, name='eliminar_mezcla'),
@@ -48,4 +53,41 @@ urlpatterns = [
     path('cataciones/<int:pk>/', views.detalle_catacion, name='detalle_catacion'),
     path('cataciones/<int:pk>/eliminar/', views.eliminar_catacion, name='eliminar_catacion'),
     path('cataciones/<int:pk>/imprimir/', views.imprimir_catacion, name='imprimir_catacion'),
+
+    # Compradores y Compras
+    path('compradores/', views.lista_compradores, name='lista_compradores'),
+    path('compradores/crear/', views.crear_comprador, name='crear_comprador'),
+    path('compradores/<int:pk>/', views.detalle_comprador, name='detalle_comprador'),
+    path('compradores/<int:pk>/editar/', views.editar_comprador, name='editar_comprador'),
+    path('compradores/<int:pk>/eliminar/', views.eliminar_comprador, name='eliminar_comprador'),
+    
+    # Compras
+    path('compras/', views.lista_compras, name='lista_compras'),
+    path('compradores/<int:comprador_id>/compras/agregar/', views.agregar_compra, name='agregar_compra'),
+    path('compras/<int:pk>/editar/', views.editar_compra, name='editar_compra'),
+    path('compras/<int:pk>/eliminar/', views.eliminar_compra, name='eliminar_compra'),
+
+    # Mantenimiento de Planta
+    path('mantenimiento/', views.control_mantenimiento, name='control_mantenimiento'),
+    path('mantenimiento/realizar/', views.realizar_mantenimiento, name='realizar_mantenimiento'),
+    path('mantenimiento/historial/', views.historial_mantenimiento, name='historial_mantenimiento'),
+
+    # Recibos de Café
+    path('lotes/<int:lote_id>/recibos/agregar/', views.agregar_recibo, name='agregar_recibo'),
+    path('recibos/<int:pk>/editar/', views.editar_recibo, name='editar_recibo'),
+    path('recibos/<int:pk>/eliminar/', views.eliminar_recibo, name='eliminar_recibo'),
+    path('recibos/<int:recibo_id>/procesar/', views.procesar_desde_recibo, name='procesar_desde_recibo'),
+
+     # ========== EVENTOS ==========
+    path('eventos/', views.eventos_lista, name='eventos_lista'),
+    
+    # Ventas
+    path('eventos/venta/crear/<str:tipo_producto>/<int:producto_id>/', views.venta_crear, name='venta_crear'),
+    path('eventos/venta/<int:venta_id>/', views.venta_detalle, name='venta_detalle'),
+    path('eventos/ventas/', views.ventas_lista, name='ventas_lista'),
+    
+    # Exportaciones
+    path('eventos/exportacion/crear/<str:tipo_producto>/<int:producto_id>/', views.exportacion_crear, name='exportacion_crear'),
+    path('eventos/exportacion/<int:exportacion_id>/', views.exportacion_detalle, name='exportacion_detalle'),
+    path('eventos/exportaciones/', views.exportaciones_lista, name='exportaciones_lista'),
 ]

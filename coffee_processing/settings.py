@@ -59,8 +59,15 @@ WSGI_APPLICATION = 'coffee_processing.wsgi.application'
 # Database
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'inprocaf_db',
+        'USER': 'inprocaf',  
+        'PASSWORD': '1234',
+        'HOST': 'localhost',
+        'PORT': '5432',
+        'OPTIONS': {
+            'sslmode': 'disable',  
+        }
     }
 }
 

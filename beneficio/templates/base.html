@@ -5,13 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}EL GIGANTE - INPROCAF{% endblock %}</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Custom Styles -->
     <style>
         .coffee-gradient {
             background: linear-gradient(135deg, #6B4423 0%, #8B5A2B 50%, #D2691E 100%);
@@ -29,18 +26,22 @@
 </head>
 <body class="bg-gray-50">
     {% if user.is_authenticated %}
-    <!-- Navegación Principal -->
     <nav class="coffee-gradient shadow-lg fixed top-0 w-full z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
+                
                 <div class="flex items-center">
-                    <div class="flex-shrink-0">
+                    <button id="sidebar-toggle" class="text-white p-2 rounded-md md:hidden">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <div class="flex-shrink-0 ml-3 md:ml-0">
                         <i class="fas fa-coffee text-white text-2xl"></i>
                     </div>
                     <div class="ml-4">
                         <h1 class="text-white text-xl font-bold">EL GIGANTE</h1>
                     </div>
                 </div>
+                
                 <div class="flex items-center space-x-4">
                     <span class="text-white">
                         <i class="fas fa-user mr-2"></i>{{ user.username }}
@@ -54,9 +55,10 @@
     </nav>
 
     <div class="flex min-h-screen pt-16">
-        <!-- Sidebar -->
-        <div class="w-64 coffee-gradient text-white fixed h-full top-16 overflow-y-auto">
-            <nav class="mt-8 pb-8">
+        <div id="sidebar" class="w-64 coffee-gradient text-white fixed h-full top-16 overflow-y-auto 
+                                transform -translate-x-full md:translate-x-0 
+                                transition-transform duration-300 ease-in-out z-40">
+        <nav class="mt-8 pb-8">
                 <a href="{% url 'dashboard' %}" class="block px-6 py-3 sidebar-hover">
                     <i class="fas fa-dashboard mr-3"></i>Dashboard
                 </a>
@@ -85,12 +87,26 @@
                     <i class="fas fa-coffee mr-3"></i>Cataciones
                 </a>
 
+                    {% if user.is_superuser %}
+                <a href="{% url 'lista_compradores' %}" class="block px-6 py-3 sidebar-hover">
+                    <i class="fas fa-handshake mr-3"></i>Compradores
+                </a>
+
+                 <a href="{% url 'lista_compras' %}" class="block px-6 py-3 sidebar-hover">
+                    <i class="fas fa-file-invoice-dollar mr-3"></i>Compras maduro
+                </a>
+
+                    {% endif %}
                 <div class="mt-4 px-6">
                     <p class="text-xs uppercase text-yellow-200 font-semibold">Reportes</p>
                 </div>
                 
                 <a href="{% url 'historial' %}" class="block px-6 py-3 sidebar-hover">
                     <i class="fas fa-history mr-3"></i>Historial
+                </a>
+
+                <a href="{% url 'eventos_lista' %}" class="block px-6 py-3 sidebar-hover">
+                    <i class="fas fa-shipping-fast mr-3"></i>Eventos
                 </a>
                 
                 {% if user.is_superuser %}
@@ -105,10 +121,9 @@
             </nav>
         </div>
 
-        <!-- Contenido Principal -->
-        <div class="flex-1 ml-64">
-            <main class="p-6">
-                <!-- Mensajes -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden"></div>
+        <div class="flex-1 md:ml-64">
+        <main class="p-6">
                 {% if messages %}
                 <div class="mb-4">
                     {% for message in messages %}
@@ -128,7 +143,6 @@
         </div>
     </div>
     {% else %}
-    <!-- Si no está autenticado -->
     <div class="min-h-screen flex items-center justify-center coffee-gradient">
         <div class="bg-white p-8 rounded-lg shadow-2xl text-center max-w-md">
             <i class="fas fa-coffee text-6xl text-amber-600 mb-4"></i>
@@ -141,29 +155,36 @@
     </div>
     {% endif %}
 
-    <!-- JavaScript -->
-   <script>
-    // Agregar botón de cerrar a los mensajes
-    document.addEventListener('DOMContentLoaded', function() {
-        const messages = document.querySelectorAll('[class*="bg-"][class*="text-"]');
-        messages.forEach(msg => {
-            if (msg.closest('main')) {
-                // Crear botón de cerrar
-                const closeBtn = document.createElement('button');
-                closeBtn.innerHTML = '&times;';
-                closeBtn.className = 'float-right text-2xl font-bold leading-none hover:opacity-75';
-                closeBtn.onclick = function() {
-                    msg.style.transition = 'opacity 0.3s';
-                    msg.style.opacity = '0';
-                    setTimeout(() => msg.remove(), 300);
-                };
-                msg.insertBefore(closeBtn, msg.firstChild);
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Seleccionamos los elementos
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('sidebar-toggle');
+            const overlay = document.getElementById('sidebar-overlay');
+
+            // Función para mostrar/ocultar el menú
+            function toggleSidebar() {
+                if (sidebar) {
+                    sidebar.classList.toggle('-translate-x-full');
+                }
+                if (overlay) {
+                    overlay.classList.toggle('hidden');
+                }
+            }
+
+            // Event listener para el botón de hamburguesa
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', toggleSidebar);
+            }
+            
+            // Event listener para el overlay (para cerrar el menú al tocar fuera)
+            if (overlay) {
+                overlay.addEventListener('click', toggleSidebar);
             }
         });
-    });
-</script>
-    
+    </script>
     {% block extra_js %}{% endblock %}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </body>
 </html>

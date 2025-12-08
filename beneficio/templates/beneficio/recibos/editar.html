@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Editar Recibo {{ recibo.numero_recibo }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Columna Izquierda: Datos Actuales -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-lg p-6 sticky top-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                        <i class="fas fa-info-circle text-blue-600"></i>
+                        Datos Actuales
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                            <p class="text-xs text-blue-600 font-semibold uppercase mb-1">Número de Recibo</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ recibo.numero_recibo }}</p>
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-xs text-gray-500 font-semibold uppercase mb-1">Lote</p>
+                            <p class="text-lg font-bold text-gray-900">{{ recibo.lote.codigo }}</p>
+                            <p class="text-sm text-gray-600">{{ recibo.lote.tipo_cafe }}</p>
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-xs text-gray-500 font-semibold uppercase mb-1">Fecha Original</p>
+                            <p class="text-lg font-bold text-gray-900">{{ recibo.fecha_recibo|date:"d/m/Y" }}</p>
+                            <p class="text-sm text-gray-600">{{ recibo.fecha_recibo|date:"H:i" }}</p>
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-xs text-gray-500 font-semibold uppercase mb-1">Proveedor</p>
+                            <p class="text-lg font-bold text-gray-900">{{ recibo.proveedor }}</p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-purple-50 p-3 rounded-lg border border-purple-200">
+                                <p class="text-xs text-purple-600 font-semibold uppercase mb-1">Peso</p>
+                                <p class="text-xl font-bold text-gray-900">{{ recibo.peso }}</p>
+                                <p class="text-xs text-gray-600">{{ recibo.get_unidad_display }}</p>
+                            </div>
+                            <div class="bg-purple-50 p-3 rounded-lg border border-purple-200">
+                                <p class="text-xs text-purple-600 font-semibold uppercase mb-1">En KG</p>
+                                <p class="text-xl font-bold text-gray-900">{{ recibo.convertir_a_kg|floatformat:2 }}</p>
+                                <p class="text-xs text-gray-600">kilogramos</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-xs text-gray-500 font-semibold uppercase mb-1">Humedad</p>
+                            <p class="text-lg font-bold text-gray-900">{{ recibo.humedad }}%</p>
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-xs text-gray-500 font-semibold uppercase mb-1">Precio por Quintal</p>
+                            <p class="text-lg font-bold text-gray-900">Q{{ recibo.precio_quintal|floatformat:2 }}</p>
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-xs text-gray-500 font-semibold uppercase mb-1">Número de Boletas</p>
+                            <p class="text-lg font-bold text-gray-900">{{ recibo.numero_boletas }}</p>
+                        </div>
+
+                        <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                            <p class="text-xs text-green-600 font-semibold uppercase mb-1">Monto Total Actual</p>
+                            <p class="text-3xl font-bold text-green-600">Q{{ recibo.monto_total|floatformat:2 }}</p>
+                        </div>
+
+                        {% if recibo.observaciones %}
+                        <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                            <p class="text-xs text-yellow-700 font-semibold uppercase mb-2">Observaciones Actuales</p>
+                            <p class="text-sm text-gray-700">{{ recibo.observaciones }}</p>
+                        </div>
+                        {% endif %}
+
+                        <div class="bg-gray-50 p-3 rounded-lg text-xs text-gray-500">
+                            <p><strong>Registrado por:</strong> {{ recibo.registrado_por.username }}</p>
+                            <p><strong>Creado:</strong> {{ recibo.created_at|date:"d/m/Y H:i" }}</p>
+                            {% if recibo.updated_at != recibo.created_at %}
+                            <p><strong>Última modificación:</strong> {{ recibo.updated_at|date:"d/m/Y H:i" }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Formulario de Edición -->
+            <div class="lg:col-span-2">
+                <form method="post" class="bg-white rounded-xl shadow-lg p-8 space-y-6" id="editForm">
+                    {% csrf_token %}
+                    
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                            <i class="fas fa-edit text-blue-600"></i>
+                            Editar Recibo {{ recibo.numero_recibo }}
+                        </h1>
+                        <p class="mt-2 text-gray-600">
+                            Modifica los datos necesarios. Los cambios se comparan con los valores originales mostrados a la izquierda.
+                        </p>
+                    </div>
+
+                    <hr>
+
+                    <h2 class="text-xl font-semibold text-gray-800">Nuevos Datos del Recibo</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Fecha de Recibo <span class="text-red-500">*</span>
+                            </label>
+                            <input type="datetime-local" 
+                                   name="fecha_recibo"
+                                   id="fecha_recibo"
+                                   value="{{ recibo.fecha_recibo|date:'Y-m-d\TH:i' }}"
+                                   required
+                                   class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600">
+                            <p class="text-xs text-gray-500 mt-1">
+                                Original: {{ recibo.fecha_recibo|date:"d/m/Y H:i" }}
+                            </p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Proveedor <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" 
+                                   name="proveedor" 
+                                   id="proveedor"
+                                   value="{{ recibo.proveedor }}"
+                                   required
+                                   placeholder="Nombre del proveedor"
+                                   class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600">
+                            <p class="text-xs text-gray-500 mt-1">
+                                Original: <span class="font-semibold">{{ recibo.proveedor }}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Peso <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" 
+                                   step="0.01"
+                                   name="peso" 
+                                   id="peso"
+                                   value="{{ recibo.peso }}"
+                                   required
+                                   oninput="calcularPreview()"
+                                   placeholder="Ej: 10.50"
+                                   class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600">
+                            <p class="text-xs text-gray-500 mt-1">
+                                Original: <span class="font-semibold">{{ recibo.peso }}</span>
+                            </p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Unidad <span class="text-red-500">*</span>
+                            </label>
+                            <select name="unidad" 
+                                    id="unidad"
+                                    onchange="calcularPreview()"
+                                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600">
+                                <option value="qq" {% if recibo.unidad == 'qq' %}selected{% endif %}>Quintales (qq)</option>
+                                <option value="kg" {% if recibo.unidad == 'kg' %}selected{% endif %}>Kilogramos (kg)</option>
+                                <option value="lb" {% if recibo.unidad == 'lb' %}selected{% endif %}>Libras (lb)</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">
+                                Original: <span class="font-semibold">{{ recibo.get_unidad_display }}</span>
+                            </p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Número de Boletas
+                            </label>
+                            <input type="number" 
+                                   name="numero_boletas" 
+                                   id="numero_boletas"
+                                   value="{{ recibo.numero_boletas }}"
+                                   placeholder="Ej: 5"
+                                   class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600">
+                            <p class="text-xs text-gray-500 mt-1">
+                                Original: <span class="font-semibold">{{ recibo.numero_boletas }}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Humedad (%) <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" 
+                                   step="0.01"
+                                   name="humedad" 
+                                   id="humedad"
+                                   value="{{ recibo.humedad }}"
+                                   required
+                                   placeholder="Ej: 12.5"
+                                   class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600">
+                            <p class="text-xs text-gray-500 mt-1">
+                                Original: <span class="font-semibold">{{ recibo.humedad }}%</span>
+                            </p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Precio por Quintal (Q) <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" 
+                                   step="0.01"
+                                   name="precio_quintal" 
+                                   id="precio_quintal"
+                                   value="{{ recibo.precio_quintal }}"
+                                   required
+                                   oninput="calcularPreview()"
+                                   placeholder="Ej: 150.00"
+                                   class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600">
+                            <p class="text-xs text-gray-500 mt-1">
+                                Original: <span class="font-semibold">Q{{ recibo.precio_quintal|floatformat:2 }}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Preview de cálculos en tiempo real -->
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border-2 border-blue-300">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                            <i class="fas fa-calculator text-blue-600"></i>
+                            Vista Previa de Cálculos
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-white p-4 rounded-lg shadow">
+                                <p class="text-xs text-gray-600 mb-1">Peso en KG (Nuevo)</p>
+                                <p class="text-2xl font-bold text-blue-600" id="preview_kg">{{ recibo.convertir_a_kg|floatformat:2 }}</p>
+                                <p class="text-xs text-gray-500 mt-1">vs Original: {{ recibo.convertir_a_kg|floatformat:2 }} kg</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg shadow">
+                                <p class="text-xs text-gray-600 mb-1">Peso en QQ (Nuevo)</p>
+                                <p class="text-2xl font-bold text-purple-600" id="preview_qq">{{ recibo.convertir_a_quintales|floatformat:2 }}</p>
+                                <p class="text-xs text-gray-500 mt-1">vs Original: {{ recibo.convertir_a_quintales|floatformat:2 }} qq</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg shadow">
+                                <p class="text-xs text-gray-600 mb-1">Monto Total (Nuevo)</p>
+                                <p class="text-2xl font-bold text-green-600" id="preview_monto">Q{{ recibo.monto_total|floatformat:2 }}</p>
+                                <p class="text-xs text-gray-500 mt-1">vs Original: Q{{ recibo.monto_total|floatformat:2 }}</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 bg-yellow-50 p-3 rounded border border-yellow-200">
+                            <p class="text-sm text-yellow-800">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                <strong>Diferencia de peso en el lote:</strong> 
+                                <span id="preview_diferencia" class="font-bold">0.00 kg</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Observaciones (Opcional)
+                        </label>
+                        <textarea name="observaciones" 
+                                  id="observaciones"
+                                  rows="4"
+                                  placeholder="Notas sobre este recibo específico..."
+                                  class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600">{{ recibo.observaciones }}</textarea>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-4 pt-6 border-t">
+                        <a href="{% url 'detalle_lote' recibo.lote.pk %}" 
+                           class="px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium text-gray-700">
+                            Cancelar
+                        </a>
+                        <button type="submit" 
+                                class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-lg hover:shadow-xl">
+                            <i class="fas fa-save mr-2"></i>
+                            Guardar Cambios
+                        </button>
+                    </div>
+                    
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const pesoOriginalKg = {{ recibo.convertir_a_kg }};
+    
+    function calcularPreview() {
+        const peso = parseFloat(document.getElementById('peso').value) || 0;
+        const unidad = document.getElementById('unidad').value;
+        const precioQQ = parseFloat(document.getElementById('precio_quintal').value) || 0;
+        
+        let pesoKg = 0;
+        let pesoQQ = 0;
+        
+        // Convertir a KG
+        if (unidad === 'kg') {
+            pesoKg = peso;
+            pesoQQ = peso / 46;
+        } else if (unidad === 'qq') {
+            pesoKg = peso * 46;
+            pesoQQ = peso;
+        } else if (unidad === 'lb') {
+            pesoKg = peso * 0.453592;
+            pesoQQ = peso / 101.4;
+        }
+        
+        // Calcular monto
+        const montoTotal = pesoQQ * precioQQ;
+        
+        // Calcular diferencia
+        const diferencia = pesoKg - pesoOriginalKg;
+        
+        // Actualizar preview
+        document.getElementById('preview_kg').textContent = pesoKg.toFixed(2);
+        document.getElementById('preview_qq').textContent = pesoQQ.toFixed(2);
+        document.getElementById('preview_monto').textContent = 'Q' + montoTotal.toFixed(2);
+        
+        const diferenciaEl = document.getElementById('preview_diferencia');
+        const signo = diferencia >= 0 ? '+' : '';
+        diferenciaEl.textContent = signo + diferencia.toFixed(2) + ' kg';
+        diferenciaEl.className = diferencia >= 0 ? 'font-bold text-green-700' : 'font-bold text-red-700';
+    }
+    
+    // Calcular al cargar la página
+    document.addEventListener('DOMContentLoaded', calcularPreview);
+</script>
+{% endblock %}

@@ -1,172 +1,168 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Lista de Procesados{% endblock %}
 
-{% block extra_css %}
-<style>
-/* Reutilizamos el gradiente del base.html */
-.coffee-gradient-header {
-    background: linear-gradient(135deg, #6B4423 0%, #8B5A2B 50%, #D2691E 100%);
-}
-/* Un ámbar más brillante para botones */
-.amber-button {
-    background-color: #f59e0b; /* amber-500 */
-}
-.amber-button:hover {
-    background-color: #d97706; /* amber-600 */
-}
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="container mx-auto px-4 py-8">
+<div class="container mx-auto mt-8 px-4">
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-3xl font-bold text-gray-800">
-            <i class="fas fa-industry mr-2 text-amber-700"></i> Procesados de Café
-        </h2>
-        <a href="{% url 'seleccionar_lote_procesar' %}" class="amber-button text-white px-6 py-3 rounded-lg transition shadow-lg flex items-center"> <i class="fas fa-plus mr-2"></i>Nuevo Procesado
+        <div>
+            <h2 class="text-3xl font-bold text-gray-800">
+                <i class="fas fa-cogs mr-2 text-green-600"></i>
+                Lista de Procesados/Trillas
+            </h2>
+            <p class="text-gray-600 mt-1">Historial de procesos de trilla realizados</p>
+        </div>
+        <a href="{% url 'seleccionar_lote_procesar' %}" 
+           class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition">
+            <i class="fas fa-plus mr-2"></i>Nuevo Procesado
         </a>
     </div>
 
-    <div class="bg-white rounded-lg shadow-md p-6 mb-6 border-t-4 border-amber-600"> <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-search mr-1 text-amber-700"></i>Número de Trilla </label>
-                <input type="text" name="numero_trilla" value="{{ request.GET.numero_trilla }}"
-                       placeholder="Buscar por número..."
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:border-amber-600"> </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-box mr-1 text-amber-700"></i>Lote </label>
-                <select name="lote" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:border-amber-600"> <option value="">Todos los lotes</option>
-                    {% for lote in lotes %}
-                        <option value="{{ lote.id }}" {% if request.GET.lote == lote.id|stringformat:"s" %}selected{% endif %}>
-                            {{ lote.codigo }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-calendar mr-1 text-amber-700"></i>Fecha Desde </label>
-                <input type="date" name="fecha_desde" value="{{ request.GET.fecha_desde }}"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:border-amber-600"> </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-calendar mr-1 text-amber-700"></i>Fecha Hasta </label>
-                <input type="date" name="fecha_hasta" value="{{ request.GET.fecha_hasta }}"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:border-amber-600"> </div>
-
-            <div class="md:col-span-4 flex gap-2">
-                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition shadow-md"> <i class="fas fa-filter mr-2"></i>Filtrar
-                </button>
-                <a href="{% url 'lista_procesados' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition shadow-md">
-                    <i class="fas fa-times mr-2"></i>Limpiar
-                </a>
-            </div>
-        </form>
-    </div>
-
-    <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+    <!-- Tabla -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
-                <thead class="coffee-gradient-header text-white"> <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                            <i class="fas fa-hashtag mr-1"></i>Número Trilla
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                            <i class="fas fa-box mr-1"></i>Lote
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                            <i class="fas fa-calendar mr-1"></i>Fecha
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                            <i class="fas fa-weight mr-1"></i>Peso Entrada
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                            <i class="fas fa-weight-hanging mr-1"></i>Peso Salida
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                            <i class="fas fa-coffee mr-1"></i>Café 1ra
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                            <i class="fas fa-user mr-1"></i>Operador
-                        </th>
-                        <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">
-                            <i class="fas fa-cog mr-1"></i>Acciones
-                        </th>
+                <thead class="bg-green-100">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Trilla #</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Lote</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Fecha</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Peso Inicial</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Peso Final</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Café 1ra (Sacos 69kg)</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Café 2da (Sacos 69kg)</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Rendimiento</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Acciones</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     {% for procesado in procesados %}
-                    <tr class="hover:bg-amber-50 transition"> <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-medium text-gray-900">{{ procesado.numero_trilla }}</div>
-                        </td>
+                    <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap">
-                             <div class="text-sm text-gray-900">{{ procesado.lote.codigo }}</div>
-                             <div class="text-xs text-gray-500">{{ procesado.lote.tipo_cafe }}</div>
+                            <span class="font-bold text-blue-700">{{ procesado.numero_trilla }}</span>
                         </td>
+                        <td class="px-6 py-4">
+                            <div>
+                                <p class="font-semibold text-gray-900">{{ procesado.lote.codigo }}</p>
+                                <p class="text-xs text-gray-500">{{ procesado.lote.tipo_cafe }}</p>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div>
+                                <p class="text-sm text-gray-900">{{ procesado.fecha|date:"d/m/Y" }}</p>
+                                {% if procesado.hora_inicio %}
+                                    <p class="text-xs text-gray-500">{{ procesado.hora_inicio }} - {{ procesado.hora_final|default:"--:--" }}</p>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="font-semibold text-gray-900">{{ procesado.peso_inicial_kg|floatformat:2 }} kg</p>
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="font-bold text-green-700">{{ procesado.peso_final_kg|floatformat:2 }} kg</p>
+                        </td>
+                        
+                        <!-- CAFÉ DE PRIMERA -->
                         <td class="px-6 py-4 whitespace-nowrap">
-                             <div class="text-sm text-gray-900">{{ procesado.fecha|date:"d/m/Y" }}</div>
+                            {% if procesado.cafe_primera > 0 %}
+                                <div class="text-sm">
+                                    <div class="font-bold text-green-700">
+                                        {{ procesado.cafe_primera|floatformat:2 }} {{ procesado.unidad_cafe_primera }}
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        <!-- AQUÍ SE MUESTRA EL CÁLCULO DE SACOS -->
+                                        {{ procesado.sacos_cafe_primera }}
+                                    </div>
+                                </div>
+                            {% else %}
+                                <span class="text-xs text-gray-400">Sin datos</span>
+                            {% endif %}
                         </td>
+
+                        <!-- CAFÉ DE SEGUNDA -->
                         <td class="px-6 py-4 whitespace-nowrap">
-                             <div class="text-sm text-gray-900">
-                                 {{ procesado.peso_inicial_kg|floatformat:2 }}
-                                 <span class="text-xs text-gray-500">{{ procesado.unidad_peso_inicial }}</span>
-                             </div>
+                            {% if procesado.cafe_segunda > 0 %}
+                                <div class="text-sm">
+                                    <div class="font-bold text-orange-600">
+                                        {{ procesado.cafe_segunda|floatformat:2 }} {{ procesado.unidad_cafe_segunda }}
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        <!-- AQUÍ SE MUESTRA EL CÁLCULO DE SACOS -->
+                                        {{ procesado.sacos_cafe_segunda }}
+                                    </div>
+                                </div>
+                            {% else %}
+                                <span class="text-xs text-gray-400">Sin datos</span>
+                            {% endif %}
                         </td>
+
+                        <!-- RENDIMIENTO CON CÍRCULO -->
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="w-16 h-16">
+                                    <svg class="transform -rotate-90" viewBox="0 0 36 36">
+                                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                              fill="none" stroke="#E5E7EB" stroke-width="3"/>
+                                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                              fill="none" 
+                                              stroke="{% if procesado.rendimiento >= 80 %}#10B981{% elif procesado.rendimiento >= 70 %}#F59E0B{% else %}#EF4444{% endif %}" 
+                                              stroke-width="3"
+                                              stroke-dasharray="{{ procesado.rendimiento }}, 100"/>
+                                    </svg>
+                                </div>
+                                <span class="ml-2 text-lg font-bold {% if procesado.rendimiento >= 80 %}text-green-600{% elif procesado.rendimiento >= 70 %}text-yellow-600{% else %}text-red-600{% endif %}">
+                                    {{ procesado.rendimiento|floatformat:1 }}%
+                                </span>
+                            </div>
+                        </td>
+
+                        <!-- ACCIONES -->
                         <td class="px-6 py-4 whitespace-nowrap">
-                             <div class="text-sm text-gray-900">
-                                 {{ procesado.peso_final_kg|floatformat:2 }}
-                                 <span class="text-xs text-gray-500">{{ procesado.unidad_peso_final }}</span>
-                             </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                             <div class="text-sm text-gray-900">
-                                 {{ procesado.cafe_primera|floatformat:2 }}
-                                 <span class="text-xs text-gray-500">{{ procesado.unidad_cafe_primera }}</span>
-                             </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                             <div class="text-sm text-gray-900">{{ procesado.operador.get_full_name|default:procesado.operador.username }}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <a href="{% url 'detalle_procesado' procesado.id %}"
-                               class="text-blue-600 hover:text-blue-900 mr-3" title="Ver detalles">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="{% url 'detalle_procesado' procesado.id %}?print=1"
-                               target="_blank"
-                               class="text-purple-600 hover:text-purple-900 mr-3" title="Imprimir">
-                                <i class="fas fa-print"></i>
-                            </a>
-                            <a href="{% url 'continuar_procesado' procesado.id %}"
-                               class="text-green-600 hover:text-green-900 mr-3" title="Continuar procesado">
-                                <i class="fas fa-play-circle"></i>
-                            </a>
-                            <form method="POST" action="{% url 'eliminar_procesado' procesado.id %}"
-                                  class="inline"
-                                  onsubmit="return confirm('¿Estás seguro de eliminar este procesado?');">
-                                {% csrf_token %}
-                                <button type="submit"
-                                        class="text-red-600 hover:text-red-900" title="Eliminar">
+                            <div class="flex items-center gap-2">
+                                <!-- Ver Detalle -->
+                                <a href="{% url 'detalle_procesado' procesado.id %}" 
+                                   class="text-blue-600 hover:text-blue-800 text-lg" 
+                                   title="Ver detalle">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                
+                                <!-- Editar -->
+                                <a href="{% url 'editar_procesado' procesado.id %}" 
+                                   class="text-green-600 hover:text-green-800 text-lg" 
+                                   title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                
+                                <!-- Continuar -->
+                                <a href="{% url 'continuar_procesado' procesado.id %}" 
+                                   class="text-amber-600 hover:text-amber-800 text-lg" 
+                                   title="Continuar">
+                                    <i class="fas fa-arrow-right"></i>
+                                </a>
+                                
+                                <!-- Imprimir -->
+                                <a href="{% url 'detalle_procesado' procesado.id %}" 
+                                   onclick="window.open(this.href, '_blank', 'width=1024,height=768'); window.print(); return false;"
+                                   class="text-purple-600 hover:text-purple-800 text-lg" 
+                                   title="Imprimir">
+                                    <i class="fas fa-print"></i>
+                                </a>
+                                
+                                <!-- Eliminar -->
+                                <a href="{% url 'eliminar_procesado' procesado.id %}" 
+                                   class="text-red-600 hover:text-red-800 text-lg" 
+                                   title="Eliminar">
                                     <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="8" class="px-6 py-8 text-center text-gray-500">
-                            <div class="flex flex-col items-center justify-center py-8">
-                                <i class="fas fa-inbox text-6xl mb-4 text-gray-300"></i>
-                                <p class="text-lg font-medium text-gray-600">No hay procesados registrados</p>
-                                <a href="{% url 'seleccionar_lote_procesar' %}" class="mt-4 text-amber-600 hover:text-amber-800 font-semibold"> <i class="fas fa-plus mr-1"></i>Crear el primero
-                                </a>
-                            </div>
+                        <td colspan="9" class="px-6 py-12 text-center text-gray-500">
+                            <i class="fas fa-cogs text-4xl mb-4"></i>
+                            <p>No hay procesados registrados</p>
                         </td>
                     </tr>
                     {% endfor %}
@@ -175,64 +171,29 @@
         </div>
     </div>
 
+    <!-- PAGINACIÓN (si existe) -->
     {% if procesados.has_other_pages %}
     <div class="mt-6 flex justify-center">
-        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+        <nav class="flex items-center gap-2">
             {% if procesados.has_previous %}
-                <a href="?page=1{{ request.GET.urlencode | cut:'page=' }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-amber-600 hover:bg-amber-50"> <i class="fas fa-angle-double-left"></i>
-                </a>
-                <a href="?page={{ procesados.previous_page_number }}{{ request.GET.urlencode | cut:'page=' }}" class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-amber-600 hover:bg-amber-50"> <i class="fas fa-angle-left"></i>
+                <a href="?page={{ procesados.previous_page_number }}" 
+                   class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                    Anterior
                 </a>
             {% endif %}
 
-            <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-amber-50 text-sm font-medium text-amber-700"> Página {{ procesados.number }} de {{ procesados.paginator.num_pages }}
+            <span class="px-4 py-2 bg-green-600 text-white rounded-lg">
+                Página {{ procesados.number }} de {{ procesados.paginator.num_pages }}
             </span>
 
             {% if procesados.has_next %}
-                <a href="?page={{ procesados.next_page_number }}{{ request.GET.urlencode | cut:'page=' }}" class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-amber-600 hover:bg-amber-50"> <i class="fas fa-angle-right"></i>
-                </a>
-                <a href="?page={{ procesados.paginator.num_pages }}{{ request.GET.urlencode | cut:'page=' }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-amber-600 hover:bg-amber-50"> <i class="fas fa-angle-double-right"></i>
+                <a href="?page={{ procesados.next_page_number }}" 
+                   class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                    Siguiente
                 </a>
             {% endif %}
         </nav>
     </div>
     {% endif %}
-
-    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white transform hover:scale-105 transition"> <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium opacity-90">Total Procesados</p>
-                    <p class="text-3xl font-bold mt-2">{{ procesados.paginator.count }}</p>
-                </div>
-                <div class="bg-white bg-opacity-20 rounded-full p-4">
-                    <i class="fas fa-industry text-3xl"></i>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white transform hover:scale-105 transition"> <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium opacity-90">Peso Total Entrada</p>
-                    <p class="text-3xl font-bold mt-2">{{ estadisticas.total_entrada|default:0|floatformat:2 }}</p>
-                    <p class="text-xs opacity-80">kilogramos</p>
-                </div>
-                <div class="bg-white bg-opacity-20 rounded-full p-4">
-                    <i class="fas fa-weight text-3xl"></i>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white transform hover:scale-105 transition"> <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium opacity-90">Peso Total Salida</p>
-                    <p class="text-3xl font-bold mt-2">{{ estadisticas.total_salida|default:0|floatformat:2 }}</p>
-                    <p class="text-xs opacity-80">kilogramos</p>
-                </div>
-                <div class="bg-white bg-opacity-20 rounded-full p-4">
-                    <i class="fas fa-weight-hanging text-3xl"></i>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 {% endblock %}

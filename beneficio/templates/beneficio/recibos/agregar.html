@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Agregar Recibo a Lote {{ lote.codigo }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <form method="post" class="bg-white rounded-xl shadow-lg p-8 space-y-6">
+            {% csrf_token %}
+            
+            <!-- Encabezado -->
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                    <i class="fas fa-plus-circle text-green-600"></i>
+                    Agregar Nuevo Recibo de Café
+                </h1>
+                <p class="mt-2 text-lg text-gray-600">
+                    Registrando una nueva entrada para el: 
+                    <strong class="text-blue-700">Lote {{ lote.codigo }}</strong>
+                    ({{ lote.tipo_cafe }})
+                </p>
+                <p class="text-sm text-gray-500 mt-2">
+                    El número de recibo (Ej: REC-00001) se generará automáticamente.
+                </p>
+            </div>
+
+            <hr>
+
+            <!-- Detalles del Recibo -->
+            <h2 class="text-xl font-semibold text-gray-800">Detalles del Recibo</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Proveedor <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" 
+                           name="proveedor" 
+                           required
+                           value="{{ lote.proveedor }}"
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Fecha de Recibo <span class="text-red-500">*</span>
+                    </label>
+                    <!-- El name="fecha_recibo" coincide con tu views.py -->
+                    <input type="datetime-local" 
+                           name="fecha_recibo"
+                           required
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+                </div>
+            </div>
+
+            <!-- Pesos y Medidas -->
+            <h2 class="text-xl font-semibold text-gray-800 pt-4 border-t">Pesos y Medidas</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Peso <span class="text-red-500">*</span>
+                    </label>
+                    <!-- El name="peso" coincide con tu views.py -->
+                    <input type="number" 
+                           step="0.01"
+                           name="peso" 
+                           required
+                           placeholder="Ej: 400"
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Unidad <span class="text-red-500">*</span>
+                    </label>
+                    <select name="unidad" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+                        <option value="qq">Quintales (qq)</option>
+                        <option value="kg">Kilogramos (kg)</option>
+                        <option value="lb">Libras (lb)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Humedad (%) <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" 
+                           step="0.01"
+                           name="humedad" 
+                           required
+                           placeholder="Ej: 12.5"
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+                </div>
+            </div>
+
+            <!-- Costos y Detalles -->
+            <h2 class="text-xl font-semibold text-gray-800 pt-4 border-t">Costos y Detalles</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Precio por Quintal (Q) <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" 
+                           step="0.01"
+                           name="precio_quintal" 
+                           required
+                           placeholder="Ej: 150.00"
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Número de Boletas/Sacos (Opcional)
+                    </label>
+                    <!-- El name="numero_boletas" coincide con tu views.py -->
+                    <input type="number"
+                           name="numero_boletas" 
+                           value="0"
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+                </div>
+            </div>
+
+            <!-- Observaciones -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Observaciones (Opcional)
+                </label>
+                <textarea name="observaciones" 
+                          rows="3"
+                          placeholder="Notas sobre este recibo específico..."
+                          class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600"></textarea>
+            </div>
+
+            <!-- Botones -->
+            <div class="flex justify-end space-x-4 pt-4 border-t">
+                <a href="{% url 'detalle_lote' lote.pk %}" 
+                   class="px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium text-gray-700">
+                    Cancelar
+                </a>
+                <button type="submit" 
+                        class="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition font-medium shadow-lg hover:shadow-xl">
+                    <i class="fas fa-save mr-2"></i>
+                    Guardar Recibo
+                </button>
+            </div>
+            
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,523 @@
+{% extends 'base.html' %}
+
+{% block title %}Procesar Recibo {{ recibo.numero_recibo }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg shadow-lg p-6 text-white">
+        <h2 class="text-3xl font-bold flex items-center">
+            <i class="fas fa-cogs mr-3"></i>
+            Procesar Recibo #{{ recibo.numero_recibo }}
+        </h2>
+        <p class="mt-2 text-green-50">
+            Creando una nueva Trilla desde el Recibo <strong class="bg-white/20 px-2 py-1 rounded">{{ recibo.numero_recibo }}</strong>
+            (Lote: {{ lote.codigo }})
+        </p>
+    </div>
+
+    <!-- Información del Recibo -->
+    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
+        <div class="flex items-start">
+            <i class="fas fa-info-circle text-blue-500 mr-3 text-xl mt-1"></i>
+            <div class="flex-1">
+                <p class="font-semibold text-blue-800 mb-2">Datos del Recibo de Origen</p>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-blue-700">
+                    <div>
+                        <span class="font-medium">Proveedor:</span> 
+                        <span class="font-bold">{{ recibo.proveedor }}</span>
+                    </div>
+                    <div>
+                        <span class="font-medium">Peso Recibo:</span> 
+                        <span class="font-bold">{{ recibo.peso|floatformat:2 }} {{ recibo.get_unidad_display }}</span>
+                    </div>
+                    <div>
+                        <span class="font-medium">(Equivalente a):</span> 
+                        <span class="font-bold">{{ recibo.convertir_a_kg|floatformat:2 }} kg</span>
+                    </div>
+                    <div>
+                        <span class="font-medium">Humedad:</span> 
+                        <span class="font-bold">{{ recibo.humedad }}%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario -->
+    <form method="post" class="bg-white rounded-lg shadow-md p-6 space-y-6">
+        {% csrf_token %}
+        
+        <!-- Mensaje de Trilla -->
+        <div class="bg-gray-100 border border-gray-200 rounded-lg p-3">
+            <p class="text-sm text-gray-700">
+                <i class="fas fa-info-circle mr-2"></i>
+                El número de trilla se generará automáticamente (Ej: T-0001, T-0002, etc.)
+            </p>
+        </div>
+
+        <!-- Hora Inicio y Fin (Tu Petición) -->
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border-l-4 border-blue-500">
+            <h3 class="font-bold text-gray-800 mb-4 text-lg flex items-center">
+                <i class="fas fa-clock text-blue-600 mr-2"></i>
+                Horario del Proceso
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Hora de Inicio
+                    </label>
+                    <input type="time" 
+                           name="hora_inicio" 
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Hora Final
+                    </label>
+                    <input type="time" 
+                           name="hora_final" 
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+                </div>
+            </div>
+        </div>
+                        <!-- SECCIÓN: BODEGA DE ALMACENAMIENTO -->
+            <div class="bg-amber-50 border-l-4 border-amber-500 p-6 rounded-lg">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-warehouse text-amber-600"></i>
+                    Bodega de Almacenamiento
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            ¿En qué bodega quedó el café? <span class="text-red-500">*</span>
+                        </label>
+                        <select name="bodega_destino" 
+                                required
+                                class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                            <option value="">Seleccione bodega...</option>
+                            {% for bodega in bodegas %}
+                            <option value="{{ bodega.id }}" {% if bodega.id == lote.bodega.id %}selected{% endif %}>
+                                Bodega {{ bodega.codigo }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="text-xs text-blue-600 font-semibold mb-1">BODEGA ORIGINAL</p>
+                        <p class="text-xl font-bold text-gray-900">Bodega {{ lote.bodega.codigo }}</p>
+                    </div>
+                </div>
+            </div>   
+
+
+        <!-- Pesos con 3 campos (Formato de Procesar Lote) -->
+        <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-lg border-l-4 border-green-500">
+            <h3 class="font-bold text-gray-800 mb-4 text-lg flex items-center">
+                <i class="fas fa-balance-scale text-green-600 mr-2"></i>
+                Pesos del Proceso
+            </h3>
+            
+            <div class="space-y-6">
+                <!-- Peso Inicial -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-arrow-right text-green-600 mr-1"></i>
+                        Peso Inicial <span class="text-red-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Operación</label>
+                            <input type="text" 
+                                   id="operacion-inicial"
+                                   placeholder="13*1.52+0.58"
+                                   oninput="calcularOperacion('inicial')"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Resultado (kg)</label>
+                            <input type="number" 
+                                   step="0.01" 
+                                   name="peso_inicial_kg" 
+                                   id="peso-inicial" 
+                                   required 
+                                   value="{{ peso_sugerido_kg|floatformat:2 }}"
+                                   onchange="calcularRendimiento()"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 text-center font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Unidad</label>
+                            <input type="text" 
+                                   name="unidad_peso_inicial" 
+                                   list="unidades-list"
+                                   value="kg"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 bg-white text-center font-medium">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Peso Final -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-arrow-left text-blue-600 mr-1"></i>
+                        Peso Final (Oro) <span class="text-red-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Operación</label>
+                            <input type="text" 
+                                   id="operacion-final"
+                                   placeholder="10*1.52+0.30"
+                                   oninput="calcularOperacion('final')"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Resultado (kg)</label>
+                            <input type="number" 
+                                   step="0.01" 
+                                   name="peso_final_kg" 
+                                   id="peso-final" 
+                                   required
+                                   onchange="calcularRendimiento()"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 text-center font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Unidad</label>
+                            <input type="text" 
+                                   name="unidad_peso_final" 
+                                   list="unidades-list"
+                                   value="kg"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 bg-white text-center font-medium">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Indicador de Rendimiento -->
+            <div id="rendimiento-display" class="hidden mt-4 p-4 rounded-lg border-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium flex items-center">
+                        <i class="fas fa-percentage mr-2"></i>
+                        Rendimiento Calculado:
+                    </span>
+                    <span class="text-3xl font-bold" id="rendimiento-valor">0.00%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Datalist para unidades -->
+        <datalist id="unidades-list">
+            <option value="kg">
+            <option value="libras">
+            <option value="lb">
+            <option value="quintales">
+            <option value="qq">
+        </datalist>
+
+        <!-- Clasificación de Café -->
+        <div class="bg-gradient-to-r from-amber-50 to-yellow-50 p-6 rounded-lg border-l-4 border-amber-500">
+            <h3 class="font-bold text-gray-800 mb-4 text-lg flex items-center">
+                <i class="fas fa-star text-amber-600 mr-2"></i>
+                Clasificación de Café (Oro)
+            </h3>
+            
+            <div class="space-y-6">
+                <!-- Café Primera -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-medal text-yellow-500 mr-1"></i>
+                        Café de Primera
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Operación</label>
+                            <input type="text" 
+                                   id="operacion-primera"
+                                   placeholder="8*1.52"
+                                   oninput="calcularOperacion('primera')"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Resultado (kg)</label>
+                            <input type="number" 
+                                   step="0.01" 
+                                   name="cafe_primera" 
+                                   id="cafe-primera"
+                                   value="0"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 text-center font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Unidad</label>
+                            <input type="text" 
+                                   name="unidad_cafe_primera" 
+                                   list="unidades-list"
+                                   value="kg"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 bg-white text-center font-medium">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Café Segunda -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-medal text-gray-400 mr-1"></i>
+                        Café de Segunda
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Operación</label>
+                            <input type="text" 
+                                   id="operacion-segunda"
+                                   placeholder="2*1.52"
+                                   oninput="calcularOperacion('segunda')"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Resultado (kg)</label>
+                            <input type="number" 
+                                   step="0.01" 
+                                   name="cafe_segunda" 
+                                   id="cafe-segunda"
+                                   value="0"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 text-center font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Unidad</label>
+                            <input type="text" 
+                                   name="unidad_cafe_segunda" 
+                                   list="unidades-list"
+                                   value="kg"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 bg-white text-center font-medium">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mermas del Proceso -->
+        <div class="bg-gradient-to-r from-red-50 to-orange-50 p-6 rounded-lg border-l-4 border-red-500">
+            <h3 class="font-bold text-gray-800 mb-4 text-lg flex items-center">
+                <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                Mermas del Proceso
+            </h3>
+            
+            <div class="space-y-6">
+                <!-- Catadura -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-filter text-amber-500 mr-1"></i>
+                        Catadura
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Operación</label>
+                            <input type="text" 
+                                   id="operacion-catadura"
+                                   placeholder="1*1.52"
+                                   oninput="calcularOperacion('catadura')"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Resultado (kg)</label>
+                            <input type="number" 
+                                   step="0.01" 
+                                   name="catadura" 
+                                   id="catadura"
+                                   value="0"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 text-center font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Unidad</label>
+                            <input type="text" list="unidades-list" value="kg" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 bg-white text-center font-medium" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rechazo Electrónica -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-times-circle text-red-500 mr-1"></i>
+                        Rechazo Electrónica
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Operación</label>
+                            <input type="text" 
+                                   id="operacion-rechazo_electronica"
+                                   placeholder="0.5*1.52"
+                                   oninput="calcularOperacion('rechazo_electronica')"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Resultado (kg)</label>
+                            <input type="number" 
+                                   step="0.01" 
+                                   name="rechazo_electronica" 
+                                   id="rechazo_electronica"
+                                   value="0"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 text-center font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Unidad</label>
+                            <input type="text" list="unidades-list" value="kg" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 bg-white text-center font-medium" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bajo Zaranda -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-arrow-down text-blue-500 mr-1"></i>
+                        Bajo Zaranda
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Operación</label>
+                            <input type="text" 
+                                   id="operacion-bajo_zaranda"
+                                   placeholder="0.3*1.52"
+                                   oninput="calcularOperacion('bajo_zaranda')"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Resultado (kg)</label>
+                            <input type="number" 
+                                   step="0.01" 
+                                   name="bajo_zaranda" 
+                                   id="bajo_zaranda"
+                                   value="0"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 text-center font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Unidad</label>
+                            <input type="text" list="unidades-list" value="kg" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 bg-white text-center font-medium" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Barridos -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-broom text-green-500 mr-1"></i>
+                        Barridos
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Operación</label>
+                            <input type="text" 
+                                   id="operacion-barridos"
+                                   placeholder="0.2*1.52"
+                                   oninput="calcularOperacion('barridos')"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Resultado (kg)</label>
+                            <input type="number" 
+                                   step="0.01" 
+                                   name="barridos" 
+                                   id="barridos"
+                                   value="0"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 text-center font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Unidad</label>
+                            <input type="text" list="unidades-list" value="kg" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 bg-white text-center font-medium" disabled>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Observaciones -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                <i class="fas fa-sticky-note text-gray-500 mr-1"></i>
+                Observaciones (Opcional)
+            </label>
+            <textarea name="observaciones" rows="4"
+                      placeholder="Notas sobre este procesamiento específico..."
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600"></textarea>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex justify-end space-x-4 pt-4 border-t">
+            <a href="{% url 'detalle_lote' lote.pk %}" 
+               class="px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium">
+                <i class="fas fa-times mr-2"></i>Cancelar
+            </a>
+            <button type="submit" 
+                    class="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition font-medium shadow-lg hover:shadow-xl">
+                <i class="fas fa-save mr-2"></i>Guardar Procesado
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+
+<!-- Copiamos el mismo JavaScript de 'procesados/crear.html' -->
+{% block extra_js %}
+<script>
+// Función para calcular operaciones matemáticas
+function calcularOperacion(tipo) {
+    const operacionInput = document.getElementById('operacion-' + tipo);
+    // Corregimos los IDs para que coincidan con este formulario
+    const resultadoInput = document.getElementById(tipo === 'inicial' ? 'peso-inicial' : 
+                                                   tipo === 'final' ? 'peso-final' : 
+                                                   tipo === 'primera' ? 'cafe-primera' :
+                                                   tipo === 'segunda' ? 'cafe-segunda' :
+                                                   tipo); // para catadura, rechazo_electronica, etc.
+    
+    try {
+        const operacion = operacionInput.value.replace(',', '.'); // Reemplazar comas por puntos
+        
+        if (/^[0-9+\-*/().\s]*$/.test(operacion) && operacion.trim() !== "") {
+            const resultado = eval(operacion);
+        
+            if (!isNaN(resultado) && isFinite(resultado)) {
+                resultadoInput.value = resultado.toFixed(2);
+                
+                if (tipo === 'inicial' || tipo === 'final') {
+                    calcularRendimiento();
+                }
+            }
+        }
+    } catch (e) {
+        // Si hay error (ej. "1+"), no hacer nada y esperar
+    }
+}
+
+function calcularRendimiento() {
+    const pesoInicial = parseFloat(document.getElementById('peso-inicial').value) || 0;
+    const pesoFinal = parseFloat(document.getElementById('peso-final').value) || 0;
+    
+    const display = document.getElementById('rendimiento-display');
+    const valor = document.getElementById('rendimiento-valor');
+
+    if (pesoInicial > 0 && pesoFinal > 0) {
+        const rendimiento = (pesoFinal / pesoInicial * 100);
+        valor.textContent = rendimiento.toFixed(2) + '%';
+        display.classList.remove('hidden');
+        
+        if (rendimiento >= 80) {
+            display.className = 'mt-4 p-4 rounded-lg border-2 bg-green-50 border-green-300';
+            valor.className = 'text-3xl font-bold text-green-700';
+        } else if (rendimiento >= 70) {
+            display.className = 'mt-4 p-4 rounded-lg border-2 bg-yellow-50 border-yellow-300';
+            valor.className = 'text-3xl font-bold text-yellow-700';
+        } else {
+            display.className = 'mt-4 p-4 rounded-lg border-2 bg-red-50 border-red-300';
+            valor.className = 'text-3xl font-bold text-red-700';
+        }
+    } else {
+        valor.textContent = '0.00%';
+        display.className = 'mt-4 p-4 rounded-lg border-2 bg-gray-50 border-gray-300';
+        valor.className = 'text-3xl font-bold text-gray-700';
+        display.classList.add('hidden');
+    }
+}
+
+// Calcular rendimiento al cargar la página
+window.addEventListener('DOMContentLoaded', calcularRendimiento);
+</script>
+{% endblock %}

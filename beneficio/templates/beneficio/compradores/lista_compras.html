@@ -1,0 +1,295 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Lista de Compras {% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Encabezado -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-4xl font-bold text-gray-900 flex items-center gap-3">
+                        <span class="bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                            📦 Lista de Compras
+                        </span>
+                    </h1>
+                    <p class="mt-2 text-gray-600">Historial completo de todas las compras registradas</p>
+                </div>
+                
+            </div>
+        </div>
+
+        <!-- Estadísticas -->
+        {% if estadisticas %}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Total Compras</p>
+                        <p class="text-3xl font-bold text-gray-900">{{ estadisticas.total_compras|default:0 }}</p>
+                    </div>
+                    <div class="bg-blue-100 rounded-full p-4">
+                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Cantidad Total</p>
+                        <p class="text-3xl font-bold text-gray-900">{{ estadisticas.total_cantidad|default:0|floatformat:2 }}</p>
+                        <p class="text-xs text-gray-500 mt-1">Unidades vendidas</p>
+                    </div>
+                    <div class="bg-green-100 rounded-full p-4">
+                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-amber-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Monto Total</p>
+                        <p class="text-3xl font-bold text-gray-900">Q{{ estadisticas.total_monto|default:0|floatformat:2 }}</p>
+                    </div>
+                    <div class="bg-amber-100 rounded-full p-4">
+                        <svg class="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Filtros -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <form method="get" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Comprador
+                        </label>
+                        <select name="comprador" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                            <option value="">Todos los compradores</option>
+                            {% for comprador in compradores %}
+                            <option value="{{ comprador.id }}" {% if request.GET.comprador == comprador.id|stringformat:"s" %}selected{% endif %}>
+                                {{ comprador.nombre }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Fecha Desde
+                        </label>
+                        <input type="date" name="fecha_desde" value="{{ request.GET.fecha_desde }}" 
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Fecha Hasta
+                        </label>
+                        <input type="date" name="fecha_hasta" value="{{ request.GET.fecha_hasta }}" 
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Estado de Pago
+                        </label>
+                        <select name="estado_pago" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                            <option value="">Todos los estados</option>
+                            <option value="pendiente" {% if request.GET.estado_pago == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                            <option value="parcial" {% if request.GET.estado_pago == 'parcial' %}selected{% endif %}>Pago Parcial</option>
+                            <option value="pagado" {% if request.GET.estado_pago == 'pagado' %}selected{% endif %}>Pagado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button type="submit" class="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        Filtrar
+                    </button>
+                    <a href="{% url 'lista_compras' %}" class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                        Limpiar Filtros
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tabla de Compras -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gradient-to-r from-amber-600 to-orange-600">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
+                                Fecha
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
+                                Comprador
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
+                                Descripción
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
+                                Cantidad
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
+                                Precio Unit.
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
+                                Monto Total
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
+                                Estado Pago
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
+                                Acciones
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for compra in compras %}
+                        <tr class="hover:bg-amber-50 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">
+                                    {{ compra.fecha_compra|date:"d/m/Y" }}
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                    {{ compra.fecha_compra|date:"H:i" }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-medium text-gray-900">
+                                    <a href="{% url 'detalle_comprador' compra.comprador.pk %}" class="text-amber-600 hover:text-amber-800">
+                                        {{ compra.comprador.nombre }}
+                                    </a>
+                                </div>
+                                {% if compra.comprador.empresa %}
+                                <div class="text-xs text-gray-500">
+                                    {{ compra.comprador.empresa }}
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-900">
+                                    {{ compra.descripcion|default:"Sin descripción"|truncatewords:8 }}
+                                </div>
+                                {% if compra.numero_factura %}
+                                <div class="text-xs text-gray-500">
+                                    Factura: {{ compra.numero_factura }}
+                                </div>
+                                {% endif %}
+                                <!-- Mostrar producto relacionado -->
+                                {% if compra.lote %}
+                                <div class="text-xs text-blue-600 mt-1">
+                                    📦 Lote: {{ compra.lote.codigo }}
+                                </div>
+                                {% elif compra.procesado %}
+                                <div class="text-xs text-green-600 mt-1">
+                                    ⚙️ Procesado: {{ compra.procesado.numero_trilla }}
+                                </div>
+                                {% elif compra.mezcla %}
+                                <div class="text-xs text-purple-600 mt-1">
+                                    🔀 Mezcla: #{{ compra.mezcla.numero }}
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-semibold text-gray-900">
+                                    {{ compra.cantidad }} {{ compra.get_unidad_display }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">
+                                    Q{{ compra.precio_unitario|floatformat:2 }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-bold text-green-600">
+                                    Q{{ compra.monto_total|floatformat:2 }}
+                                </div>
+                                
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if compra.estado_pago == 'pagado' %}
+                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    ✓ Pagado
+                                </span>
+                                {% elif compra.estado_pago == 'parcial' %}
+                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                    ⏳ Parcial
+                                </span>
+                                {% else %}
+                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                    ⏰ Pendiente
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex gap-2">
+                                    <a href="{% url 'editar_compra' compra.pk %}" 
+                                       class="text-blue-600 hover:text-blue-900 transition-colors" 
+                                       title="Editar">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
+                                    </a>
+                                    <a href="{% url 'eliminar_compra' compra.pk %}" 
+                                       class="text-red-600 hover:text-red-900 transition-colors" 
+                                       title="Eliminar"
+                                       onclick="return confirm('¿Está seguro de eliminar esta compra?')">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="px-6 py-12 text-center">
+                                <div class="flex flex-col items-center justify-center text-gray-500">
+                                    <svg class="w-16 h-16 mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                                    </svg>
+                                    <p class="text-lg font-medium">No hay compras registradas</p>
+                                    <p class="text-sm mt-1">Los registros de compras aparecerán aquí</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Botón de regreso -->
+        <div class="mt-8">
+            <a href="{% url 'lista_compradores' %}" 
+               class="inline-flex items-center gap-2 px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Volver a Compradores
+            </a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

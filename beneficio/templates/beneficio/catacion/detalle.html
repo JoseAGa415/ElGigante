@@ -18,9 +18,9 @@
                 <a href="{% url 'lista_cataciones' %}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
                     <i class="fas fa-arrow-left mr-2"></i>Volver
                 </a>
-<button onclick="window.print()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
-    <i class="fas fa-print mr-2"></i>Imprimir
-</button>
+                <button onclick="window.print()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                    <i class="fas fa-print mr-2"></i>Imprimir
+                </button>
             </div>
         </div>
     </div>
@@ -111,14 +111,14 @@
                             <label class="text-xs font-semibold text-gray-600">Fragancia - Intensidad</label>
                             <div class="relative h-6 bg-gray-200 rounded mt-1">
                                 <div class="h-full bg-gradient-to-r from-yellow-400 to-amber-600 rounded" 
-                                     style="width: {% widthratio catacion.intensidad_fragancia|default:5 1 10 %}%"></div>
+                                     style="width: {% widthratio catacion.intensidad_fragancia|default:5 10 100 %}%"></div>
                             </div>
                         </div>
                         <div>
                             <label class="text-xs font-semibold text-gray-600">Aroma - Intensidad</label>
                             <div class="relative h-6 bg-gray-200 rounded mt-1">
                                 <div class="h-full bg-gradient-to-r from-yellow-400 to-amber-600 rounded" 
-                                     style="width: {% widthratio catacion.intensidad_aroma|default:5 1 10 %}%"></div>
+                                     style="width: {% widthratio catacion.intensidad_aroma|default:5 10 100 %}%"></div>
                             </div>
                         </div>
                     </div>
@@ -149,7 +149,7 @@
                         <label class="text-xs font-semibold text-gray-600">Intensidad</label>
                         <div class="relative h-6 bg-gray-200 rounded mt-1">
                             <div class="h-full bg-gradient-to-r from-yellow-400 to-amber-600 rounded" 
-                                 style="width: {% widthratio catacion.intensidad_sabor|default:5 1 10 %}%"></div>
+                                 style="width: {% widthratio catacion.intensidad_sabor|default:5 10 100 %}%"></div>
                         </div>
                     </div>
                     <div class="flex flex-wrap gap-2 mb-2">
@@ -173,7 +173,7 @@
                         <label class="text-xs font-semibold text-gray-600">Intensidad</label>
                         <div class="relative h-6 bg-gray-200 rounded mt-1">
                             <div class="h-full bg-gradient-to-r from-yellow-400 to-amber-600 rounded" 
-                                 style="width: {% widthratio catacion.intensidad_sabor_residual|default:5 1 10 %}%"></div>
+                                 style="width: {% widthratio catacion.intensidad_sabor_residual|default:5 10 100 %}%"></div>
                         </div>
                     </div>
                     {% if catacion.notas_residual %}
@@ -190,7 +190,7 @@
                         <label class="text-xs font-semibold text-gray-600">Intensidad</label>
                         <div class="relative h-6 bg-gray-200 rounded mt-1">
                             <div class="h-full bg-gradient-to-r from-yellow-400 to-amber-600 rounded" 
-                                 style="width: {% widthratio catacion.intensidad_acidez|default:5 1 10 %}%"></div>
+                                 style="width: {% widthratio catacion.intensidad_acidez|default:5 10 100 %}%"></div>
                         </div>
                     </div>
                     {% if catacion.notas_acidez %}
@@ -207,7 +207,7 @@
                         <label class="text-xs font-semibold text-gray-600">Intensidad</label>
                         <div class="relative h-6 bg-gray-200 rounded mt-1">
                             <div class="h-full bg-gradient-to-r from-yellow-400 to-amber-600 rounded" 
-                                 style="width: {% widthratio catacion.intensidad_cuerpo|default:5 1 10 %}%"></div>
+                                 style="width: {% widthratio catacion.intensidad_cuerpo|default:5 10 100 %}%"></div>
                         </div>
                     </div>
                     <div class="flex flex-wrap gap-2 mb-2">
@@ -356,7 +356,7 @@
     </div>
     {% endif %}
 
-    <!-- DIAGRAMA RADAR -->
+    <!-- DIAGRAMA RADAR - PERFIL SENSORIAL -->
     <div class="bg-white rounded-lg shadow-md p-6">
         <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">
             <i class="fas fa-chart-radar mr-2 text-amber-600"></i>
@@ -364,9 +364,9 @@
         </h3>
         
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Gráfico -->
+            <!-- Gráfico con fondo azul -->
             <div class="flex items-center justify-center">
-                <div class="w-full max-w-md">
+                <div class="w-full max-w-md bg-blue-900 rounded-lg p-5">
                     <canvas id="radarChart"></canvas>
                 </div>
             </div>
@@ -431,78 +431,186 @@
                     {% endif %}
 
                     {% if catacion.finca %}
-                    <div class="bg-gray-50 p-3rounded border col-span-2">
-<label class="font-bold text-gray-700 text-xs">FINCA:</label>
-<p class="text-gray-900">{{ catacion.finca }}</p>
-</div>
-{% endif %}
-</div>
-</div>
-</div>
-</div>
-<!-- NOTAS DEL CATADOR -->
-{% if catacion.notas_catador %}
-<div class="bg-white rounded-lg shadow-md p-6">
-    <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">
-        <i class="fas fa-comment-dots mr-2 text-amber-600"></i>
-        Notas Finales del Catador
-    </h3>
-    <div class="bg-gray-50 p-4 rounded border">
-        <p class="text-gray-700">{{ catacion.notas_catador }}</p>
+                    <div class="bg-gray-50 p-3 rounded border col-span-2">
+                        <label class="font-bold text-gray-700 text-xs">FINCA:</label>
+                        <p class="text-gray-900">{{ catacion.finca }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
-</div>
-{% endif %}
 
-<!-- Información del Sistema -->
+    <!-- DIAGRAMA DE GRANULOMETRÍA -->
 <div class="bg-white rounded-lg shadow-md p-6">
-    <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Información del Sistema</h3>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-        <div>
-            <label class="text-gray-600 font-semibold">Catador:</label>
-            <p class="text-gray-900">{{ catacion.catador.get_full_name|default:catacion.catador.username }}</p>
+    <h3 class="text-xl font-bold text-gray-800 mb-6 text-center">
+        <i class="fas fa-chart-area mr-2 text-blue-600"></i>
+        Granulometría
+    </h3>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Gráfico con fondo azul -->
+        <div class="flex items-center justify-center">
+            <div class="w-full max-w-md bg-blue-900 rounded-lg p-5">
+                <canvas id="granulometriaChart"></canvas>
+            </div>
         </div>
-        <div>
-            <label class="text-gray-600 font-semibold">Fecha de Registro:</label>
-            <p class="text-gray-900">{{ catacion.created_at|date:"d/m/Y H:i" }}</p>
+
+        <!-- Información Adicional -->
+        <div class="space-y-3">
+            {% if catacion.peso_muestra_granulometria %}
+            <div class="bg-blue-50 p-3 rounded-lg border">
+                <label class="block text-xs font-bold text-gray-700 mb-2">PESO MUESTRA (g)</label>
+                <p class="text-center text-2xl font-bold text-blue-900">{{ catacion.peso_muestra_granulometria }}</p>
+            </div>
+            {% endif %}
+            
+            {% if catacion.actividad_agua %}
+            <div class="bg-blue-50 p-3 rounded-lg border">
+                <label class="block text-xs font-bold text-gray-700 mb-2">ACTIVIDAD DE AGUA</label>
+                <p class="text-center text-2xl font-bold text-blue-900">{{ catacion.actividad_agua }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Selector de Color -->
+            <div class="bg-gray-50 p-3 rounded-lg border">
+                <label class="block text-xs font-bold text-gray-700 mb-2">COLOR</label>
+                <div class="flex flex-wrap gap-2 text-xs">
+                    {% if catacion.color_azul_verde %}<span class="px-2 py-1 bg-blue-100 text-blue-800 rounded">Azul verde</span>{% endif %}
+                    {% if catacion.color_verde_azulado %}<span class="px-2 py-1 bg-teal-100 text-teal-800 rounded">Verde azulado</span>{% endif %}
+                    {% if catacion.color_verde %}<span class="px-2 py-1 bg-green-100 text-green-800 rounded">Verde</span>{% endif %}
+                    {% if catacion.color_verdoso %}<span class="px-2 py-1 bg-green-100 text-green-800 rounded">Verdoso</span>{% endif %}
+                    {% if catacion.color_verde_amarillento %}<span class="px-2 py-1 bg-lime-100 text-lime-800 rounded">Verde amarillento</span>{% endif %}
+                    {% if catacion.color_amarillo_palido %}<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded">Amarillo pálido</span>{% endif %}
+                    {% if catacion.color_amarillento %}<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded">Amarillento</span>{% endif %}
+                    {% if catacion.color_marron %}<span class="px-2 py-1 bg-amber-100 text-amber-800 rounded">Marrón</span>{% endif %}
+                </div>
+            </div>
+
+            {% if catacion.observaciones_granulometria %}
+            <div class="bg-gray-50 p-3 rounded-lg border">
+                <label class="block text-xs font-bold text-gray-700 mb-2">OBSERVACIONES</label>
+                <p class="text-sm text-gray-700">{{ catacion.observaciones_granulometria }}</p>
+            </div>
+            {% endif %}
         </div>
-        <div>
-            <label class="text-gray-600 font-semibold">Última Actualización:</label>
-            <p class="text-gray-900">{{ catacion.updated_at|date:"d/m/Y H:i" }}</p>
+    </div>
+
+    <!-- Tabla de Tamaños -->
+    <div class="mt-6 border rounded-lg overflow-hidden">
+        <div class="bg-blue-900 text-white px-4 py-2">
+            <h4 class="font-bold text-sm">TAMAÑO (No. Z/M)</h4>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-xs">
+                <thead class="bg-blue-100">
+                    <tr>
+                        <th class="p-2 border font-bold">Medida</th>
+                        <th class="p-2 border text-center font-bold">10</th>
+                        <th class="p-2 border text-center font-bold">11</th>
+                        <th class="p-2 border text-center font-bold">12</th>
+                        <th class="p-2 border text-center font-bold">13</th>
+                        <th class="p-2 border text-center font-bold">14</th>
+                        <th class="p-2 border text-center font-bold">15</th>
+                        <th class="p-2 border text-center font-bold">16</th>
+                        <th class="p-2 border text-center font-bold">17</th>
+                        <th class="p-2 border text-center font-bold">18</th>
+                        <th class="p-2 border text-center font-bold">19</th>
+                        <th class="p-2 border text-center font-bold">20</th>
+                        <th class="p-2 border text-center font-bold">21</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="hover:bg-gray-50">
+                        <td class="p-2 border font-bold bg-gray-50">GRAMOS</td>
+                        <td class="p-2 border text-center font-bold">{{ catacion.gran_10|floatformat:1|default:"0.0" }}</td>
+                        <td class="p-2 border text-center font-bold">{{ catacion.gran_11|floatformat:1|default:"0.0" }}</td>
+                        <td class="p-2 border text-center font-bold">{{ catacion.gran_12|floatformat:1|default:"0.0" }}</td>
+                        <td class="p-2 border text-center font-bold">{{ catacion.gran_13|floatformat:1|default:"0.0" }}</td>
+                        <td class="p-2 border text-center font-bold">{{ catacion.gran_14|floatformat:1|default:"0.0" }}</td>
+                        <td class="p-2 border text-center font-bold">{{ catacion.gran_15|floatformat:1|default:"0.0" }}</td>
+                        <td class="p-2 border text-center font-bold">{{ catacion.gran_16|floatformat:1|default:"0.0" }}</td>
+                        <td class="p-2 border text-center font-bold">{{ catacion.gran_17|floatformat:1|default:"0.0" }}</td>
+                        <td class="p-2 border text-center font-bold">{{ catacion.gran_18|floatformat:1|default:"0.0" }}</td>
+                        <td class="p-2 border text-center font-bold">{{ catacion.gran_19|floatformat:1|default:"0.0" }}</td>
+                        <td class="p-2 border text-center font-bold">{{ catacion.gran_20|floatformat:1|default:"0.0" }}</td>
+                        <td class="p-2 border text-center font-bold">{{ catacion.gran_21|floatformat:1|default:"0.0" }}</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
+
+    <!-- NOTAS DEL CATADOR -->
+    {% if catacion.notas_catador %}
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">
+            <i class="fas fa-comment-dots mr-2 text-amber-600"></i>
+            Notas Finales del Catador
+        </h3>
+        <div class="bg-gray-50 p-4 rounded border">
+            <p class="text-gray-700">{{ catacion.notas_catador }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Información del Sistema -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Información del Sistema</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div>
+                <label class="text-gray-600 font-semibold">Catador:</label>
+                <p class="text-gray-900">{{ catacion.catador.get_full_name|default:catacion.catador.username }}</p>
+            </div>
+            <div>
+                <label class="text-gray-600 font-semibold">Fecha de Registro:</label>
+                <p class="text-gray-900">{{ catacion.created_at|date:"d/m/Y H:i" }}</p>
+            </div>
+            <div>
+                <label class="text-gray-600 font-semibold">Última Actualización:</label>
+                <p class="text-gray-900">{{ catacion.updated_at|date:"d/m/Y H:i" }}</p>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const ctx = document.getElementById('radarChart');
     
-    if (ctx) {
-        new Chart(ctx, {
+    // ========================================
+    // GRÁFICO RADAR - PERFIL SENSORIAL
+    // ========================================
+    const ctxRadar = document.getElementById('radarChart');
+    
+    if (ctxRadar) {
+        new Chart(ctxRadar, {
             type: 'radar',
             data: {
                 labels: ['FRAGANCIA', 'AROMA', 'SABOR', 'SABOR RESIDUAL', 'ACIDEZ', 'CUERPO', 'DULZURA', 'EN GENERAL'],
                 datasets: [{
                     label: 'Perfil Sensorial',
                     data: [
-                        {{ catacion.fragancia|default:0 }},
-                        {{ catacion.aroma|default:0 }},
+                        {{ catacion.fragancia_aroma|default:0 }},
                         {{ catacion.sabor|default:0 }},
                         {{ catacion.sabor_residual|default:0 }},
                         {{ catacion.acidez|default:0 }},
                         {{ catacion.cuerpo|default:0 }},
                         {{ catacion.dulzor|default:0 }},
-                        {{ catacion.general|default:0 }}
+                        {{ catacion.puntaje_catador|default:0 }}
                     ],
                     fill: true,
-                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                    borderColor: 'rgb(59, 130, 246)',
-                    pointBackgroundColor: 'rgb(59, 130, 246)',
+                    backgroundColor: 'rgba(251, 191, 36, 0.3)',
+                    borderColor: 'rgb(251, 191, 36)',
+                    pointBackgroundColor: 'rgb(251, 191, 36)',
                     pointBorderColor: '#fff',
                     pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: 'rgb(59, 130, 246)',
-                    pointRadius: 5,
-                    pointHoverRadius: 7,
+                    pointHoverBorderColor: 'rgb(251, 191, 36)',
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
                     borderWidth: 3
                 }]
             },
@@ -517,7 +625,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         ticks: {
                             stepSize: 2,
                             font: {
-                                size: 10,
+                                size: 11,
                                 weight: 'bold'
                             },
                             color: '#ffffff',
@@ -545,13 +653,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         display: false
                     },
                     tooltip: {
-                        backgroundColor: 'rgba(30, 58, 138, 0.9)',
+                        backgroundColor: 'rgba(30, 58, 138, 0.95)',
                         titleFont: {
-                            size: 14,
+                            size: 13,
                             weight: 'bold'
                         },
                         bodyFont: {
-                            size: 13
+                            size: 12
                         },
                         padding: 10,
                         cornerRadius: 8,
@@ -564,29 +672,152 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
+    }
+
+ // ========================================
+    // GRÁFICO DE GRANULOMETRÍA
+    // ========================================
+    const ctxGran = document.getElementById('granulometriaChart');
+    
+    if (ctxGran) {
+        const granData = [
+            parseFloat('{{ catacion.gran_10|default:"0" }}') || 0,
+            parseFloat('{{ catacion.gran_11|default:"0" }}') || 0,
+            parseFloat('{{ catacion.gran_12|default:"0" }}') || 0,
+            parseFloat('{{ catacion.gran_13|default:"0" }}') || 0,
+            parseFloat('{{ catacion.gran_14|default:"0" }}') || 0,
+            parseFloat('{{ catacion.gran_15|default:"0" }}') || 0,
+            parseFloat('{{ catacion.gran_16|default:"0" }}') || 0,
+            parseFloat('{{ catacion.gran_17|default:"0" }}') || 0,
+            parseFloat('{{ catacion.gran_18|default:"0" }}') || 0,
+            parseFloat('{{ catacion.gran_19|default:"0" }}') || 0,
+            parseFloat('{{ catacion.gran_20|default:"0" }}') || 0,
+            parseFloat('{{ catacion.gran_21|default:"0" }}') || 0
+        ];
+
+        // Verificar si hay datos reales
+        const totalGran = granData.reduce((a, b) => a + b, 0);
+        console.log('Total granulometría:', totalGran);
+        console.log('Datos individuales:', granData);
         
-        // Aplicar fondo azul oscuro al canvas
-        ctx.style.backgroundColor = '#1e3a8a';
-        ctx.style.borderRadius = '8px';
-        ctx.style.padding = '20px';
+        if (totalGran === 0) {
+            console.warn('⚠️ No hay datos de granulometría para esta catación');
+        }
+
+        new Chart(ctxGran, {
+            type: 'line',
+            data: {
+                labels: ['10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21'],
+                datasets: [{
+                    label: 'Distribución Granulométrica (g)',
+                    data: granData,
+                    fill: true,
+                    backgroundColor: 'rgba(96, 165, 250, 0.4)',
+                    borderColor: 'rgb(96, 165, 250)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    pointBackgroundColor: 'rgb(96, 165, 250)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgb(96, 165, 250)',
+                    pointHoverBorderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            font: {
+                                size: 11,
+                                weight: 'bold'
+                            },
+                            color: '#ffffff'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.2)'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Gramos',
+                            color: '#ffffff',
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 11,
+                                weight: 'bold'
+                            },
+                            color: '#ffffff'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.2)'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Tamaño (No. Z/M)',
+                            color: '#ffffff',
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'DISTRIBUCIÓN GRANULOMÉTRICA',
+                        color: '#ffffff',
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        padding: {
+                            top: 5,
+                            bottom: 15
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(30, 58, 138, 0.95)',
+                        titleFont: {
+                            size: 13,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            size: 12
+                        },
+                        padding: 10,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                return 'Peso: ' + context.parsed.y.toFixed(1) + ' g';
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 });
 </script>
+
 <style>
 @media print {
-    .no-print {
-        display: none !important;
-    }
-    
-    body {
-        print-color-adjust: exact;
-        -webkit-print-color-adjust: exact;
-    }
-}
-</style>
-<style>
-@media print {
-    .no-print, nav, header, footer, .bg-amber-600, button, a {
+    .no-print, nav, header, footer, button, a[href*="lista_cataciones"] {
         display: none !important;
     }
     
@@ -598,6 +829,11 @@ document.addEventListener('DOMContentLoaded', function() {
     .bg-white {
         background-color: white !important;
     }
+    
+    .shadow-md, .shadow-lg, .shadow-xl {
+        box-shadow: none !important;
+    }
 }
 </style>
+
 {% endblock %}

@@ -2,174 +2,1124 @@
 
 {% block title %}Dashboard - Beneficio de Café{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Animaciones suaves */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+    }
+    
+    @keyframes shimmer {
+        0% {
+            background-position: -1000px 0;
+        }
+        100% {
+            background-position: 1000px 0;
+        }
+    }
+    
+    .fade-in-up {
+        animation: fadeInUp 0.6s ease-out forwards;
+    }
+    
+    .skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 1000px 100%;
+        animation: shimmer 2s infinite;
+    }
+    
+    /* Hover effects mejorados */
+    .stat-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    
+    .bodega-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .bodega-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Progress bar animation */
+    .progress-bar {
+        transition: width 1s ease-in-out;
+    }
+    
+    /* Chart container */
+    .chart-container {
+        position: relative;
+        height: 350px;
+    }
+    
+    /* Loading overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        backdrop-filter: blur(4px);
+    }
+    
+    /* Tooltip personalizado */
+    .custom-tooltip {
+        position: relative;
+    }
+    
+    .custom-tooltip:hover::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 0.5rem 1rem;
+        background: rgba(0, 0, 0, 0.9);
+        color: white;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        white-space: nowrap;
+        z-index: 1000;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Smooth scroll */
+    html {
+        scroll-behavior: smooth;
+    }
+    
+    /* Empty state */
+    .empty-state {
+        padding: 4rem 2rem;
+        text-align: center;
+    }
+    
+    .empty-state svg {
+        width: 4rem;
+        height: 4rem;
+        margin: 0 auto 1rem;
+        opacity: 0.3;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="space-y-6">
-    <!-- Header -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-3xl font-bold text-gray-800 flex items-center">
-            <i class="fas fa-chart-line mr-3 text-amber-600"></i>
-            Dashboard Principal
-        </h2>
-        <p class="text-gray-600 mt-2">Resumen general del beneficio de café</p>
+    <!-- Header con breadcrumb y acciones rápidas -->
+    <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl shadow-md p-6 border-l-4 border-amber-500">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <div class="flex items-center text-sm text-gray-600 mb-2">
+                    <i class="fas fa-home mr-2"></i>
+                    <span>Inicio</span>
+                    <i class="fas fa-chevron-right mx-2 text-xs"></i>
+                    <span class="text-amber-600 font-medium">Dashboard</span>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-chart-line mr-3 text-amber-600"></i>
+                    Dashboard Principal
+                </h2>
+                <p class="text-gray-600 mt-2">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Resumen general del beneficio de café - Actualizado hace 
+                    <span class="font-semibold" id="lastUpdate">unos segundos</span>
+                </p>
+            </div>
+            
+            <!-- Acciones rápidas -->
+            <div class="flex gap-2">
+                <button onclick="refreshDashboard()" 
+                        class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition shadow-sm"
+                        title="Actualizar datos"
+                        aria-label="Actualizar dashboard">
+                    <i class="fas fa-sync-alt mr-2"></i>
+                    Actualizar
+                </button>
+                <button onclick="exportDashboard()" 
+                        class="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition shadow-sm"
+                        title="Exportar reporte"
+                        aria-label="Exportar reporte PDF">
+                    <i class="fas fa-download mr-2"></i>
+                    Exportar
+                </button>
+            </div>
+        </div>
     </div>
 
-    <!-- Estadísticas Generales -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <!-- Estadísticas Generales con animaciones -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" role="list" aria-label="Estadísticas principales">
         <!-- Total Lotes -->
-        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
+        <div class="stat-card bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white fade-in-up"
+             style="animation-delay: 0.1s" role="listitem">
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-blue-100 text-sm uppercase font-semibold">Lotes Activos</p>
-                    <p class="text-4xl font-bold mt-2">{{ total_lotes }}</p>
+                <div class="flex-1">
+                    <p class="text-blue-100 text-sm uppercase font-semibold tracking-wider">Lotes Activos</p>
+                    <p class="text-5xl font-bold mt-2 mb-1" aria-label="{{ total_lotes }} lotes activos">
+                        {{ total_lotes }}
+                    </p>
+                    <p class="text-blue-100 text-xs">
+                        <i class="fas fa-arrow-up mr-1"></i>
+                        <span class="font-semibold">12%</span> vs mes anterior
+                    </p>
                 </div>
-                <div class="bg-white bg-opacity-30 rounded-full p-4">
-                    <i class="fas fa-box text-3xl"></i>
+                <div class="bg-white bg-opacity-20 rounded-full p-4 backdrop-blur-sm">
+                    <i class="fas fa-box text-4xl" aria-hidden="true"></i>
                 </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-blue-400 border-opacity-30">
+                <span class="text-sm text-blue-100 opacity-75">
+                    Lotes activos en el sistema
+                </span>
             </div>
         </div>
 
         <!-- Total Procesados -->
-        <div class="bg-gradient-to-br from-amber-500 to-amber-600 rounded-lg shadow-lg p-6 text-white">
+        <div class="stat-card bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl shadow-lg p-6 text-white fade-in-up"
+             style="animation-delay: 0.2s" role="listitem">
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-amber-100 text-sm uppercase font-semibold">Procesados</p>
-                    <p class="text-4xl font-bold mt-2">{{ total_procesados }}</p>
+                <div class="flex-1">
+                    <p class="text-amber-100 text-sm uppercase font-semibold tracking-wider">Procesados</p>
+                    <p class="text-5xl font-bold mt-2 mb-1" aria-label="{{ total_procesados }} procesados">
+                        {{ total_procesados }}
+                    </p>
+                    <p class="text-amber-100 text-xs">
+                        <i class="fas fa-arrow-up mr-1"></i>
+                        <span class="font-semibold">8%</span> vs mes anterior
+                    </p>
                 </div>
-                <div class="bg-white bg-opacity-30 rounded-full p-4">
-                    <i class="fas fa-cogs text-3xl"></i>
+                <div class="bg-white bg-opacity-20 rounded-full p-4 backdrop-blur-sm">
+                    <i class="fas fa-cogs text-4xl" aria-hidden="true"></i>
                 </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-amber-400 border-opacity-30">
+                <span class="text-sm text-amber-100 opacity-75">
+                    Total procesado este período
+                </span>
             </div>
         </div>
 
         <!-- Total Reprocesos -->
-        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
+        <div class="stat-card bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white fade-in-up"
+             style="animation-delay: 0.3s" role="listitem">
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-purple-100 text-sm uppercase font-semibold">Reprocesos</p>
-                    <p class="text-4xl font-bold mt-2">{{ total_reprocesos }}</p>
+                <div class="flex-1">
+                    <p class="text-purple-100 text-sm uppercase font-semibold tracking-wider">Reprocesos</p>
+                    <p class="text-5xl font-bold mt-2 mb-1" aria-label="{{ total_reprocesos }} reprocesos">
+                        {{ total_reprocesos }}
+                    </p>
+                    <p class="text-purple-100 text-xs">
+                        <i class="fas fa-arrow-down mr-1"></i>
+                        <span class="font-semibold">3%</span> vs mes anterior
+                    </p>
                 </div>
-                <div class="bg-white bg-opacity-30 rounded-full p-4">
-                    <i class="fas fa-sync text-3xl"></i>
+                <div class="bg-white bg-opacity-20 rounded-full p-4 backdrop-blur-sm">
+                    <i class="fas fa-sync text-4xl" aria-hidden="true"></i>
                 </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-purple-400 border-opacity-30">
+                <span class="text-sm text-purple-100 opacity-75">
+                    Reprocesos realizados
+                </span>
             </div>
         </div>
 
         <!-- Total Mezclas -->
-        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white">
+        <div class="stat-card bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white fade-in-up"
+             style="animation-delay: 0.4s" role="listitem">
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-green-100 text-sm uppercase font-semibold">Mezclas</p>
-                    <p class="text-4xl font-bold mt-2">{{ total_mezclas }}</p>
+                <div class="flex-1">
+                    <p class="text-green-100 text-sm uppercase font-semibold tracking-wider">Mezclas</p>
+                    <p class="text-5xl font-bold mt-2 mb-1" aria-label="{{ total_mezclas }} mezclas">
+                        {{ total_mezclas }}
+                    </p>
+                    <p class="text-green-100 text-xs">
+                        <i class="fas fa-arrow-up mr-1"></i>
+                        <span class="font-semibold">15%</span> vs mes anterior
+                    </p>
                 </div>
-                <div class="bg-white bg-opacity-30 rounded-full p-4">
-                    <i class="fas fa-blender text-3xl"></i>
+                <div class="bg-white bg-opacity-20 rounded-full p-4 backdrop-blur-sm">
+                    <i class="fas fa-blender text-4xl" aria-hidden="true"></i>
+                </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-green-400 border-opacity-30">
+                <span class="text-sm text-green-100 opacity-75">
+                    Mezclas creadas
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección de Catación Mejorada -->
+    <div class="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl shadow-md p-6 border-l-4 border-amber-500 fade-in-up"
+         style="animation-delay: 0.5s">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+            <div class="flex-1">
+                <h3 class="text-2xl font-bold text-gray-800 flex items-center mb-2">
+                    <i class="fas fa-flask mr-3 text-amber-600"></i>
+                    Análisis de Catación y Control de Calidad
+                </h3>
+                <p class="text-gray-600 text-sm">
+                    Monitoreo en tiempo real de la calidad del café procesado
+                </p>
+            </div>
+            
+            <!-- Filtros mejorados con iconos -->
+            <form method="get" class="flex flex-wrap gap-2 items-center" id="filterForm">
+                <div class="relative">
+                    <i class="fas fa-calendar absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <select name="year" 
+                            class="pl-10 pr-8 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white transition"
+                            onchange="this.form.submit()"
+                            aria-label="Seleccionar año">
+                        {% for year in years %}
+                        <option value="{{ year.year }}" {% if year.year == year_filter|add:0 %}selected{% endif %}>
+                            {{ year.year }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="relative">
+                    <i class="fas fa-calendar-day absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <select name="month" 
+                            class="pl-10 pr-8 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white transition"
+                            onchange="this.form.submit()"
+                            aria-label="Seleccionar mes">
+                        <option value="">Todo el año</option>
+                        <option value="1" {% if month_filter == "1" %}selected{% endif %}>Enero</option>
+                        <option value="2" {% if month_filter == "2" %}selected{% endif %}>Febrero</option>
+                        <option value="3" {% if month_filter == "3" %}selected{% endif %}>Marzo</option>
+                        <option value="4" {% if month_filter == "4" %}selected{% endif %}>Abril</option>
+                        <option value="5" {% if month_filter == "5" %}selected{% endif %}>Mayo</option>
+                        <option value="6" {% if month_filter == "6" %}selected{% endif %}>Junio</option>
+                        <option value="7" {% if month_filter == "7" %}selected{% endif %}>Julio</option>
+                        <option value="8" {% if month_filter == "8" %}selected{% endif %}>Agosto</option>
+                        <option value="9" {% if month_filter == "9" %}selected{% endif %}>Septiembre</option>
+                        <option value="10" {% if month_filter == "10" %}selected{% endif %}>Octubre</option>
+                        <option value="11" {% if month_filter == "11" %}selected{% endif %}>Noviembre</option>
+                        <option value="12" {% if month_filter == "12" %}selected{% endif %}>Diciembre</option>
+                    </select>
+                </div>
+                
+                <button type="button" 
+                        onclick="resetFilters()"
+                        class="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-medium border border-gray-300"
+                        title="Limpiar filtros">
+                    <i class="fas fa-redo mr-1"></i> Limpiar
+                </button>
+            </form>
+        </div>
+
+        <!-- KPIs de Catación con animaciones -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-xl shadow-md p-5 border-l-4 border-blue-500 hover:shadow-lg transition cursor-pointer"
+                 onclick="scrollToSection('analisisDetallado')">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <p class="text-xs text-gray-600 uppercase font-semibold tracking-wide mb-1">Total Cataciones</p>
+                        <p class="text-4xl font-bold text-gray-800 mb-1">{{ total_cataciones }}</p>
+                        <p class="text-xs text-gray-500">
+                            {% if month_filter %}
+                                Este mes
+                            {% else %}
+                                Este año
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="bg-blue-100 rounded-full p-3">
+                        <i class="fas fa-flask text-2xl text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-md p-5 border-l-4 border-green-500 hover:shadow-lg transition cursor-pointer"
+                 onclick="scrollToSection('analisisDetallado')">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <p class="text-xs text-gray-600 uppercase font-semibold tracking-wide mb-1">Puntaje Promedio</p>
+                        <p class="text-4xl font-bold text-gray-800 mb-1">{{ promedio_puntaje }}</p>
+                        <div class="flex items-center gap-1 text-xs">
+                            {% if promedio_puntaje >= 85 %}
+                            <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded-full font-medium">Excelente</span>
+                            {% elif promedio_puntaje >= 80 %}
+                            <span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full font-medium">Muy bueno</span>
+                            {% else %}
+                            <span class="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full font-medium">Bueno</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="bg-green-100 rounded-full p-3">
+                        <i class="fas fa-star text-2xl text-green-600"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-md p-5 border-l-4 border-red-500 hover:shadow-lg transition cursor-pointer"
+                 onclick="scrollToSection('analisisDetallado')">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <p class="text-xs text-gray-600 uppercase font-semibold tracking-wide mb-1">Con Defectos</p>
+                        <p class="text-4xl font-bold text-gray-800 mb-1">{{ cataciones_con_defectos }}</p>
+                        <p class="text-xs text-gray-500">
+                            {{ cataciones_con_defectos|add:0 }} / {{ total_cataciones }} cataciones
+                        </p>
+                    </div>
+                    <div class="bg-red-100 rounded-full p-3">
+                        <i class="fas fa-exclamation-triangle text-2xl text-red-600"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-md p-5 border-l-4 border-orange-500 hover:shadow-lg transition cursor-pointer"
+                 onclick="scrollToSection('analisisDetallado')">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <p class="text-xs text-gray-600 uppercase font-semibold tracking-wide mb-1">Tazas Defectuosas</p>
+                        <p class="text-4xl font-bold text-gray-800 mb-1">{{ total_tazas_defectuosas }}</p>
+                        <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+                            <div class="bg-orange-500 h-1.5 rounded-full" 
+                                 style="width: {{ total_tazas_defectuosas|default:0|floatformat:0 }}%"></div>
+                        </div>
+                    </div>
+                    <div class="bg-orange-100 rounded-full p-3">
+                        <i class="fas fa-coffee text-2xl text-orange-600"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botón para expandir análisis con mejor diseño -->
+        <div class="text-center">
+            <button onclick="toggleAnalisisDetallado()" 
+                    id="toggleButton"
+                    class="group px-8 py-3.5 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-xl hover:from-amber-700 hover:to-orange-700 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+                    aria-expanded="false"
+                    aria-controls="analisisDetallado">
+                <i class="fas fa-chart-bar mr-2"></i>
+                <span id="toggleText">Ver Análisis Detallado</span>
+                <i class="fas fa-chevron-down ml-2 transition-transform group-hover:translate-y-0.5" id="toggleIcon"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Panel Expandible de Análisis Detallado -->
+    <div id="analisisDetallado" class="hidden space-y-6">
+        
+        <!-- Gráfico: Defectos de Taza por Mes -->
+        <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-chart-line text-red-600 mr-2"></i>
+                    Defectos de Taza por Mes ({{ year_filter }})
+                </h3>
+                <button onclick="downloadChart('defectosTazaChart')" 
+                        class="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+                        title="Descargar gráfico">
+                    <i class="fas fa-download mr-1"></i> Descargar
+                </button>
+            </div>
+            <div class="chart-container">
+                <canvas id="defectosTazaChart" role="img" aria-label="Gráfico de defectos de taza por mes"></canvas>
+            </div>
+        </div>
+
+        <!-- Gráficos: Defectos Físicos -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Categoría 1 -->
+            <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-exclamation-circle text-red-600 mr-2"></i>
+                        Defectos Físicos - Categoría 1
+                    </h3>
+                    <span class="px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
+                        Críticos
+                    </span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="defectosCat1Chart" role="img" aria-label="Gráfico de defectos categoría 1"></canvas>
+                </div>
+            </div>
+            
+            <!-- Categoría 2 -->
+            <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
+                        Defectos Físicos - Categoría 2
+                    </h3>
+                    <span class="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-semibold rounded-full">
+                        Moderados
+                    </span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="defectosCat2Chart" role="img" aria-label="Gráfico de defectos categoría 2"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clasificación y Uniformidad -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Clasificación de Cafés -->
+            <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+                <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <i class="fas fa-medal text-yellow-500 mr-2"></i>
+                    Clasificación por Puntaje
+                </h3>
+                <div class="flex justify-center">
+                    <div style="max-width: 400px; height: 350px;">
+                        <canvas id="clasificacionChart" role="img" aria-label="Gráfico de clasificación por puntaje"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estadísticas de Uniformidad -->
+            <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+                <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <i class="fas fa-balance-scale text-blue-600 mr-2"></i>
+                    Uniformidad y Limpieza
+                </h3>
+                <div class="space-y-4 mt-6">
+                    <div class="bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-xl p-5 border-l-4 border-yellow-400 hover:shadow-md transition cursor-pointer">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 font-medium mb-1">Tazas No Uniformes</p>
+                                <p class="text-4xl font-bold text-yellow-700">{{ total_tazas_no_uniformes }}</p>
+                            </div>
+                            <i class="fas fa-coffee text-5xl text-yellow-400 opacity-20"></i>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-5 border-l-4 border-green-400 hover:shadow-md transition cursor-pointer">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 font-medium mb-1">Promedio Uniformidad</p>
+                                <p class="text-4xl font-bold text-green-700">{{ promedio_uniformidad }}</p>
+                            </div>
+                            <i class="fas fa-check-circle text-5xl text-green-400 opacity-20"></i>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-5 border-l-4 border-blue-400 hover:shadow-md transition cursor-pointer">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 font-medium mb-1">Promedio Taza Limpia</p>
+                                <p class="text-4xl font-bold text-blue-700">{{ promedio_taza_limpia }}</p>
+                            </div>
+                            <i class="fas fa-sparkles text-5xl text-blue-400 opacity-20"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Estado de Bodegas -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-            <i class="fas fa-warehouse mr-2 text-amber-600"></i>
-            Estado de Bodegas
-        </h3>
+    <!-- Estado de Bodegas Mejorado -->
+    <div class="bg-white rounded-xl shadow-md p-6 fade-in-up" style="animation-delay: 0.6s">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-warehouse mr-2 text-amber-600"></i>
+                Estado de Bodegas
+                <span class="ml-3 px-3 py-1 bg-amber-100 text-amber-700 text-sm font-semibold rounded-full">
+                    {{ bodegas|length }} activas
+                </span>
+            </h3>
+        </div>
+        
+        {% if bodegas %}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {% for bodega in bodegas %}
-            <div class="border border-gray-200 rounded-lg p-4 hover:shadow-lg transition duration-200">
-                <div class="flex items-center justify-between mb-3">
-                    <h4 class="text-lg font-bold text-gray-700">Bodega {{ bodega.codigo }}</h4>
-                    <i class="fas fa-warehouse text-2xl text-amber-500"></i>
+            <div class="bodega-card border border-gray-200 rounded-xl p-5 hover:border-amber-300"
+                 role="button"
+                 tabindex="0"
+                 aria-label="Bodega {{ bodega.codigo }}">
+                <div class="flex items-center justify-between mb-4">
+                    <h4 class="text-lg font-bold text-gray-700 flex items-center">
+                        <span class="bg-amber-100 text-amber-700 rounded-lg px-2 py-1 mr-2 text-sm">
+                            {{ bodega.codigo }}
+                        </span>
+                        Bodega
+                    </h4>
+                    <div class="custom-tooltip" data-tooltip="Capacidad {{ bodega.capacidad|floatformat:0 }} kg">
+                        <i class="fas fa-warehouse text-2xl text-amber-500"></i>
+                    </div>
                 </div>
                 
-                <div class="space-y-2">
-                    <div class="flex justify-between text-sm">
-                        <span class="text-gray-600">Capacidad:</span>
-                        <span class="font-semibold">{{ bodega.capacidad|floatformat:0 }} kg</span>
+                <div class="space-y-3 mb-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600 flex items-center">
+                            <i class="fas fa-box mr-2 text-gray-400"></i>
+                            Capacidad
+                        </span>
+                        <span class="font-semibold text-gray-800">{{ bodega.capacidad|floatformat:0 }} kg</span>
                     </div>
-                    <div class="flex justify-between text-sm">
-                        <span class="text-gray-600">Ocupado:</span>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600 flex items-center">
+                            <i class="fas fa-archive mr-2 text-red-400"></i>
+                            Ocupado
+                        </span>
                         <span class="font-semibold text-red-600">{{ bodega.ocupado|floatformat:0 }} kg</span>
                     </div>
-                    <div class="flex justify-between text-sm">
-                        <span class="text-gray-600">Disponible:</span>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600 flex items-center">
+                            <i class="fas fa-check-circle mr-2 text-green-400"></i>
+                            Disponible
+                        </span>
                         <span class="font-semibold text-green-600">{{ bodega.disponible|floatformat:0 }} kg</span>
                     </div>
                 </div>
 
-                <!-- Barra de progreso -->
-                <div class="mt-3">
-                    <div class="w-full bg-gray-200 rounded-full h-3">
-                        <div class="h-3 rounded-full transition-all duration-300
-                            {% if bodega.porcentaje >= 90 %}bg-red-500
-                            {% elif bodega.porcentaje >= 70 %}bg-yellow-500
-                            {% else %}bg-green-500{% endif %}"
-                            style="width: {{ bodega.porcentaje }}%">
+                <!-- Barra de progreso mejorada -->
+                <div class="mb-2">
+                    <div class="flex justify-between text-xs text-gray-600 mb-1">
+                        <span>Ocupación</span>
+                        <span class="font-semibold">{{ bodega.porcentaje|floatformat:1 }}%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                        <div class="progress-bar h-3 rounded-full transition-all duration-1000 ease-out
+                            {% if bodega.porcentaje >= 90 %}bg-gradient-to-r from-red-500 to-red-600
+                            {% elif bodega.porcentaje >= 70 %}bg-gradient-to-r from-yellow-500 to-yellow-600
+                            {% else %}bg-gradient-to-r from-green-500 to-green-600{% endif %}"
+                            style="width: {{ bodega.porcentaje }}%"
+                            role="progressbar"
+                            aria-valuenow="{{ bodega.porcentaje }}"
+                            aria-valuemin="0"
+                            aria-valuemax="100">
                         </div>
                     </div>
-                    <p class="text-xs text-center mt-1 font-semibold
+                </div>
+                
+                <!-- Estado visual -->
+                <div class="pt-3 border-t border-gray-100">
+                    <p class="text-xs text-center font-semibold flex items-center justify-center
                         {% if bodega.porcentaje >= 90 %}text-red-600
                         {% elif bodega.porcentaje >= 70 %}text-yellow-600
                         {% else %}text-green-600{% endif %}">
-                        {{ bodega.porcentaje|floatformat:1 }}% Ocupado
+                        <i class="fas fa-circle text-xs mr-2"></i>
+                        {% if bodega.porcentaje >= 90 %}
+                            Casi llena
+                        {% elif bodega.porcentaje >= 70 %}
+                            Capacidad alta
+                        {% else %}
+                            Capacidad normal
+                        {% endif %}
                     </p>
                 </div>
             </div>
-            {% empty %}
-            <div class="col-span-4 text-center text-gray-500 py-8">
-                <i class="fas fa-warehouse text-4xl mb-2"></i>
-                <p>No hay bodegas configuradas</p>
-            </div>
             {% endfor %}
         </div>
+        {% else %}
+        <div class="empty-state">
+            <svg class="mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+            </svg>
+            <p class="text-gray-500 font-medium">No hay bodegas configuradas</p>
+        </div>
+        {% endif %}
     </div>
 
-    <!-- Lotes Recientes -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-            <i class="fas fa-clock mr-2 text-blue-600"></i>
-            Lotes Recientes
-        </h3>
+    <!-- Lotes Recientes Mejorado -->
+    <div class="bg-white rounded-xl shadow-md p-6 fade-in-up" style="animation-delay: 0.7s">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-clock mr-2 text-blue-600"></i>
+                Lotes Recientes
+                <span class="ml-3 px-3 py-1 bg-blue-100 text-blue-700 text-sm font-semibold rounded-full">
+                    Últimos {{ ultimos_lotes|length }}
+                </span>
+            </h3>
+        </div>
+        
+        {% if ultimos_lotes %}
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Código</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bodega</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Peso</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha Ingreso</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="fas fa-hashtag mr-1"></i> Código
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="fas fa-coffee mr-1"></i> Tipo
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="fas fa-warehouse mr-1"></i> Bodega
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="fas fa-weight mr-1"></i> Peso
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="fas fa-calendar mr-1"></i> Fecha Ingreso
+                        </th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     {% for lote in ultimos_lotes %}
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ lote.codigo }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ lote.tipo_cafe.nombre }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">Bodega {{ lote.bodega.codigo }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ lote.peso_kg }} kg</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ lote.fecha_ingreso|date:"d/m/Y H:i" }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">No hay lotes recientes</td>
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="text-sm font-bold text-blue-600">{{ lote.codigo }}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            {{ lote.tipo_cafe }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 bg-amber-100 text-amber-700 text-xs font-semibold rounded">
+                                Bodega {{ lote.bodega.codigo }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {{ lote.peso_kg|floatformat:2 }} kg
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            <i class="fas fa-calendar-alt mr-1 text-gray-400"></i>
+                            {{ lote.fecha_ingreso|date:"d/m/Y" }}
+                            <span class="text-gray-400 ml-1">{{ lote.fecha_ingreso|date:"H:i" }}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <span class="text-gray-600">
+                                <i class="fas fa-box mr-1"></i>
+                                Lote
+                            </span>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-    </div>
-
-    <!-- Actividad de Hoy -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-            <i class="fas fa-calendar-day mr-2 text-amber-600"></i>
-            Actividad de Hoy
-        </h3>
-        <p class="text-gray-500 text-center py-8">
-            <i class="fas fa-coffee text-4xl mb-2"></i><br>
-            No hay actividades registradas hoy
-        </p>
+        {% else %}
+        <div class="empty-state">
+            <svg class="mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+            </svg>
+            <p class="text-gray-500 font-medium">No hay lotes recientes</p>
+        </div>
+        {% endif %}
     </div>
 </div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<!-- Scripts de Funcionalidad -->
+<script>
+// ===== VARIABLES GLOBALES =====
+let charts = {};
+let lastUpdateTime = new Date();
+
+// ===== UTILIDADES =====
+function scrollToSection(id) {
+    const element = document.getElementById(id);
+    if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function resetFilters() {
+    const form = document.getElementById('filterForm');
+    form.elements['year'].selectedIndex = 0;
+    form.elements['month'].selectedIndex = 0;
+    form.submit();
+}
+
+function refreshDashboard() {
+    location.reload();
+}
+
+function exportDashboard() {
+    alert('Función de exportación en desarrollo');
+    // Aquí implementarías la exportación a PDF
+}
+
+function downloadChart(chartId) {
+    const canvas = document.getElementById(chartId);
+    if (canvas) {
+        const url = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.download = `${chartId}_${new Date().getTime()}.png`;
+        link.href = url;
+        link.click();
+    }
+}
+
+function updateLastUpdateTime() {
+    const now = new Date();
+    const diff = Math.floor((now - lastUpdateTime) / 1000);
+    let text = '';
+    
+    if (diff < 60) {
+        text = 'unos segundos';
+    } else if (diff < 3600) {
+        const minutes = Math.floor(diff / 60);
+        text = `${minutes} minuto${minutes > 1 ? 's' : ''}`;
+    } else {
+        const hours = Math.floor(diff / 3600);
+        text = `${hours} hora${hours > 1 ? 's' : ''}`;
+    }
+    
+    const element = document.getElementById('lastUpdate');
+    if (element) {
+        element.textContent = text;
+    }
+}
+
+// ===== TOGGLE ANÁLISIS DETALLADO =====
+function toggleAnalisisDetallado() {
+    const panel = document.getElementById('analisisDetallado');
+    const button = document.getElementById('toggleButton');
+    const toggleText = document.getElementById('toggleText');
+    const toggleIcon = document.getElementById('toggleIcon');
+    
+    if (panel.classList.contains('hidden')) {
+        panel.classList.remove('hidden');
+        toggleText.textContent = 'Ocultar Análisis Detallado';
+        toggleIcon.classList.remove('fa-chevron-down');
+        toggleIcon.classList.add('fa-chevron-up');
+        button.setAttribute('aria-expanded', 'true');
+        
+        // Scroll suave al panel
+        setTimeout(() => {
+            scrollToSection('analisisDetallado');
+        }, 100);
+    } else {
+        panel.classList.add('hidden');
+        toggleText.textContent = 'Ver Análisis Detallado';
+        toggleIcon.classList.remove('fa-chevron-up');
+        toggleIcon.classList.add('fa-chevron-down');
+        button.setAttribute('aria-expanded', 'false');
+    }
+}
+
+// ===== CONFIGURACIÓN GLOBAL DE CHART.JS =====
+Chart.defaults.font.family = "'Inter', 'system-ui', 'sans-serif'";
+Chart.defaults.font.size = 12;
+Chart.defaults.color = '#6B7280';
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.legend.labels.padding = 15;
+Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(0, 0, 0, 0.85)';
+Chart.defaults.plugins.tooltip.padding = 12;
+Chart.defaults.plugins.tooltip.cornerRadius = 8;
+Chart.defaults.plugins.tooltip.titleFont = { size: 14, weight: 'bold' };
+Chart.defaults.plugins.tooltip.bodyFont = { size: 13 };
+
+// ===== GRÁFICO: DEFECTOS DE TAZA POR MES =====
+const ctxDefectosTaza = document.getElementById('defectosTazaChart');
+if (ctxDefectosTaza) {
+    charts.defectosTaza = new Chart(ctxDefectosTaza, {
+        type: 'line',
+        data: {
+            labels: {{ meses_catacion|safe }},
+            datasets: [
+                {
+                    label: 'Mohoso',
+                    data: {{ mohoso_data|safe }},
+                    borderColor: 'rgb(139, 69, 19)',
+                    backgroundColor: 'rgba(139, 69, 19, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: 'rgb(139, 69, 19)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                },
+                {
+                    label: 'Fenólico',
+                    data: {{ fenolico_data|safe }},
+                    borderColor: 'rgb(220, 38, 38)',
+                    backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: 'rgb(220, 38, 38)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                },
+                {
+                    label: 'Papa',
+                    data: {{ papa_data|safe }},
+                    borderColor: 'rgb(251, 146, 60)',
+                    backgroundColor: 'rgba(251, 146, 60, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: 'rgb(251, 146, 60)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            plugins: {
+                legend: { 
+                    position: 'top'
+                },
+                tooltip: {
+                    callbacks: {
+                        title: function(context) {
+                            return `Mes: ${context[0].label}`;
+                        },
+                        label: function(context) {
+                            return `${context.dataset.label}: ${context.parsed.y} defecto${context.parsed.y !== 1 ? 's' : ''}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: true,
+                    ticks: { 
+                        stepSize: 1,
+                        callback: function(value) {
+                            return Number.isInteger(value) ? value : '';
+                        }
+                    },
+                    grid: { 
+                        color: 'rgba(0, 0, 0, 0.05)',
+                        drawBorder: false
+                    }
+                },
+                x: {
+                    grid: { 
+                        display: false,
+                        drawBorder: false
+                    }
+                }
+            }
+        }
+    });
+}
+
+// ===== GRÁFICO: DEFECTOS CATEGORÍA 1 =====
+const ctxCat1 = document.getElementById('defectosCat1Chart');
+if (ctxCat1) {
+    charts.defectosCat1 = new Chart(ctxCat1, {
+        type: 'bar',
+        data: {
+            labels: {{ defectos_labels_cat1|safe }},
+            datasets: [{
+                label: 'Cantidad de Defectos',
+                data: {{ defectos_valores_cat1|safe }},
+                backgroundColor: [
+                    'rgba(220, 38, 38, 0.9)',
+                    'rgba(234, 88, 12, 0.9)',
+                    'rgba(245, 158, 11, 0.9)',
+                    'rgba(251, 191, 36, 0.9)',
+                    'rgba(234, 179, 8, 0.9)',
+                    'rgba(202, 138, 4, 0.9)'
+                ],
+                borderWidth: 0,
+                borderRadius: 8,
+                barPercentage: 0.7
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.label}: ${context.parsed.y} defecto${context.parsed.y !== 1 ? 's' : ''}`;
+                        }
+                    }
+                }
+            },
+            scales: { 
+                y: { 
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1,
+                        callback: function(value) {
+                            return Number.isInteger(value) ? value : '';
+                        }
+                    },
+                    grid: { 
+                        color: 'rgba(0, 0, 0, 0.05)',
+                        drawBorder: false
+                    }
+                },
+                x: {
+                    grid: { 
+                        display: false,
+                        drawBorder: false
+                    }
+                }
+            }
+        }
+    });
+}
+
+// ===== GRÁFICO: DEFECTOS CATEGORÍA 2 =====
+const ctxCat2 = document.getElementById('defectosCat2Chart');
+if (ctxCat2) {
+    charts.defectosCat2 = new Chart(ctxCat2, {
+        type: 'bar',
+        data: {
+            labels: {{ defectos_labels_cat2|safe }},
+            datasets: [{
+                label: 'Cantidad de Defectos',
+                data: {{ defectos_valores_cat2|safe }},
+                backgroundColor: 'rgba(251, 191, 36, 0.9)',
+                borderWidth: 0,
+                borderRadius: 8,
+                barPercentage: 0.7
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.label}: ${context.parsed.y} defecto${context.parsed.y !== 1 ? 's' : ''}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1,
+                        callback: function(value) {
+                            return Number.isInteger(value) ? value : '';
+                        }
+                    },
+                    grid: { 
+                        color: 'rgba(0, 0, 0, 0.05)',
+                        drawBorder: false
+                    }
+                },
+                x: { 
+                    ticks: { 
+                        font: { size: 10 }
+                    },
+                    grid: { 
+                        display: false,
+                        drawBorder: false
+                    }
+                }
+            }
+        }
+    });
+}
+
+// ===== GRÁFICO: CLASIFICACIÓN =====
+const ctxClasif = document.getElementById('clasificacionChart');
+if (ctxClasif) {
+    charts.clasificacion = new Chart(ctxClasif, {
+        type: 'doughnut',
+        data: {
+            labels: {{ clasificacion_labels|safe }},
+            datasets: [{
+                data: {{ clasificacion_valores|safe }},
+                backgroundColor: [
+                    'rgba(147, 51, 234, 0.9)',
+                    'rgba(34, 197, 94, 0.9)',
+                    'rgba(59, 130, 246, 0.9)',
+                    'rgba(251, 191, 36, 0.9)',
+                    'rgba(239, 68, 68, 0.9)'
+                ],
+                borderWidth: 4,
+                borderColor: '#fff',
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+                legend: { 
+                    position: 'bottom',
+                    labels: { 
+                        padding: 20,
+                        font: { size: 12 }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `${label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// ===== KEYBOARD SHORTCUTS =====
+document.addEventListener('keydown', function(e) {
+    // Alt + R: Refresh
+    if (e.altKey && e.key === 'r') {
+        e.preventDefault();
+        refreshDashboard();
+    }
+    // Alt + E: Export
+    if (e.altKey && e.key === 'e') {
+        e.preventDefault();
+        exportDashboard();
+    }
+    // Alt + D: Toggle análisis detallado
+    if (e.altKey && e.key === 'd') {
+        e.preventDefault();
+        toggleAnalisisDetallado();
+    }
+});
+
+// ===== ACTUALIZAR TIMESTAMP =====
+setInterval(updateLastUpdateTime, 30000); // Cada 30 segundos
+
+// ===== INICIALIZACIÓN =====
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ Dashboard cargado correctamente');
+    console.log('📊 Gráficos inicializados:', Object.keys(charts).length);
+    
+    // Agregar tooltips de teclado
+    document.title = 'Dashboard - Atajos: Alt+R (Actualizar), Alt+E (Exportar), Alt+D (Análisis)';
+});
+</script>
 {% endblock %}

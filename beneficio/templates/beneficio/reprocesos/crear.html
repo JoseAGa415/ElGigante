@@ -1,111 +1,534 @@
 {% extends 'base.html' %}
 
-{% block title %}Crear Reproceso - Beneficio de Café{% endblock %}
+{% block title %}Crear Reproceso #{{ siguiente_numero }}{% endblock %}
 
 {% block content %}
 <div class="max-w-4xl mx-auto space-y-6">
-    <!-- Header -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-2xl font-bold text-gray-800 flex items-center">
-            <i class="fas fa-sync mr-3 text-purple-600"></i>
+    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg shadow-lg p-6 text-white">
+        <h2 class="text-3xl font-bold flex items-center">
+            <i class="fas fa-sync mr-3"></i>
             Crear Reproceso #{{ siguiente_numero }}
         </h2>
-        <p class="text-gray-600 mt-2">De Trilla #{{ procesado.numero_trilla }} - Lote {{ procesado.lote.codigo }}</p>
+        <p class="mt-2 text-purple-50">
+            Registrando un nuevo reproceso para la Trilla <strong class="bg-white/20 px-2 py-1 rounded">{{ procesado.numero_trilla }}</strong> 
+            (Lote: {{ procesado.lote.codigo }})
+        </p>
     </div>
 
-    <!-- Formulario -->
     <form method="post" class="bg-white rounded-lg shadow-md p-6 space-y-6">
         {% csrf_token %}
         
-        <!-- Información del origen -->
-        <div class="bg-gray-50 p-4 rounded-lg">
-            <h3 class="font-bold text-gray-700 mb-2">Información de Origen</h3>
-            <div class="grid grid-cols-2 gap-4 text-sm">
-                <div>
+        <div class="bg-gray-50 p-4 rounded-lg border-l-4 border-gray-400">
+            <h3 class="font-bold text-gray-700 mb-3 flex items-center">
+                <i class="fas fa-box text-gray-600 mr-2"></i>
+                Información de Origen
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div class="flex items-center">
                     <span class="text-gray-600">Trilla:</span>
                     <span class="font-semibold ml-2">#{{ procesado.numero_trilla }}</span>
                 </div>
-                <div>
+                <div class="flex items-center">
                     <span class="text-gray-600">Lote:</span>
                     <span class="font-semibold ml-2">{{ procesado.lote.codigo }}</span>
                 </div>
-                <div>
+                <div class="flex items-center">
                     <span class="text-gray-600">Peso Final Trilla:</span>
-                    <span class="font-semibold ml-2">{{ procesado.peso_final_kg }} kg</span>
+                    <span class="font-semibold ml-2">{{ procesado.peso_final_kg }} {{ procesado.unidad_peso_final }}</span>
                 </div>
-                <div>
+                <div class="flex items-center">
                     <span class="text-gray-600">Reprocesos previos:</span>
                     <span class="font-semibold ml-2">{{ procesado.reprocesos.count }}</span>
                 </div>
             </div>
         </div>
-
-        <!-- Pesos -->
+        
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
+             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Peso Inicial (kg) <span class="text-red-500">*</span>
+                    <i class="fas fa-user-cog text-purple-600 mr-1"></i>
+                    Encargado del Reproceso (Opcional)
                 </label>
-                <input type="number" step="0.01" name="peso_inicial_kg" required
+                <input type="text" 
+                       name="encargado_reproceso" 
+                       placeholder="Ej: Nombre del operario de piso"
                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Peso Final (kg) <span class="text-red-500">*</span>
+                    <i class="fas fa-tag text-purple-600 mr-1"></i>
+                    Nombre de este Reproceso (Opcional)
                 </label>
-                <input type="number" step="0.01" name="peso_final_kg" required
+                <input type="text" 
+                       name="nombre" 
+                       placeholder="Ej: Reproceso de Segunda"
                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
             </div>
         </div>
-
-        <!-- Mermas -->
-        <div>
-            <h3 class="font-bold text-gray-700 mb-3">Mermas del Reproceso</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Catadura (kg)</label>
-                    <input type="number" step="0.01" name="catadura" value="0"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Rechazo Electrónica (kg)</label>
-                    <input type="number" step="0.01" name="rechazo_electronica" value="0"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Bajo Zaranda (kg)</label>
-                    <input type="number" step="0.01" name="bajo_zaranda" value="0"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Barridos (kg)</label>
-                    <input type="number" step="0.01" name="barridos" value="0"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
-                </div>
+         <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                <i class="fas fa-users text-purple-600 mr-1"></i>
+                Cantidad de Trabajadores (Opcional)
+            </label>
+            <input type="number" 
+                   name="cantidad_trabajadores" 
+                   min="1"
+                   placeholder="Ej: 5"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 text-center">
+        </div> 
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-calendar-alt text-purple-600 mr-1"></i>
+                    Fecha (Opcional)
+                </label>
+                <input type="date" 
+                       name="fecha" 
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
+                <p class="text-xs text-gray-500 mt-1">Dejar en blanco para usar la fecha actual.</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-clock text-purple-600 mr-1"></i>
+                    Hora Inicio (Opcional)
+                </label>
+                <input type="time" 
+                       name="hora_inicio" 
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-clock text-purple-600 mr-1"></i>
+                    Hora Fin (Opcional)
+                </label>
+                <input type="time" 
+                       name="hora_fin" 
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
             </div>
         </div>
-
-        <!-- Motivo -->
+<div class="bg-amber-50 border-l-4 border-amber-500 p-6 rounded-lg mb-6">
+    <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+        <i class="fas fa-warehouse text-amber-600"></i>
+        Bodega de Almacenamiento
+    </h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
+                ¿En qué bodega quedó el café? <span class="text-red-500">*</span>
+            </label>
+            <select name="bodega_destino" 
+                    required
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                <option value="">Seleccione bodega...</option>
+                {% for bodega in bodegas %}
+                <option value="{{ bodega.id }}">
+                    Bodega {{ bodega.codigo }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="bg-blue-50 p-4 rounded-lg">
+            <p class="text-xs text-blue-600 font-semibold mb-1">PROCESADO ORIGINAL</p>
+            <p class="text-sm text-gray-900">Trilla #{{ procesado.numero_trilla }}</p>
+            <p class="text-sm text-gray-600">Lote {{ procesado.lote.codigo }}</p>
+        </div>
+    </div>
+</div>
+
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border-l-4 border-blue-500">
+            <h3 class="font-bold text-gray-800 mb-4 text-lg flex items-center">
+                <i class="fas fa-balance-scale text-blue-600 mr-2"></i>
+                Pesos del Reproceso
+            </h3>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-arrow-right text-green-600 mr-1"></i>
+                        Peso Inicial <span class="text-red-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Operación</label>
+                            <input type="text" 
+                                   id="operacion-inicial"
+                                   placeholder="10*1.52"
+                                   oninput="calcularOperacion('inicial')"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Resultado</label>
+                            <input type="number" 
+                                   step="0.01" 
+                                   name="peso_inicial_kg" 
+                                   id="peso-inicial" 
+                                   required 
+                                   value="{{ procesado.peso_final_kg|default_if_none:'' }}"
+                                   onchange="calcularRendimiento()"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 text-center font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Unidad</label>
+                            <input type="text" 
+                                   name="unidad_peso_inicial" 
+                                   list="unidades-list"
+                                   value="{{ procesado.unidad_peso_final|default:'kg' }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 bg-white text-center font-medium">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-arrow-left text-blue-600 mr-1"></i>
+                        Peso Final <span class="text-red-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Operación</label>
+                            <input type="text" 
+                                   id="operacion-final"
+                                   placeholder="8*1.52"
+                                   oninput="calcularOperacion('final')"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Resultado</label>
+                            <input type="number" 
+                                   step="0.01" 
+                                   name="peso_final_kg" 
+                                   id="peso-final" 
+                                   required
+                                   onchange="calcularRendimiento()"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 text-center font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Unidad</label>
+                            <input type="text" 
+                                   name="unidad_peso_final" 
+                                   list="unidades-list"
+                                   value="kg"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 bg-white text-center font-medium">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="rendimiento-display" class="mt-4 p-4 rounded-lg border-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium flex items-center">
+                        <i class="fas fa-percentage mr-2"></i>
+                        Rendimiento Calculado:
+                    </span>
+                    <span class="text-3xl font-bold" id="rendimiento-valor">0.00%</span>
+                </div>
+            </div>
+        </div>
+
+        <datalist id="unidades-list">
+            <option value="kg">
+            <option value="libras">
+            <option value="lb">
+            <option value="quintales">
+            <option value="qq">
+        </datalist>
+
+        <div class="bg-gradient-to-r from-amber-50 to-yellow-50 p-6 rounded-lg border-l-4 border-amber-500">
+            <h3 class="font-bold text-gray-800 mb-4 text-lg flex items-center">
+                <i class="fas fa-star text-amber-600 mr-2"></i>
+                Clasificación de Café
+            </h3>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-medal text-yellow-500 mr-1"></i>
+                        Café de Primera
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Operación</label>
+                            <input type="text" 
+                                   id="operacion-primera"
+                                   placeholder="8*1.52"
+                                   oninput="calcularOperacion('primera')"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Resultado</label>
+                            <input type="number" 
+                                   step="0.01" 
+                                   name="cafe_primera" 
+                                   id="cafe-primera"
+                                   value="0"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 text-center font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Unidad</label>
+                            <input type="text" 
+                                   name="unidad_cafe_primera" 
+                                   list="unidades-list"
+                                   value="kg"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 bg-white text-center font-medium">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-medal text-gray-400 mr-1"></i>
+                        Café de Segunda
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Operación</label>
+                            <input type="text" 
+                                   id="operacion-segunda"
+                                   placeholder="2*1.52"
+                                   oninput="calcularOperacion('segunda')"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Resultado</label>
+                            <input type="number" 
+                                   step="0.01" 
+                                   name="cafe_segunda" 
+                                   id="cafe-segunda"
+                                   value="0"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 text-center font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Unidad</label>
+                            <input type="text" 
+                                   name="unidad_cafe_segunda" 
+                                   list="unidades-list"
+                                   value="kg"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 bg-white text-center font-medium">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-red-50 to-orange-50 p-6 rounded-lg border-l-4 border-red-500">
+            <h3 class="font-bold text-gray-800 mb-4 text-lg flex items-center">
+                <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                Mermas del Reproceso
+            </h3>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-filter text-amber-500 mr-1"></i>
+                        Catadura
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Operación</label>
+                            <input type="text" 
+                                   id="operacion-catadura"
+                                   placeholder="1*1.52"
+                                   oninput="calcularOperacion('catadura')"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Resultado</label>
+                            <input type="number" 
+                                   step="0.01" 
+                                   name="catadura" 
+                                   id="catadura"
+                                   value="0"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 text-center font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Unidad</label>
+                            <input type="text" list="unidades-list" value="kg" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 bg-white text-center font-medium" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-times-circle text-red-500 mr-1"></i>
+                        Rechazo Electrónica
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Operación</label>
+                            <input type="text" 
+                                   id="operacion-rechazo_electronica"
+                                   placeholder="0.5*1.52"
+                                   oninput="calcularOperacion('rechazo_electronica')"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Resultado</label>
+                            <input type="number" 
+                                   step="0.01" 
+                                   name="rechazo_electronica" 
+                                   id="rechazo_electronica"
+                                   value="0"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 text-center font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Unidad</label>
+                            <input type="text" list="unidades-list" value="kg" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 bg-white text-center font-medium" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-arrow-down text-blue-500 mr-1"></i>
+                        Bajo Zaranda
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Operación</label>
+                            <input type="text" 
+                                   id="operacion-bajo_zaranda"
+                                   placeholder="0.3*1.52"
+                                   oninput="calcularOperacion('bajo_zaranda')"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Resultado</label>
+                            <input type="number" 
+                                   step="0.01" 
+                                   name="bajo_zaranda" 
+                                   id="bajo_zaranda"
+                                   value="0"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 text-center font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Unidad</label>
+                            <input type="text" list="unidades-list" value="kg" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 bg-white text-center font-medium" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-broom text-green-500 mr-1"></i>
+                        Barridos
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Operación</label>
+                            <input type="text" 
+                                   id="operacion-barridos"
+                                   placeholder="0.2*1.52"
+                                   oninput="calcularOperacion('barridos')"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Resultado</label>
+                            <input type="number" 
+                                   step="0.01" 
+                                   name="barridos" 
+                                   id="barridos"
+                                   value="0"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 text-center font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Unidad</label>
+                            <input type="text" list="unidades-list" value="kg" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 bg-white text-center font-medium" disabled>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                <i class="fas fa-sticky-note text-gray-500 mr-1"></i>
                 Motivo del Reproceso <span class="text-red-500">*</span>
             </label>
             <textarea name="motivo" rows="4" required
-                      placeholder="Describe el motivo por el cual se realiza este reproceso..."
+                      placeholder="Describe por qué se realiza este reproceso..."
                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600"></textarea>
         </div>
 
-        <!-- Botones -->
-        <div class="flex justify-end space-x-4">
+        <div class="flex justify-end space-x-4 pt-4 border-t">
             <a href="{% url 'detalle_procesado' procesado.id %}" 
-               class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
-                Cancelar
+               class="px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium">
+                <i class="fas fa-times mr-2"></i>Cancelar
             </a>
             <button type="submit" 
-                    class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                    class="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition font-medium shadow-lg hover:shadow-xl">
                 <i class="fas fa-save mr-2"></i>Guardar Reproceso
             </button>
         </div>
     </form>
 </div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+// Función para calcular operaciones matemáticas
+function calcularOperacion(tipo) {
+    // Corregimos los IDs para que coincidan con el formulario
+    const operacionInput = document.getElementById('operacion-' + tipo);
+    const resultadoInput = document.getElementById(tipo === 'inicial' ? 'peso-inicial' : 
+                                                   tipo === 'final' ? 'peso-final' : 
+                                                   tipo === 'primera' ? 'cafe-primera' :
+                                                   tipo === 'segunda' ? 'cafe-segunda' :
+                                                   tipo); // para catadura, rechazo_electronica, etc.
+    
+    try {
+        const operacion = operacionInput.value.replace(',', '.'); // Reemplazar comas por puntos
+        
+        // Expresión regular simple para validar la entrada (solo números y operadores básicos)
+        if (/^[0-9+\-*/().\s]*$/.test(operacion) && operacion.trim() !== "") {
+            const resultado = eval(operacion);
+        
+            if (!isNaN(resultado) && isFinite(resultado)) {
+                resultadoInput.value = resultado.toFixed(2);
+                
+                if (tipo === 'inicial' || tipo === 'final') {
+                    calcularRendimiento();
+                }
+            }
+        }
+    } catch (e) {
+        // Si hay error (ej. "1+"), no hacer nada y esperar
+    }
+}
+
+function calcularRendimiento() {
+    const pesoInicial = parseFloat(document.getElementById('peso-inicial').value) || 0;
+    const pesoFinal = parseFloat(document.getElementById('peso-final').value) || 0;
+    
+    if (pesoInicial > 0 && pesoFinal > 0) {
+        const rendimiento = (pesoFinal / pesoInicial * 100);
+        document.getElementById('rendimiento-valor').textContent = rendimiento.toFixed(2) + '%';
+        
+        const display = document.getElementById('rendimiento-display');
+        const valor = document.getElementById('rendimiento-valor');
+        
+        if (rendimiento >= 80) {
+            display.className = 'mt-4 p-4 rounded-lg border-2 bg-green-50 border-green-300';
+            valor.className = 'text-3xl font-bold text-green-700';
+        } else if (rendimiento >= 70) {
+            display.className = 'mt-4 p-4 rounded-lg border-2 bg-yellow-50 border-yellow-300';
+            valor.className = 'text-3xl font-bold text-yellow-700';
+        } else {
+            display.className = 'mt-4 p-4 rounded-lg border-2 bg-red-50 border-red-300';
+            valor.className = 'text-3xl font-bold text-red-700';
+        }
+    } else {
+        document.getElementById('rendimiento-valor').textContent = '0.00%';
+        const display = document.getElementById('rendimiento-display');
+        const valor = document.getElementById('rendimiento-valor');
+        display.className = 'mt-4 p-4 rounded-lg border-2 bg-gray-50 border-gray-300';
+        valor.className = 'text-3xl font-bold text-gray-700';
+    }
+}
+
+// Calcular rendimiento al cargar la página
+window.addEventListener('DOMContentLoaded', calcularRendimiento);
+</script>
 {% endblock %}

@@ -1,0 +1,307 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalle Exportación {{ exportacion.codigo_exportacion }}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg shadow-lg p-6 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-3xl font-bold flex items-center">
+                    <i class="fas fa-globe mr-3"></i>
+                    Exportación {{ exportacion.codigo_exportacion }}
+                </h2>
+                <p class="mt-2 text-purple-100">Detalles completos de la exportación</p>
+            </div>
+            <div class="flex gap-3">
+                <a href="{% url 'exportaciones_lista' %}" 
+                   class="px-4 py-2 bg-white text-purple-600 rounded-lg hover:bg-purple-50 transition font-medium">
+                    <i class="fas fa-list mr-2"></i>Ver Todas
+                </a>
+                <a href="{% url 'eventos_lista' %}" 
+                   class="px-4 py-2 bg-white text-indigo-600 rounded-lg hover:bg-indigo-50 transition font-medium">
+                    <i class="fas fa-arrow-left mr-2"></i>Eventos
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estado y Fecha -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 
+            {% if exportacion.estado == 'entregada' %}border-green-500
+            {% elif exportacion.estado == 'transito' %}border-blue-500
+            {% elif exportacion.estado == 'documentacion' %}border-orange-500
+            {% elif exportacion.estado == 'preparacion' %}border-yellow-500
+            {% else %}border-red-500{% endif %}">
+            <p class="text-sm text-gray-600 uppercase font-semibold mb-2">Estado</p>
+            <span class="px-4 py-2 rounded-full text-sm font-bold inline-block
+                {% if exportacion.estado == 'entregada' %}bg-green-100 text-green-800
+                {% elif exportacion.estado == 'transito' %}bg-blue-100 text-blue-800
+                {% elif exportacion.estado == 'documentacion' %}bg-orange-100 text-orange-800
+                {% elif exportacion.estado == 'preparacion' %}bg-yellow-100 text-yellow-800
+                {% else %}bg-red-100 text-red-800{% endif %}">
+                {% if exportacion.estado == 'entregada' %}<i class="fas fa-check-circle"></i>
+                {% elif exportacion.estado == 'transito' %}<i class="fas fa-ship"></i>
+                {% elif exportacion.estado == 'documentacion' %}<i class="fas fa-file-alt"></i>
+                {% elif exportacion.estado == 'preparacion' %}<i class="fas fa-box-open"></i>
+                {% else %}<i class="fas fa-times-circle"></i>{% endif %}
+                {{ exportacion.get_estado_display }}
+            </span>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+            <p class="text-sm text-gray-600 uppercase font-semibold mb-2">Fecha de Exportación</p>
+            <p class="text-2xl font-bold text-gray-800">{{ exportacion.fecha_exportacion|date:"d/m/Y" }}</p>
+            <p class="text-sm text-gray-500">{{ exportacion.fecha_exportacion|date:"H:i" }}</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-500">
+            <p class="text-sm text-gray-600 uppercase font-semibold mb-2">Creado Por</p>
+            <p class="text-lg font-semibold text-gray-800">
+                <i class="fas fa-user-circle text-purple-600"></i> 
+                {{ exportacion.creado_por.get_full_name|default:exportacion.creado_por.username }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Información del Producto -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center border-b border-gray-200 pb-3">
+            <i class="fas fa-box text-purple-600 mr-2"></i>
+            Producto Exportado
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Tipo de Producto</p>
+                <span class="px-3 py-1 rounded text-sm font-semibold
+                    {% if exportacion.tipo_producto == 'procesado' %}bg-amber-100 text-amber-800
+                    {% elif exportacion.tipo_producto == 'reproceso' %}bg-purple-100 text-purple-800
+                    {% else %}bg-green-100 text-green-800{% endif %}">
+                    <i class="fas 
+                        {% if exportacion.tipo_producto == 'procesado' %}fa-cogs
+                        {% elif exportacion.tipo_producto == 'reproceso' %}fa-sync
+                        {% else %}fa-blender{% endif %} mr-1"></i>
+                    {{ exportacion.get_tipo_producto_display }}
+                </span>
+            </div>
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Identificación</p>
+                <p class="font-semibold text-gray-800">{{ exportacion.producto_descripcion }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Peso Exportado</p>
+                <p class="text-2xl font-bold text-purple-600">{{ exportacion.peso_exportado_kg|floatformat:2 }} kg</p>
+                <p class="text-sm text-gray-500">({{ exportacion.quintales_exportados|floatformat:2 }} quintales)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información de Destino -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center border-b border-gray-200 pb-3">
+            <i class="fas fa-map-marked-alt text-purple-600 mr-2"></i>
+            Información de Destino
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <p class="text-sm text-gray-600 mb-1">País de Destino</p>
+                <p class="font-bold text-gray-800 text-lg">
+                    <i class="fas fa-flag text-blue-600"></i> {{ exportacion.pais_destino }}
+                </p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Ciudad de Destino</p>
+                <p class="font-semibold text-gray-800">
+                    {% if exportacion.ciudad_destino %}
+                        <i class="fas fa-city text-purple-600"></i> {{ exportacion.ciudad_destino }}
+                    {% else %}
+                        <span class="text-gray-400">No especificada</span>
+                    {% endif %}
+                </p>
+            </div>
+            {% if exportacion.comprador %}
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Comprador</p>
+                <p class="font-semibold text-gray-800">{{ exportacion.comprador.nombre }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Información Comercial -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center border-b border-gray-200 pb-3">
+            <i class="fas fa-dollar-sign text-purple-600 mr-2"></i>
+            Información Comercial
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-blue-50 rounded-lg p-4">
+                <p class="text-sm text-gray-600 mb-1">Precio por Quintal</p>
+                <p class="text-2xl font-bold text-blue-600">Q {{ exportacion.precio_quintal|floatformat:2 }}</p>
+            </div>
+            <div class="bg-green-50 rounded-lg p-4">
+                <p class="text-sm text-gray-600 mb-1">Precio Total</p>
+                <p class="text-3xl font-bold text-green-600">Q {{ exportacion.precio_total|floatformat:2 }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Documentación Aduanal -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center border-b border-gray-200 pb-3">
+            <i class="fas fa-file-alt text-purple-600 mr-2"></i>
+            Documentación Aduanal
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Número de Contenedor</p>
+                <p class="font-semibold text-gray-800">
+                    {% if exportacion.numero_contenedor %}
+                        <i class="fas fa-box text-blue-600"></i> {{ exportacion.numero_contenedor }}
+                    {% else %}
+                        <span class="text-gray-400">No especificado</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Bill of Lading (BL)</p>
+                <p class="font-semibold text-gray-800">
+                    {% if exportacion.numero_bl %}
+                        <i class="fas fa-ship text-green-600"></i> {{ exportacion.numero_bl }}
+                    {% else %}
+                        <span class="text-gray-400">No especificado</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Número de Factura</p>
+                <p class="font-semibold text-gray-800">
+                    {% if exportacion.numero_factura %}
+                        <i class="fas fa-receipt text-purple-600"></i> {{ exportacion.numero_factura }}
+                    {% else %}
+                        <span class="text-gray-400">No especificado</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Certificado de Origen</p>
+                <p class="font-semibold text-gray-800">
+                    {% if exportacion.certificado_origen %}
+                        <i class="fas fa-certificate text-yellow-600"></i> {{ exportacion.certificado_origen }}
+                    {% else %}
+                        <span class="text-gray-400">No especificado</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información de Logística -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center border-b border-gray-200 pb-3">
+            <i class="fas fa-shipping-fast text-purple-600 mr-2"></i>
+            Información de Logística
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Tipo de Envío</p>
+                <span class="px-3 py-1 rounded-full text-sm font-semibold
+                    {% if exportacion.tipo_envio == 'maritimo' %}bg-blue-100 text-blue-800
+                    {% elif exportacion.tipo_envio == 'aereo' %}bg-sky-100 text-sky-800
+                    {% else %}bg-green-100 text-green-800{% endif %}">
+                    <i class="fas 
+                        {% if exportacion.tipo_envio == 'maritimo' %}fa-ship
+                        {% elif exportacion.tipo_envio == 'aereo' %}fa-plane
+                        {% else %}fa-truck{% endif %} mr-1"></i>
+                    {{ exportacion.get_tipo_envio_display }}
+                </span>
+            </div>
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Naviera/Transportista</p>
+                <p class="font-semibold text-gray-800">
+                    {% if exportacion.naviera_transportista %}
+                        {{ exportacion.naviera_transportista }}
+                    {% else %}
+                        <span class="text-gray-400">No especificado</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Fecha de Embarque</p>
+                <p class="font-semibold text-gray-800">
+                    {% if exportacion.fecha_embarque %}
+                        <i class="fas fa-calendar-alt text-blue-600"></i> {{ exportacion.fecha_embarque|date:"d/m/Y" }}
+                    {% else %}
+                        <span class="text-gray-400">No especificada</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Fecha de Arribo Estimada</p>
+                <p class="font-semibold text-gray-800">
+                    {% if exportacion.fecha_arribo_estimada %}
+                        <i class="fas fa-calendar-check text-green-600"></i> {{ exportacion.fecha_arribo_estimada|date:"d/m/Y" }}
+                    {% else %}
+                        <span class="text-gray-400">No especificada</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Puerto de Embarque</p>
+                <p class="font-semibold text-gray-800">
+                    {% if exportacion.puerto_embarque %}
+                        <i class="fas fa-anchor text-blue-600"></i> {{ exportacion.puerto_embarque }}
+                    {% else %}
+                        <span class="text-gray-400">No especificado</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Puerto de Destino</p>
+                <p class="font-semibold text-gray-800">
+                    {% if exportacion.puerto_destino %}
+                        <i class="fas fa-warehouse text-purple-600"></i> {{ exportacion.puerto_destino }}
+                    {% else %}
+                        <span class="text-gray-400">No especificado</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Observaciones -->
+    {% if exportacion.observaciones %}
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center border-b border-gray-200 pb-3">
+            <i class="fas fa-comment-alt text-purple-600 mr-2"></i>
+            Observaciones
+        </h3>
+        <div class="bg-gray-50 rounded-lg p-4">
+            <p class="text-gray-700 whitespace-pre-wrap">{{ exportacion.observaciones }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Auditoría -->
+    <div class="bg-gray-50 rounded-lg p-4 text-sm text-gray-600">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <i class="fas fa-calendar-plus text-blue-600"></i>
+                <strong>Creado:</strong> {{ exportacion.created_at|date:"d/m/Y H:i" }}
+            </div>
+            <div>
+                <i class="fas fa-calendar-check text-green-600"></i>
+                <strong>Última actualización:</strong> {{ exportacion.updated_at|date:"d/m/Y H:i" }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

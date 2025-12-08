@@ -1,102 +1,559 @@
 {% extends 'base.html' %}
 
-{% block title %}Editar Reproceso - Beneficio de Café{% endblock %}
+{% block title %}Editar Reproceso #{{ reproceso.numero }}{% endblock %}
 
 {% block content %}
 <div class="max-w-4xl mx-auto space-y-6">
-    <!-- Header -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-2xl font-bold text-gray-800 flex items-center">
-            <i class="fas fa-sync mr-3 text-purple-600"></i>
+    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg shadow-lg p-6 text-white">
+        <h2 class="text-3xl font-bold flex items-center">
+            <i class="fas fa-edit mr-3"></i>
             Editar Reproceso #{{ reproceso.numero }}
         </h2>
-        <p class="text-gray-600 mt-2">De Trilla #{{ reproceso.procesado.numero_trilla }} - Lote {{ reproceso.procesado.lote.codigo }}</p>
+        <p class="mt-2 text-purple-50">
+            De Trilla <strong class="bg-white/20 px-2 py-1 rounded">#{{ reproceso.procesado.numero_trilla }}</strong> 
+            (Lote: {{ reproceso.procesado.lote.codigo }})
+        </p>
     </div>
 
-    <!-- Formulario -->
     <form method="post" class="bg-white rounded-lg shadow-md p-6 space-y-6">
         {% csrf_token %}
         
-        <!-- Información del origen -->
-        <div class="bg-gray-50 p-4 rounded-lg">
-            <h3 class="font-bold text-gray-700 mb-2">Información de Origen</h3>
-            <div class="grid grid-cols-2 gap-4 text-sm">
-                <div>
+        <div class="bg-gray-50 p-4 rounded-lg border-l-4 border-gray-400">
+            <h3 class="font-bold text-gray-700 mb-3 flex items-center">
+                <i class="fas fa-box text-gray-600 mr-2"></i>
+                Información de Origen
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div class="flex items-center">
                     <span class="text-gray-600">Trilla:</span>
                     <span class="font-semibold ml-2">#{{ reproceso.procesado.numero_trilla }}</span>
                 </div>
-                <div>
+                <div class="flex items-center">
                     <span class="text-gray-600">Lote:</span>
                     <span class="font-semibold ml-2">{{ reproceso.procesado.lote.codigo }}</span>
                 </div>
+                <div class="flex items-center">
+                    <span class="text-gray-600">Peso Final Trilla:</span>
+                    <span class="font-semibold ml-2">{{ reproceso.procesado.peso_final_kg }} {{ reproceso.procesado.unidad_peso_final }}</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-gray-600">Reprocesos totales:</span>
+                    <span class="font-semibold ml-2">{{ reproceso.procesado.reprocesos.count }}</span>
+                </div>
             </div>
         </div>
-
-        <!-- Pesos -->
+        
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
+             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Peso Inicial (kg) <span class="text-red-500">*</span>
+                    <i class="fas fa-user-cog text-purple-600 mr-1"></i>
+                    Encargado del Reproceso
                 </label>
-                <input type="number" step="0.01" name="peso_inicial_kg" value="{{ reproceso.peso_inicial_kg }}" required
+                <input type="text" 
+                       name="encargado_reproceso" 
+                       value="{{ reproceso.encargado_reproceso|default:'' }}"
+                       placeholder="Ej: Nombre del operario de piso"
                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
+                <p class="text-xs text-blue-600 mt-1 font-semibold">✓ Valor anterior: {{ reproceso.encargado_reproceso|default:"No especificado" }}</p>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Peso Final (kg) <span class="text-red-500">*</span>
+                    <i class="fas fa-tag text-purple-600 mr-1"></i>
+                    Nombre de este Reproceso
                 </label>
-                <input type="number" step="0.01" name="peso_final_kg" value="{{ reproceso.peso_final_kg }}" required
+                <input type="text" 
+                       name="nombre" 
+                       value="{{ reproceso.nombre|default:'' }}"
+                       placeholder="Ej: Reproceso de Segunda"
                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
+                <p class="text-xs text-blue-600 mt-1 font-semibold">✓ Valor anterior: {{ reproceso.nombre|default:"Sin nombre" }}</p>
             </div>
         </div>
 
-        <!-- Mermas -->
-        <div>
-            <h3 class="font-bold text-gray-700 mb-3">Mermas del Reproceso</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-calendar-alt text-purple-600 mr-1"></i>
+                    Fecha
+                </label>
+                <input type="date" 
+                       name="fecha" 
+                       value="{{ reproceso.fecha|date:'Y-m-d' }}"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
+                <p class="text-xs text-blue-600 mt-1 font-semibold">✓ Fecha anterior: {{ reproceso.fecha|date:"d/m/Y" }}</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-clock text-purple-600 mr-1"></i>
+                    Hora Inicio
+                </label>
+                <input type="time" 
+                       name="hora_inicio" 
+                       value="{% if reproceso.hora_inicio %}{{ reproceso.hora_inicio|time:'H:i' }}{% endif %}"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
+                <p class="text-xs text-blue-600 mt-1 font-semibold">✓ Hora anterior: {% if reproceso.hora_inicio %}{{ reproceso.hora_inicio|time:"H:i" }}{% else %}No registrado{% endif %}</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-clock text-purple-600 mr-1"></i>
+                    Hora Fin
+                </label>
+                <input type="time" 
+                       name="hora_fin" 
+                       value="{% if reproceso.hora_final %}{{ reproceso.hora_final|time:'H:i' }}{% endif %}"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
+                <p class="text-xs text-blue-600 mt-1 font-semibold">✓ Hora anterior: {% if reproceso.hora_final %}{{ reproceso.hora_final|time:"H:i" }}{% else %}No registrado{% endif %}</p>
+            </div>
+        </div>
+
+        <div class="bg-amber-50 border-l-4 border-amber-500 p-6 rounded-lg mb-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <i class="fas fa-warehouse text-amber-600"></i>
+                Bodega de Almacenamiento
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Catadura (kg)</label>
-                    <input type="number" step="0.01" name="catadura" value="{{ reproceso.catadura }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        ¿En qué bodega quedó el café? <span class="text-red-500">*</span>
+                    </label>
+                    <select name="bodega_destino" 
+                            required
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                        <option value="">Seleccione bodega...</option>
+                        {% for bodega in bodegas %}
+                        <option value="{{ bodega.id }}" {% if reproceso.bodega_destino and reproceso.bodega_destino.id == bodega.id %}selected{% endif %}>
+                            Bodega {{ bodega.codigo }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <p class="text-xs text-blue-600 mt-1 font-semibold">✓ Bodega anterior: {% if reproceso.bodega_destino %}Bodega {{ reproceso.bodega_destino.codigo }}{% else %}No asignada{% endif %}</p>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Rechazo Electrónica (kg)</label>
-                    <input type="number" step="0.01" name="rechazo_electronica" value="{{ reproceso.rechazo_electronica }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Bajo Zaranda (kg)</label>
-                    <input type="number" step="0.01" name="bajo_zaranda" value="{{ reproceso.bajo_zaranda }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Barridos (kg)</label>
-                    <input type="number" step="0.01" name="barridos" value="{{ reproceso.barridos }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
+                
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <p class="text-xs text-blue-600 font-semibold mb-1">REPROCESO ACTUAL</p>
+                    <p class="text-sm text-gray-900">Reproceso #{{ reproceso.numero }}</p>
+                    <p class="text-sm text-gray-600">Trilla #{{ reproceso.procesado.numero_trilla }}</p>
+                    <p class="text-xs text-gray-500 mt-2">Duración: {{ reproceso.duracion_proceso }}</p>
                 </div>
             </div>
         </div>
 
-        <!-- Motivo -->
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border-l-4 border-blue-500">
+            <h3 class="font-bold text-gray-800 mb-4 text-lg flex items-center">
+                <i class="fas fa-balance-scale text-blue-600 mr-2"></i>
+                Pesos del Reproceso
+            </h3>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-arrow-right text-green-600 mr-1"></i>
+                        Peso Inicial <span class="text-red-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Operación</label>
+                            <input type="text" 
+                                   id="operacion-inicial"
+                                   value="{{ reproceso.peso_inicial_kg }}"
+                                   placeholder="10*1.52"
+                                   oninput="calcularOperacion('inicial')"
+                                   class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-purple-600 text-sm bg-blue-50">
+                            <p class="text-xs text-blue-600 mt-1 font-medium">✓ Original: {{ reproceso.peso_inicial_kg }}</p>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Resultado</label>
+                            <input type="number" 
+                                   step="0.01" 
+                                   name="peso_inicial_kg" 
+                                   id="peso-inicial" 
+                                   required 
+                                   value="{{ reproceso.peso_inicial_kg }}"
+                                   onchange="calcularRendimiento()"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 text-center font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Unidad</label>
+                            <input type="text" 
+                                   name="unidad_peso_inicial" 
+                                   list="unidades-list"
+                                   value="{{ reproceso.unidad_peso_inicial }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 bg-white text-center font-medium">
+                            <p class="text-xs text-blue-600 mt-1 font-medium">✓ Unidad: {{ reproceso.unidad_peso_inicial }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-arrow-left text-blue-600 mr-1"></i>
+                        Peso Final <span class="text-red-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Operación</label>
+                            <input type="text" 
+                                   id="operacion-final"
+                                   value="{{ reproceso.peso_final_kg }}"
+                                   placeholder="8*1.52"
+                                   oninput="calcularOperacion('final')"
+                                   class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-purple-600 text-sm bg-blue-50">
+                            <p class="text-xs text-blue-600 mt-1 font-medium">✓ Original: {{ reproceso.peso_final_kg }}</p>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Resultado</label>
+                            <input type="number" 
+                                   step="0.01" 
+                                   name="peso_final_kg" 
+                                   id="peso-final" 
+                                   required
+                                   value="{{ reproceso.peso_final_kg }}"
+                                   onchange="calcularRendimiento()"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 text-center font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Unidad</label>
+                            <input type="text" 
+                                   name="unidad_peso_final" 
+                                   list="unidades-list"
+                                   value="{{ reproceso.unidad_peso_final }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 bg-white text-center font-medium">
+                            <p class="text-xs text-blue-600 mt-1 font-medium">✓ Unidad: {{ reproceso.unidad_peso_final }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="rendimiento-display" class="mt-4 p-4 rounded-lg border-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium flex items-center">
+                        <i class="fas fa-percentage mr-2"></i>
+                        Rendimiento Calculado:
+                    </span>
+                    <span class="text-3xl font-bold" id="rendimiento-valor">{{ reproceso.rendimiento|floatformat:2 }}%</span>
+                </div>
+                <p class="text-xs text-blue-600 mt-2 font-semibold">✓ Rendimiento anterior: {{ reproceso.rendimiento|floatformat:2 }}%</p>
+            </div>
+        </div>
+
+        <datalist id="unidades-list">
+            <option value="kg">
+            <option value="libras">
+            <option value="lb">
+            <option value="quintales">
+            <option value="qq">
+        </datalist>
+
+        <div class="bg-gradient-to-r from-amber-50 to-yellow-50 p-6 rounded-lg border-l-4 border-amber-500">
+            <h3 class="font-bold text-gray-800 mb-4 text-lg flex items-center">
+                <i class="fas fa-star text-amber-600 mr-2"></i>
+                Clasificación de Café
+            </h3>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-medal text-yellow-500 mr-1"></i>
+                        Café de Primera
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Operación</label>
+                            <input type="text" 
+                                   id="operacion-primera"
+                                   value="{{ reproceso.cafe_primera }}"
+                                   placeholder="8*1.52"
+                                   oninput="calcularOperacion('primera')"
+                                   class="w-full px-3 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-600 text-sm bg-amber-50">
+                            <p class="text-xs text-amber-600 mt-1 font-medium">✓ Original: {{ reproceso.cafe_primera }}</p>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Resultado</label>
+                            <input type="number" 
+                                   step="0.01" 
+                                   name="cafe_primera" 
+                                   id="cafe-primera"
+                                   value="{{ reproceso.cafe_primera }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 text-center font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Unidad</label>
+                            <input type="text" 
+                                   name="unidad_cafe_primera" 
+                                   list="unidades-list"
+                                   value="{{ reproceso.unidad_cafe_primera }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 bg-white text-center font-medium">
+                            <p class="text-xs text-amber-600 mt-1 font-medium">✓ Unidad: {{ reproceso.unidad_cafe_primera }}</p>
+                        </div>
+                    </div>
+                    <p class="text-xs text-amber-700 mt-2 font-semibold bg-amber-100 p-2 rounded">
+                        ✓ Anterior: {{ reproceso.cafe_primera }} {{ reproceso.unidad_cafe_primera }} → {{ reproceso.sacos_cafe_primera }}
+                    </p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-medal text-gray-400 mr-1"></i>
+                        Café de Segunda
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Operación</label>
+                            <input type="text" 
+                                   id="operacion-segunda"
+                                   value="{{ reproceso.cafe_segunda }}"
+                                   placeholder="2*1.52"
+                                   oninput="calcularOperacion('segunda')"
+                                   class="w-full px-3 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-600 text-sm bg-amber-50">
+                            <p class="text-xs text-amber-600 mt-1 font-medium">✓ Original: {{ reproceso.cafe_segunda }}</p>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Resultado</label>
+                            <input type="number" 
+                                   step="0.01" 
+                                   name="cafe_segunda" 
+                                   id="cafe-segunda"
+                                   value="{{ reproceso.cafe_segunda }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 text-center font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Unidad</label>
+                            <input type="text" 
+                                   name="unidad_cafe_segunda" 
+                                   list="unidades-list"
+                                   value="{{ reproceso.unidad_cafe_segunda }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 bg-white text-center font-medium">
+                            <p class="text-xs text-amber-600 mt-1 font-medium">✓ Unidad: {{ reproceso.unidad_cafe_segunda }}</p>
+                        </div>
+                    </div>
+                    <p class="text-xs text-amber-700 mt-2 font-semibold bg-amber-100 p-2 rounded">
+                        ✓ Anterior: {{ reproceso.cafe_segunda }} {{ reproceso.unidad_cafe_segunda }} → {{ reproceso.sacos_cafe_segunda }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-red-50 to-orange-50 p-6 rounded-lg border-l-4 border-red-500">
+            <h3 class="font-bold text-gray-800 mb-4 text-lg flex items-center">
+                <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                Mermas del Reproceso
+            </h3>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-filter text-amber-500 mr-1"></i>
+                        Catadura
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Operación</label>
+                            <input type="text" 
+                                   id="operacion-catadura"
+                                   value="{{ reproceso.catadura }}"
+                                   placeholder="1*1.52"
+                                   oninput="calcularOperacion('catadura')"
+                                   class="w-full px-3 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-600 text-sm bg-red-50">
+                            <p class="text-xs text-red-600 mt-1 font-medium">✓ Original: {{ reproceso.catadura }} kg</p>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Resultado</label>
+                            <input type="number" 
+                                   step="0.01" 
+                                   name="catadura" 
+                                   id="catadura"
+                                   value="{{ reproceso.catadura }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 text-center font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Unidad</label>
+                            <input type="text" list="unidades-list" value="kg" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 bg-white text-center font-medium" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-times-circle text-red-500 mr-1"></i>
+                        Rechazo Electrónica
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Operación</label>
+                            <input type="text" 
+                                   id="operacion-rechazo_electronica"
+                                   value="{{ reproceso.rechazo_electronica }}"
+                                   placeholder="0.5*1.52"
+                                   oninput="calcularOperacion('rechazo_electronica')"
+                                   class="w-full px-3 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-600 text-sm bg-red-50">
+                            <p class="text-xs text-red-600 mt-1 font-medium">✓ Original: {{ reproceso.rechazo_electronica }} kg</p>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Resultado</label>
+                            <input type="number" 
+                                   step="0.01" 
+                                   name="rechazo_electronica" 
+                                   id="rechazo_electronica"
+                                   value="{{ reproceso.rechazo_electronica }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 text-center font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Unidad</label>
+                            <input type="text" list="unidades-list" value="kg" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 bg-white text-center font-medium" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-arrow-down text-blue-500 mr-1"></i>
+                        Bajo Zaranda
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Operación</label>
+                            <input type="text" 
+                                   id="operacion-bajo_zaranda"
+                                   value="{{ reproceso.bajo_zaranda }}"
+                                   placeholder="0.3*1.52"
+                                   oninput="calcularOperacion('bajo_zaranda')"
+                                   class="w-full px-3 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-600 text-sm bg-red-50">
+                            <p class="text-xs text-red-600 mt-1 font-medium">✓ Original: {{ reproceso.bajo_zaranda }} kg</p>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Resultado</label>
+                            <input type="number" 
+                                   step="0.01" 
+                                   name="bajo_zaranda" 
+                                   id="bajo_zaranda"
+                                   value="{{ reproceso.bajo_zaranda }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 text-center font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Unidad</label>
+                            <input type="text" list="unidades-list" value="kg" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 bg-white text-center font-medium" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-broom text-green-500 mr-1"></i>
+                        Barridos
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Operación</label>
+                            <input type="text" 
+                                   id="operacion-barridos"
+                                   value="{{ reproceso.barridos }}"
+                                   placeholder="0.2*1.52"
+                                   oninput="calcularOperacion('barridos')"
+                                   class="w-full px-3 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-600 text-sm bg-red-50">
+                            <p class="text-xs text-red-600 mt-1 font-medium">✓ Original: {{ reproceso.barridos }} kg</p>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Resultado</label>
+                            <input type="number" 
+                                   step="0.01" 
+                                   name="barridos" 
+                                   id="barridos"
+                                   value="{{ reproceso.barridos }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 text-center font-bold text-lg">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">Unidad</label>
+                            <input type="text" list="unidades-list" value="kg" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 bg-white text-center font-medium" disabled>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-red-100 p-4 rounded-lg border border-red-300">
+                    <p class="text-sm font-semibold text-red-900">✓ Merma Total Anterior: {{ reproceso.merma_total|floatformat:2 }} kg</p>
+                </div>
+            </div>
+        </div>
+
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
+                <i class="fas fa-sticky-note text-gray-500 mr-1"></i>
                 Motivo del Reproceso <span class="text-red-500">*</span>
             </label>
             <textarea name="motivo" rows="4" required
+                      placeholder="Describe por qué se realizó este reproceso..."
                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">{{ reproceso.motivo }}</textarea>
+            <div class="bg-blue-50 p-3 mt-2 rounded border-l-4 border-blue-400">
+                <p class="text-xs text-blue-700 font-semibold mb-1">✓ MOTIVO ANTERIOR:</p>
+                <p class="text-sm text-gray-700 italic">"{{ reproceso.motivo }}"</p>
+            </div>
         </div>
 
-        <!-- Botones -->
-        <div class="flex justify-end space-x-4">
+        <div class="flex justify-end space-x-4 pt-4 border-t">
             <a href="{% url 'detalle_reproceso' reproceso.id %}" 
-               class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
-                Cancelar
+               class="px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium">
+                <i class="fas fa-times mr-2"></i>Cancelar
             </a>
             <button type="submit" 
-                    class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                    class="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition font-medium shadow-lg hover:shadow-xl">
                 <i class="fas fa-save mr-2"></i>Actualizar Reproceso
             </button>
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function calcularOperacion(tipo) {
+    const operacionInput = document.getElementById('operacion-' + tipo);
+    const resultadoInput = document.getElementById(tipo === 'inicial' ? 'peso-inicial' : 
+                                                   tipo === 'final' ? 'peso-final' : 
+                                                   tipo === 'primera' ? 'cafe-primera' :
+                                                   tipo === 'segunda' ? 'cafe-segunda' :
+                                                   tipo);
+    
+    try {
+        const operacion = operacionInput.value.replace(',', '.');
+        
+        if (/^[0-9+\-*/().\s]*$/.test(operacion) && operacion.trim() !== "") {
+            const resultado = eval(operacion);
+        
+            if (!isNaN(resultado) && isFinite(resultado)) {
+                resultadoInput.value = resultado.toFixed(2);
+                
+                if (tipo === 'inicial' || tipo === 'final') {
+                    calcularRendimiento();
+                }
+            }
+        }
+    } catch (e) {}
+}
+
+function calcularRendimiento() {
+    const pesoInicial = parseFloat(document.getElementById('peso-inicial').value) || 0;
+    const pesoFinal = parseFloat(document.getElementById('peso-final').value) || 0;
+    
+    if (pesoInicial > 0 && pesoFinal > 0) {
+        const rendimiento = (pesoFinal / pesoInicial * 100);
+        document.getElementById('rendimiento-valor').textContent = rendimiento.toFixed(2) + '%';
+        
+        const display = document.getElementById('rendimiento-display');
+        const valor = document.getElementById('rendimiento-valor');
+        
+        if (rendimiento >= 80) {
+            display.className = 'mt-4 p-4 rounded-lg border-2 bg-green-50 border-green-300';
+            valor.className = 'text-3xl font-bold text-green-700';
+        } else if (rendimiento >= 70) {
+            display.className = 'mt-4 p-4 rounded-lg border-2 bg-yellow-50 border-yellow-300';
+            valor.className = 'text-3xl font-bold text-yellow-700';
+        } else {
+            display.className = 'mt-4 p-4 rounded-lg border-2 bg-red-50 border-red-300';
+            valor.className = 'text-3xl font-bold text-red-700';
+        }
+    }
+}
+
+window.addEventListener('DOMContentLoaded', calcularRendimiento);
+</script>
 {% endblock %}

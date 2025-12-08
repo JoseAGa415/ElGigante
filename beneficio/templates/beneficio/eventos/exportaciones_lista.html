@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}Listado de Exportaciones{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg shadow-lg p-6 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-3xl font-bold flex items-center">
+                    <i class="fas fa-plane-departure mr-3"></i>
+                    Historial de Exportaciones
+                </h2>
+                <p class="mt-2 text-purple-100">Registro completo de todas las exportaciones realizadas</p>
+            </div>
+            <a href="{% url 'eventos_lista' %}" 
+               class="px-6 py-3 bg-white text-purple-600 rounded-lg hover:bg-purple-50 transition font-medium shadow-md">
+                <i class="fas fa-arrow-left mr-2"></i>Volver a Eventos
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <form method="get" class="flex gap-4 items-end">
+            <div class="flex-1">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-filter text-purple-600"></i> Filtrar por Estado
+                </label>
+                <select name="estado" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                    <option value="">Todos los estados</option>
+                    <option value="preparacion" {% if request.GET.estado == 'preparacion' %}selected{% endif %}>En Preparación</option>
+                    <option value="documentacion" {% if request.GET.estado == 'documentacion' %}selected{% endif %}>Documentación</option>
+                    <option value="transito" {% if request.GET.estado == 'transito' %}selected{% endif %}>En Tránsito</option>
+                    <option value="entregada" {% if request.GET.estado == 'entregada' %}selected{% endif %}>Entregada</option>
+                    <option value="cancelada" {% if request.GET.estado == 'cancelada' %}selected{% endif %}>Cancelada</option>
+                </select>
+            </div>
+
+            <button type="submit" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                <i class="fas fa-search mr-2"></i>Filtrar
+            </button>
+
+            {% if request.GET.estado %}
+            <a href="{% url 'exportaciones_lista' %}" 
+               class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                <i class="fas fa-times mr-2"></i>Limpiar
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Estadísticas Rápidas -->
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+            <p class="text-sm text-gray-600 uppercase font-semibold">Total</p>
+            <p class="text-3xl font-bold text-gray-800">{{ exportaciones.count }}</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500">
+            <p class="text-sm text-gray-600 uppercase font-semibold">Preparación</p>
+            <p class="text-3xl font-bold text-gray-800">
+                {{ exportaciones|length }}
+            </p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-orange-500">
+            <p class="text-sm text-gray-600 uppercase font-semibold">En Tránsito</p>
+            <p class="text-3xl font-bold text-gray-800">
+                {{ exportaciones|length }}
+            </p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+            <p class="text-sm text-gray-600 uppercase font-semibold">Entregadas</p>
+            <p class="text-3xl font-bold text-gray-800">
+                {{ exportaciones|length }}
+            </p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
+            <p class="text-sm text-gray-600 uppercase font-semibold">Canceladas</p>
+            <p class="text-3xl font-bold text-gray-800">
+                {{ exportaciones|length }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Tabla de Exportaciones -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="p-6 bg-gray-50 border-b border-gray-200">
+            <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-globe mr-2 text-purple-600"></i>
+                Listado de Exportaciones
+            </h3>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Código</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Fecha</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Producto</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Destino</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Peso (kg)</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Precio Total</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Estado</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for exportacion in exportaciones %}
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="font-mono font-semibold text-gray-800">{{ exportacion.codigo_exportacion }}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            {{ exportacion.fecha_exportacion|date:"d/m/Y" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 rounded text-xs font-semibold
+                                {% if exportacion.tipo_producto == 'procesado' %}bg-amber-100 text-amber-800
+                                {% elif exportacion.tipo_producto == 'reproceso' %}bg-purple-100 text-purple-800
+                                {% else %}bg-green-100 text-green-800{% endif %}">
+                                {{ exportacion.producto_descripcion }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div>
+                                <p class="font-semibold text-gray-800">
+                                    <i class="fas fa-flag text-blue-600"></i> {{ exportacion.pais_destino }}
+                                </p>
+                                {% if exportacion.ciudad_destino %}
+                                <p class="text-xs text-gray-500">{{ exportacion.ciudad_destino }}</p>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="font-semibold text-gray-800">{{ exportacion.peso_exportado_kg|floatformat:2 }} kg</span>
+                            <span class="text-xs text-gray-500 block">({{ exportacion.quintales_exportados|floatformat:2 }} qq)</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="font-bold text-green-600">Q {{ exportacion.precio_total|floatformat:2 }}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold
+                                {% if exportacion.estado == 'entregada' %}bg-green-100 text-green-800
+                                {% elif exportacion.estado == 'transito' %}bg-blue-100 text-blue-800
+                                {% elif exportacion.estado == 'documentacion' %}bg-orange-100 text-orange-800
+                                {% elif exportacion.estado == 'preparacion' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-red-100 text-red-800{% endif %}">
+                                {% if exportacion.estado == 'entregada' %}<i class="fas fa-check-circle"></i>
+                                {% elif exportacion.estado == 'transito' %}<i class="fas fa-ship"></i>
+                                {% elif exportacion.estado == 'documentacion' %}<i class="fas fa-file-alt"></i>
+                                {% elif exportacion.estado == 'preparacion' %}<i class="fas fa-box-open"></i>
+                                {% else %}<i class="fas fa-times-circle"></i>{% endif %}
+                                {{ exportacion.get_estado_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <a href="{% url 'exportacion_detalle' exportacion.id %}"
+                               class="px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 transition text-sm font-medium"
+                               title="Ver Detalles">
+                                <i class="fas fa-eye"></i> Ver
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="px-6 py-12 text-center">
+                            <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+                            <p class="text-gray-500 text-lg">No hay exportaciones registradas</p>
+                            <a href="{% url 'eventos_lista' %}" 
+                               class="mt-4 inline-block px-6 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition">
+                                <i class="fas fa-plus mr-2"></i>Crear Primera Exportación
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

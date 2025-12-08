@@ -1,358 +1,569 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Crear Procesado - Beneficio de Café{% endblock %}
+{% block title %}Crear Procesado - Lote {{ lote.codigo }}{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto space-y-6">
-    <!-- Header -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-2xl font-bold text-gray-800 flex items-center">
-            <i class="fas fa-cogs mr-3 text-amber-600"></i>
-            Crear Nuevo Procesado/Trilla
-        </h2>
-        <p class="text-gray-600 mt-2">Registrar proceso de trilla de café del lote <strong>{{ lote.codigo }}</strong></p>
-    </div>
-
-    <!-- Formulario -->
-    <form method="post" class="bg-white rounded-lg shadow-md p-6 space-y-6">
-        {% csrf_token %}
+<div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <!-- Número de Trilla -->
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-                Número de Trilla <span class="text-red-500">*</span>
-            </label>
-            <input type="text" name="numero_trilla" required
-                   placeholder="Ej: T-2025-001"
-                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600">
-        </div>
-
-        <!--  Fecha de Procesado -->
-<div>
-    <label class="block text-sm font-medium text-gray-700 mb-2">
-        Fecha de Procesado <span class="text-red-500">*</span>
-    </label>
-    <input type="datetime-local" name="fecha" required
-           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600">
-</div>
-        
-        <!-- NUEVOS CAMPOS: Encargado y Personas -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Encargado de la Trilla <span class="text-red-500">*</span>
-                </label>
-                <input type="text" name="encargado_trilla" required
-                       placeholder="Nombre del encargado"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600">
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Personas Trabajando <span class="text-red-500">*</span>
-                </label>
-                <input type="number" name="personas_trabajando" min="1" required
-                       placeholder="Número de personas"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600">
-            </div>
-        </div>
-
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-                Estado del Proceso <span class="text-red-500">*</span>
-            </label>
-            <select name="estado" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 bg-white">
-                <option value="en_proceso" selected>En Proceso</option>
-                <option value="pendiente">Pendiente</option>
-                <option value="completado">Completado</option>
-            </select>
-            <p class="text-xs text-gray-500 mt-1">Los procesos "En Proceso" y "Pendiente" aparecerán primero en la lista</p>
-        </div>
-
-        <!-- Tipo de Café con Datalist -->
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-                Tipo de Café <span class="text-red-500">*</span>
-            </label>
-            <input type="text" 
-                   name="tipo_cafe" 
-                   list="tipos-cafe-list"
-                   value="{{ lote.tipo_cafe }}"
-                   required
-                   placeholder="Ej: Arábica, Robusta, Geisha, Pacamara, Bourbon..."
-                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
-            <datalist id="tipos-cafe-list">
-                <option value="Arábica">
-                <option value="Robusta">
-                <option value="Geisha">
-                <option value="Pacamara">
-                <option value="Bourbon">
-                <option value="Caturra">
-                <option value="Catuaí">
-                <option value="Typica">
-                <option value="Maragogipe">
-                <option value="Mundo Novo">
-                <option value="SL28">
-                <option value="SL34">
-                <option value="Liberica">
-                <option value="Villa Sarchi">
-                <option value="Tekisic">
-                <option value="Pache">
-            </datalist>
-            <p class="text-xs text-gray-500 mt-1">Escribe la variedad o selecciona del listado. Las nuevas variedades se guardarán automáticamente.</p>
+        <!-- Encabezado -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                <i class="fas fa-cogs text-amber-600"></i>
+                Crear Nuevo Procesado/Trilla
+            </h1>
+            <p class="mt-2 text-gray-600">
+                Registrar proceso de trilla de café del lote <strong class="text-amber-700">{{ lote.codigo }}</strong>
+            </p>
         </div>
 
         <!-- Información del Lote -->
-        <div class="bg-gray-50 p-4 rounded-lg">
-            <h3 class="font-bold text-gray-700 mb-2">Información del Lote</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div>
-                    <span class="text-gray-600">Código:</span>
-                    <span class="font-semibold ml-2">{{ lote.codigo }}</span>
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <i class="fas fa-info-circle text-blue-600"></i>
+                Información del Lote
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Código</p>
+                    <p class="text-lg font-bold text-gray-900">{{ lote.codigo }}</p>
                 </div>
-                <div>
-                    <span class="text-gray-600">Tipo:</span>
-                    <span class="font-semibold ml-2">{{ lote.tipo_cafe }}</span>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Tipo</p>
+                    <p class="text-lg font-bold text-gray-900">{{ lote.tipo_cafe }}</p>
                 </div>
-                <div>
-                    <span class="text-gray-600">Bodega:</span>
-                    <span class="font-semibold ml-2">{{ lote.bodega.codigo }}</span>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Bodega</p>
+                    <p class="text-lg font-bold text-gray-900">{{ lote.bodega.codigo }}</p>
                 </div>
-                <div>
-                    <span class="text-gray-600">Peso:</span>
-                    <span class="font-semibold ml-2">{{ lote.peso_kg|floatformat:2 }} kg</span>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Peso Total</p>
+                    <p class="text-lg font-bold text-gray-900">{{ lote.peso_kg }} kg</p>
+                    <p class="text-xs text-gray-500">{{ lote.peso_en_quintales|floatformat:2 }} qq</p>
                 </div>
-            </div>
-        </div>
-
-        <!-- Pesos -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Peso Inicial <span class="text-red-500">*</span>
-                </label>
-                <div class="flex gap-2 items-center">
-                    <input type="number" step="0.01" name="peso_inicial_kg" id="peso-inicial" required
-                           class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600"
-                           placeholder="0.00" onchange="calcularRendimiento()">
-                    <input type="text" name="unidad_peso_inicial" 
-                           placeholder="kg, lb, g..."
-                           list="unidades-list"
-                           class="w-28 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 bg-white text-center"
-                           value="kg">
-                </div>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Peso Final <span class="text-red-500">*</span>
-                </label>
-                <div class="flex gap-2 items-center">
-                    <input type="number" step="0.01" name="peso_final_kg" id="peso-final" required
-                           class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600"
-                           placeholder="0.00" onchange="calcularRendimiento()">
-                    <input type="text" name="unidad_peso_final" 
-                           placeholder="kg, lb, g..."
-                           list="unidades-list"
-                           class="w-28 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 bg-white text-center"
-                           value="kg">
+                <div class="bg-green-50 p-4 rounded-lg border-2 border-green-500">
+                    <p class="text-xs text-green-600 uppercase font-semibold mb-1">Disponible</p>
+                    <p class="text-2xl font-bold text-green-700">{{ lote.peso_disponible|floatformat:2 }}</p>
+                    <p class="text-xs text-green-600">kg ({{ lote.peso_disponible_qq|floatformat:2 }} qq)</p>
+                    {% if lote.peso_procesado > 0 %}
+                        <p class="text-xs text-gray-500 mt-1">Ya procesado: {{ lote.porcentaje_procesado|floatformat:0 }}%</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
-
-        <!-- Datalist para sugerencias de unidades -->
-        <datalist id="unidades-list">
-            <option value="kg">
-            <option value="libras">
-            <option value="lb">
-            <option value="gramos">
-            <option value="g">
-            <option value="quintales">
-            <option value="qq">
-            <option value="ton">
-            <option value="onzas">
-            <option value="oz">
-            <option value="sacos">
-        </datalist>
-
-        <!-- Clasificación de Café -->
-        <div>
-            <h3 class="font-bold text-gray-700 mb-3">Clasificación de Café</h3>
+         <!-- SECCIÓN: INFORMACIÓN DEL PERSONAL -->
+        <div class="bg-gradient-to-r from-purple-50 to-indigo-50 p-6 rounded-lg border-2 border-purple-300">
+            <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
+                <i class="fas fa-users text-purple-600"></i>
+                Información del Personal
+            </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Café de Primera</label>
-                    <div class="flex gap-2 items-center">
-                        <input type="number" step="0.01" name="cafe_primera" value="0"
-                               class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
-                        <input type="text" name="unidad_cafe_primera" 
-                               placeholder="kg, lb, g..."
-                               list="unidades-list"
-                               class="w-28 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 bg-white text-center"
-                               value="kg">
-                    </div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-user-tie text-blue-600 mr-1"></i>
+                        Persona Encargada <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" 
+                           name="encargado_mezcla"
+                           required
+                           placeholder="Nombre del encargado"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 font-semibold">
+                    <p class="text-xs text-gray-500 mt-1">Persona responsable de la mezcla</p>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Café de Segunda</label>
-                    <div class="flex gap-2 items-center">
-                        <input type="number" step="0.01" name="cafe_segunda" value="0"
-                               class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
-                        <input type="text" name="unidad_cafe_segunda" 
-                               placeholder="kg, lb, g..."
-                               list="unidades-list"
-                               class="w-28 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 bg-white text-center"
-                               value="kg">
-                    </div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-users text-green-600 mr-1"></i>
+                        Cantidad de Personal <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" 
+                           name="personas_trabajando"
+                           min="1"
+                           required
+                           placeholder="0"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 font-semibold text-lg">
+                    <p class="text-xs text-gray-500 mt-1">Número de personas que trabajaron ese día</p>
                 </div>
             </div>
         </div>
+        <!-- Formulario -->
+        <form method="post" class="bg-white rounded-xl shadow-lg p-8 space-y-8">
+            {% csrf_token %}
 
-        <!-- Indicador de Rendimiento -->
-        <div id="rendimiento-display" class="hidden bg-blue-50 border border-blue-200 p-4 rounded-lg">
-            <div class="flex items-center justify-between">
-                <span class="text-sm font-medium text-blue-700">Rendimiento Estimado:</span>
-                <span class="text-2xl font-bold text-blue-900" id="rendimiento-valor">0%</span>
+            <!-- Alerta informativa -->
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4">
+                <div class="flex">
+                    <i class="fas fa-info-circle text-blue-600 text-xl mr-3"></i>
+                    <div>
+                        <p class="text-sm text-blue-800">
+                            El número de trilla se generará automáticamente (Ej: T-0001, T-0002, etc.)
+                        </p>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <!-- Mermas -->
-<div>
-    <h3 class="font-bold text-gray-700 mb-4 text-lg">Mermas del Proceso</h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Catadura -->
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-                <i class="fas fa-filter text-amber-500 mr-1"></i>Catadura
-            </label>
-            <div class="flex gap-2 items-center">
-                <input type="number" step="0.01" name="catadura" value="0"
-                       class="w-32 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 text-center">
-                <input type="text" 
-                       list="unidades-list"
-                       placeholder="unidad"
-                       class="w-20 px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 bg-white text-center text-sm"
-                       value="kg">
+            <!-- SECCIÓN: HORARIO DEL PROCESO -->
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border-2 border-blue-300">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-clock text-blue-600"></i>
+                    Horario del Proceso
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Fecha de Procesado <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date" 
+                               name="fecha_procesado"
+                               value="{{ today|date:'Y-m-d' }}"
+                               required
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+                        <p class="text-xs text-gray-500 mt-1">Fecha del proceso de trilla</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Hora de Inicio <span class="text-red-500">*</span>
+                        </label>
+                        <input type="time" 
+                               name="hora_inicio"
+                               required
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+                        <p class="text-xs text-gray-500 mt-1">Hora en que inició el procesamiento</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Hora Final <span class="text-red-500">*</span>
+                        </label>
+                        <input type="time" 
+                               name="hora_final"
+                               required
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+                        <p class="text-xs text-gray-500 mt-1">Hora en que finalizó el procesamiento</p>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <!-- Rechazo Electrónica -->
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-                <i class="fas fa-times-circle text-red-500 mr-1"></i>Rechazo Electrónica
-            </label>
-            <div class="flex gap-2 items-center">
-                <input type="number" step="0.01" name="rechazo_electronica" value="0"
-                       class="w-32 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 text-center">
-                <input type="text" 
-                       list="unidades-list"
-                       placeholder="unidad"
-                       class="w-20 px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 bg-white text-center text-sm"
-                       value="kg">
+            <!-- SECCIÓN: BODEGA DE ALMACENAMIENTO -->
+            <div class="bg-amber-50 border-l-4 border-amber-500 p-6 rounded-lg">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-warehouse text-amber-600"></i>
+                    Bodega de Almacenamiento
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            ¿En qué bodega quedó el café? <span class="text-red-500">*</span>
+                        </label>
+                        <select name="bodega_destino" 
+                                required
+                                class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                            <option value="">Seleccione bodega...</option>
+                            {% for bodega in bodegas %}
+                            <option value="{{ bodega.id }}" {% if bodega.id == lote.bodega.id %}selected{% endif %}>
+                                Bodega {{ bodega.codigo }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="text-xs text-blue-600 font-semibold mb-1">BODEGA ORIGINAL</p>
+                        <p class="text-xl font-bold text-gray-900">Bodega {{ lote.bodega.codigo }}</p>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <!-- Bajo Zaranda -->
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-                <i class="fas fa-arrow-down text-blue-500 mr-1"></i>Bajo Zaranda
-            </label>
-            <div class="flex gap-2 items-center">
-                <input type="number" step="0.01" name="bajo_zaranda" value="0"
-                       class="w-32 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 text-center">
-                <input type="text" 
-                       list="unidades-list"
-                       placeholder="unidad"
-                       class="w-20 px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 bg-white text-center text-sm"
-                       value="kg">
+            <!-- SECCIÓN: PESO DE REFERENCIA PARA SACOS -->
+            <div class="bg-purple-50 border-l-4 border-purple-500 p-6 rounded-lg">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-box text-purple-600"></i>
+                    Peso de Referencia para Sacos
+                </h2>
+                <p class="text-sm text-gray-600 mb-4">
+                    Define el peso estándar de tus sacos para calcular automáticamente cuántos sacos obtendrás
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Peso del Saco <span class="text-red-500">*</span>
+                        </label>
+                        <div class="flex gap-2">
+                            <input type="number" 
+                                   step="0.01"
+                                   name="peso_saco_referencia"
+                                   value="69"
+                                   required
+                                   placeholder="69"
+                                   class="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-600 font-semibold text-lg">
+                            <select name="unidad_saco_referencia" 
+                                    class="px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-600 bg-white font-semibold">
+                                <option value="kg" selected>kg</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Peso estándar de cada saco (ej: 69 kg, 152 lb)</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg border-2 border-purple-300">
+                        <p class="text-xs text-purple-600 font-semibold uppercase mb-2">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Ejemplos Comunes
+                        </p>
+                        <ul class="text-sm text-gray-700 space-y-1">
+                            <li>• <strong>69 kg</strong> - Sacos estándar</li>
+                            <li>• <strong>152 lb</strong> - Sacos de 152 libras</li>
+                            <li>• <strong>46 kg</strong> - Quintales</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <!-- Barridos -->
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-                <i class="fas fa-broom text-green-500 mr-1"></i>Barridos
-            </label>
-            <div class="flex gap-2 items-center">
-                <input type="number" step="0.01" name="barridos" value="0"
-                       class="w-32 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 text-center">
-                <input type="text" 
-                       list="unidades-list"
-                       placeholder="unidad"
-                       class="w-20 px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 bg-white text-center text-sm"
-                       value="kg">
+            <!-- SECCIÓN: PESOS DEL PROCESADO -->
+            <div class="border-l-4 border-blue-500 bg-blue-50 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-balance-scale text-blue-600"></i>
+                    Pesos del Procesado
+                </h2>
+                
+                <!-- Peso Inicial -->
+                <div class="mb-6">
+                    <label class="flex items-center text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-arrow-down text-green-600 mr-2"></i>
+                        Peso Inicial <span class="text-red-500 ml-1">*</span>
+                    </label>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Operación</label>
+                            <input type="text" 
+                                   name="operacion_peso_inicial"
+                                   placeholder="Ej: 13*1.52+0.58"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Resultado</label>
+                            <input type="number" 
+                                   step="0.01"
+                                   name="peso_inicial_kg"
+                                   required
+                                   placeholder="0.00"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 font-semibold">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Unidad</label>
+                            <select name="unidad_peso_inicial" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 bg-white font-semibold text-center">
+                                <option value="kg" selected>kg</option>
+                                <option value="qq">qq</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Peso del café antes de procesar</p>
+                </div>
+
+                <!-- Peso Final -->
+                <div>
+                    <label class="flex items-center text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-arrow-up text-blue-600 mr-2"></i>
+                        Peso Final <span class="text-red-500 ml-1">*</span>
+                    </label>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Operación</label>
+                            <input type="text" 
+                                   name="operacion_peso_final"
+                                   placeholder="Ej: 8*1.52"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Resultado</label>
+                            <input type="number" 
+                                   step="0.01"
+                                   name="peso_final_kg"
+                                   required
+                                   placeholder="0.00"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 font-semibold">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Unidad</label>
+                            <select name="unidad_peso_final" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 bg-white font-semibold text-center">
+                                <option value="kg" selected>kg</option>
+                                <option value="qq">qq</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Peso del café después de procesar</p>
+                </div>
+
+                <!-- Rendimiento Calculado -->
+                <div class="mt-6 bg-white p-4 rounded-lg border-2 border-blue-300">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-gray-700">
+                            <i class="fas fa-percent text-blue-600 mr-2"></i>
+                            Rendimiento Calculado:
+                        </span>
+                        <span class="text-2xl font-bold text-blue-600" id="rendimiento">0.00%</span>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-</div>
 
-        <!-- Observaciones -->
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Observaciones</label>
-            <textarea name="observaciones" rows="4"
-                      placeholder="Notas adicionales sobre el procesado..."
-                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600"></textarea>
-        </div>
+            <!-- SECCIÓN: CLASIFICACIÓN DEL CAFÉ -->
+            <div class="border-l-4 border-yellow-500 bg-yellow-50 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-star text-yellow-600"></i>
+                    Clasificación del Café
+                </h2>
+                
+                <!-- Café de Primera -->
+                <div class="mb-4">
+                    <label class="flex items-center text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-trophy text-yellow-600 mr-2"></i>
+                        Café de Primera
+                    </label>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Operación</label>
+                            <input type="text" 
+                                   name="operacion_cafe_primera"
+                                   placeholder="Ej: 8*1.52"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-600">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Resultado</label>
+                            <input type="number" 
+                                   step="0.01"
+                                   name="cafe_primera"
+                                   value="0"
+                                   placeholder="0"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-600 font-semibold">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Unidad</label>
+                            <select name="unidad_cafe_primera" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-600 bg-white font-semibold text-center">
+                                <option value="kg" selected>kg</option>
+                                <option value="qq">qq</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
 
-        <!-- Botones -->
-        <div class="flex justify-end space-x-4">
-            <a href="{% url 'lista_procesados' %}" 
-               class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
-                Cancelar
-            </a>
-            <button type="submit" 
-                    class="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition">
-                <i class="fas fa-save mr-2"></i>Guardar Procesado
-            </button>
-        </div>
-    </form>
-</div>
+                <!-- Café de Segunda -->
+                <div>
+                    <label class="flex items-center text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-medal text-gray-500 mr-2"></i>
+                        Café de Segunda
+                    </label>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Operación</label>
+                            <input type="text" 
+                                   name="operacion_cafe_segunda"
+                                   placeholder="Ej: 2*1.52"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-600">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Resultado</label>
+                            <input type="number" 
+                                   step="0.01"
+                                   name="cafe_segunda"
+                                   value="0"
+                                   placeholder="0"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-600 font-semibold">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Unidad</label>
+                            <select name="unidad_cafe_segunda" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-600 bg-white font-semibold text-center">
+                                <option value="kg" selected>kg</option>
+                                <option value="qq">qq</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-<script>
-function calcularRendimiento() {
-    const pesoInicial = parseFloat(document.getElementById('peso-inicial').value) || 0;
-    const pesoFinal = parseFloat(document.getElementById('peso-final').value) || 0;
+            <script>
+// ========================================
+// CALCULADORA DE OPERACIONES MATEMÁTICAS
+// ========================================
+
+function evaluarOperacion(inputOperacion, inputResultado) {
+    const operacion = inputOperacion.value.trim();
     
-    if (pesoInicial > 0 && pesoFinal > 0) {
-        const rendimiento = (pesoFinal / pesoInicial * 100).toFixed(2);
-        document.getElementById('rendimiento-display').classList.remove('hidden');
-        document.getElementById('rendimiento-valor').textContent = rendimiento + '%';
+    if (!operacion) return;
+    
+    try {
+        // Reemplazar x y X por *
+        const operacionLimpia = operacion.replace(/x|X/g, '*');
         
-        // Cambiar color según rendimiento
-        const display = document.getElementById('rendimiento-display');
-        if (rendimiento >= 80) {
-            display.className = 'bg-green-50 border border-green-200 p-4 rounded-lg';
-            document.getElementById('rendimiento-valor').className = 'text-2xl font-bold text-green-900';
-        } else if (rendimiento >= 70) {
-            display.className = 'bg-yellow-50 border border-yellow-200 p-4 rounded-lg';
-            document.getElementById('rendimiento-valor').className = 'text-2xl font-bold text-yellow-900';
-        } else {
-            display.className = 'bg-red-50 border border-red-200 p-4 rounded-lg';
-            document.getElementById('rendimiento-valor').className = 'text-2xl font-bold text-red-900';
+        // Evaluar la operación
+        const resultado = eval(operacionLimpia);
+        
+        if (!isNaN(resultado) && isFinite(resultado)) {
+            inputResultado.value = resultado.toFixed(2);
+            
+            // Disparar evento para recalcular rendimiento
+            inputResultado.dispatchEvent(new Event('input'));
         }
-    } else {
-        document.getElementById('rendimiento-display').classList.add('hidden');
+    } catch (error) {
+        console.error('Error en operación:', error);
+        alert('⚠️ Operación inválida. Usa formato: 13*1.52+0.58');
     }
 }
 
-// Guardar nuevas variedades en localStorage para historial
-document.querySelector('form').addEventListener('submit', function() {
-    const tipoCafe = document.querySelector('input[name="tipo_cafe"]').value;
-    if (tipoCafe) {
-        let variedades = JSON.parse(localStorage.getItem('variedadesCafe') || '[]');
-        if (!variedades.includes(tipoCafe)) {
-            variedades.push(tipoCafe);
-            localStorage.setItem('variedadesCafe', JSON.stringify(variedades));
-        }
+// Configurar calculadoras para todos los campos
+const calculadoras = [
+    { operacion: 'operacion_peso_inicial', resultado: 'peso_inicial_kg' },
+    { operacion: 'operacion_peso_final', resultado: 'peso_final_kg' },
+    { operacion: 'operacion_cafe_primera', resultado: 'cafe_primera' },
+    { operacion: 'operacion_cafe_segunda', resultado: 'cafe_segunda' }
+];
+
+calculadoras.forEach(calc => {
+    const inputOp = document.querySelector(`input[name="${calc.operacion}"]`);
+    const inputRes = document.querySelector(`input[name="${calc.resultado}"]`);
+    
+    if (inputOp && inputRes) {
+        // Calcular al perder el foco
+        inputOp.addEventListener('blur', () => evaluarOperacion(inputOp, inputRes));
+        
+        // Calcular al presionar Enter
+        inputOp.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                evaluarOperacion(inputOp, inputRes);
+            }
+        });
     }
 });
 
-// Cargar variedades guardadas al cargar la página
+          </script>  
+            <!-- SECCIÓN: MERMAS Y RECHAZOS -->
+            <div class="border-l-4 border-red-500 bg-red-50 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-exclamation-triangle text-red-600"></i>
+                    Mermas del Procesado
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Catadura (kg)</label>
+                        <input type="number" step="0.01" name="catadura" value="0" placeholder="0.00"
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-red-600">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Rechazo Electrónica (kg)</label>
+                        <input type="number" step="0.01" name="rechazo_electronica" value="0" placeholder="0.00"
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-red-600">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Bajo Zaranda (kg)</label>
+                        <input type="number" step="0.01" name="bajo_zaranda" value="0" placeholder="0.00"
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-red-600">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Barridos (kg)</label>
+                        <input type="number" step="0.01" name="barridos" value="0" placeholder="0.00"
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-red-600">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN: OBSERVACIONES -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-comment-alt text-gray-600 mr-2"></i>
+                    Observaciones
+                </label>
+                <textarea name="observaciones" 
+                          rows="4"
+                          placeholder="Notas adicionales sobre el procesado..."
+                          class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600"></textarea>
+            </div>
+
+            <!-- Botones -->
+            <div class="flex justify-end space-x-4 pt-6 border-t">
+                <a href="{% url 'seleccionar_lote_procesar' %}" 
+                   class="px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium text-gray-700">
+                    <i class="fas fa-times mr-2"></i>
+                    Cancelar
+                </a>
+                <button type="submit" 
+                        class="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition font-medium shadow-lg hover:shadow-xl">
+                    <i class="fas fa-save mr-2"></i>
+                    Registrar Procesado
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Peso máximo disponible del lote
+const pesoMaximoDisponible = {{ lote.peso_disponible }};
+
+// Validación de peso máximo
+function validarPesoMaximo() {
+    const pesoAProcesar = parseFloat(document.querySelector('input[name="peso_inicial_kg"]').value) || 0;
+    
+    if (pesoAProcesar > pesoMaximoDisponible) {
+        alert(`❌ ERROR: No puedes procesar ${pesoAProcesar.toFixed(2)} kg.\n\nSolo hay ${pesoMaximoDisponible.toFixed(2)} kg disponibles en el lote.\n\nPeso ya procesado: {{ lote.peso_procesado|floatformat:2 }} kg de {{ lote.peso_kg }} kg totales.`);
+        document.querySelector('input[name="peso_inicial_kg"]').value = pesoMaximoDisponible.toFixed(2);
+        return false;
+    }
+    return true;
+}
+
+// Calcular rendimiento en tiempo real
+function calcularRendimiento() {
+    const pesoInicial = parseFloat(document.querySelector('input[name="peso_inicial_kg"]').value) || 0;
+    const pesoFinal = parseFloat(document.querySelector('input[name="peso_final_kg"]').value) || 0;
+    
+    if (pesoInicial > 0) {
+        const rendimiento = (pesoFinal / pesoInicial) * 100;
+        document.getElementById('rendimiento').textContent = rendimiento.toFixed(2) + '%';
+    } else {
+        document.getElementById('rendimiento').textContent = '0.00%';
+    }
+}
+
+// Listeners para calcular rendimiento
+document.querySelector('input[name="peso_inicial_kg"]').addEventListener('input', calcularRendimiento);
+document.querySelector('input[name="peso_final_kg"]').addEventListener('input', calcularRendimiento);
+
+// Validar al perder el foco del campo
+document.querySelector('input[name="peso_inicial_kg"]').addEventListener('blur', validarPesoMaximo);
+
+// Validación de horas y peso en el submit
+document.querySelector('form').addEventListener('submit', function(e) {
+    const horaInicio = document.querySelector('input[name="hora_inicio"]').value;
+    const horaFinal = document.querySelector('input[name="hora_final"]').value;
+    
+    // Validar horas
+    if (horaInicio && horaFinal && horaFinal < horaInicio) {
+        e.preventDefault();
+        alert('⚠️ La hora final no puede ser menor que la hora de inicio.');
+        return false;
+    }
+    
+    // Validar peso máximo
+    if (!validarPesoMaximo()) {
+        e.preventDefault();
+        return false;
+    }
+});
+
+// Auto-completar hora actual
 window.addEventListener('DOMContentLoaded', function() {
-    const datalist = document.getElementById('tipos-cafe-list');
-    const variedades = JSON.parse(localStorage.getItem('variedadesCafe') || '[]');
-    variedades.forEach(function(variedad) {
-        const option = document.createElement('option');
-        option.value = variedad;
-        datalist.appendChild(option);
-    });
+    const now = new Date();
+    const horaActual = now.toTimeString().slice(0, 5);
+    
+    const inputHoraInicio = document.querySelector('input[name="hora_inicio"]');
+    if (inputHoraInicio && !inputHoraInicio.value) {
+        inputHoraInicio.value = horaActual;
+    }
 });
 </script>
 {% endblock %}

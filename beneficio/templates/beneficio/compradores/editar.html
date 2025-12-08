@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Editar Comprador{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <form method="post" class="bg-white rounded-xl shadow-lg p-8 space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                    <i class="fas fa-user-edit text-blue-600"></i>
+                    Editar Comprador
+                </h1>
+                <p class="mt-2 text-gray-600">Modifica la información del comprador.</p>
+            </div>
+
+            <hr>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Nombre Completo <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" 
+                           name="nombre" 
+                           value="{{ comprador.nombre }}"
+                           required
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Empresa (Opcional)
+                    </label>
+                    <input type="text" 
+                           name="empresa" 
+                           value="{{ comprador.empresa|default:'' }}"
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Teléfono (Opcional)
+                    </label>
+                    <input type="tel" 
+                           name="telefono" 
+                           value="{{ comprador.telefono|default:'' }}"
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Email (Opcional)
+                    </label>
+                    <input type="email" 
+                           name="email" 
+                           value="{{ comprador.email|default:'' }}"
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Dirección (Opcional)
+                </label>
+                <textarea name="direccion" 
+                          rows="3"
+                          class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">{{ comprador.direccion|default:'' }}</textarea>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Notas (Opcional)
+                </label>
+                <textarea name="notas" 
+                          rows="3"
+                          class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">{{ comprador.notas|default:'' }}</textarea>
+            </div>
+
+            <div class="flex justify-end space-x-4 pt-4 border-t">
+                <a href="{% url 'detalle_comprador' comprador.pk %}" 
+                   class="px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium text-gray-700">
+                    Cancelar
+                </a>
+                <button type="submit" 
+                        class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-lg hover:shadow-xl">
+                    <i class="fas fa-save mr-2"></i>
+                    Actualizar Comprador
+                </button>
+            </div>
+            
+        </form>
+    </div>
+</div>
+{% endblock %}
