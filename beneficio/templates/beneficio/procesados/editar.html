@@ -1,225 +1,558 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Editar Procesado - {{ procesado.numero_trilla }}{% endblock %}
+{% block title %}Editar Procesado #{{ procesado.numero_trilla }}{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto space-y-6">
-    <!-- Header -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-2xl font-bold text-gray-800 flex items-center">
-            <i class="fas fa-edit mr-3 text-blue-600"></i>
-            Editar Procesado/Trilla #{{ procesado.numero_trilla }}
-        </h2>
-        <p class="text-gray-600 mt-2">Dar seguimiento al proceso de trilla del lote <strong>{{ procesado.lote.codigo }}</strong></p>
-    </div>
-
-    <!-- Formulario -->
-    <form method="post" class="bg-white rounded-lg shadow-md p-6 space-y-6">
-        {% csrf_token %}
+<div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <!-- Número de Trilla (solo lectura) -->
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-                Número de Trilla
-            </label>
-            <input type="text" value="{{ procesado.numero_trilla }}" readonly
-                   class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed">
-        </div>
-
-        <!-- Tipo de Café y Estado del Proceso -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Tipo de Café
-                </label>
-                <input type="text" value="{{ procesado.lote.tipo_cafe }}" readonly
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-amber-50 font-semibold text-amber-800 cursor-not-allowed">
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Estado del Proceso <span class="text-red-500">*</span>
-                </label>
-                <select name="estado_proceso" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
-                    <option value="en_proceso">En Proceso</option>
-                    <option value="completado">Completado</option>
-                    <option value="pendiente">Pendiente</option>
-                </select>
-                <p class="text-xs text-gray-500 mt-1">Actualiza el estado según el avance del procesado</p>
-            </div>
-        </div>
-
-        <!-- Información del Lote -->
-        <div class="bg-gray-50 p-4 rounded-lg">
-            <h3 class="font-bold text-gray-700 mb-2">Información del Lote</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div>
-                    <span class="text-gray-600">Código:</span>
-                    <span class="font-semibold ml-2">{{ procesado.lote.codigo }}</span>
-                </div>
-                <div>
-                    <span class="text-gray-600">Bodega:</span>
-                    <span class="font-semibold ml-2">{{ procesado.lote.bodega.codigo }}</span>
-                </div>
-                <div>
-                    <span class="text-gray-600">Fecha inicial:</span>
-                    <span class="font-semibold ml-2">{{ procesado.fecha|date:"d/m/Y" }}</span>
-                </div>
-                <div>
-                    <span class="text-gray-600">Proveedor:</span>
-                    <span class="font-semibold ml-2">{{ procesado.lote.proveedor }}</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Pesos -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Peso Inicial <span class="text-red-500">*</span>
-                </label>
-                <div class="flex gap-2">
-                    <input type="number" step="0.01" name="peso_inicial_kg" id="peso-inicial" required
-                           value="{{ procesado.peso_inicial_kg|floatformat:2 }}"
-                           class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600"
-                           oninput="calcularRendimiento()">
-                    <select name="unidad_peso_inicial" class="w-32 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
-                        <option value="kg" {% if procesado.unidad_peso_inicial == 'kg' %}selected{% endif %}>kg</option>
-                        <option value="libras" {% if procesado.unidad_peso_inicial == 'libras' %}selected{% endif %}>libras</option>
-                        <option value="gramos" {% if procesado.unidad_peso_inicial == 'gramos' %}selected{% endif %}>gramos</option>
-                    </select>
-                </div>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Peso Final <span class="text-red-500">*</span>
-                </label>
-                <div class="flex gap-2">
-                    <input type="number" step="0.01" name="peso_final_kg" id="peso-final" required
-                           value="{{ procesado.peso_final_kg|floatformat:2 }}"
-                           class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600"
-                           oninput="calcularRendimiento()">
-                    <select name="unidad_peso_final" class="w-32 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
-                        <option value="kg" {% if procesado.unidad_peso_final == 'kg' %}selected{% endif %}>kg</option>
-                        <option value="libras" {% if procesado.unidad_peso_final == 'libras' %}selected{% endif %}>libras</option>
-                        <option value="gramos" {% if procesado.unidad_peso_final == 'gramos' %}selected{% endif %}>gramos</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <!-- Clasificación de Café -->
-        <div>
-            <h3 class="font-bold text-gray-700 mb-3">Clasificación de Café</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Café de Primera</label>
-                    <div class="flex gap-2">
-                        <input type="number" step="0.01" name="cafe_primera" value="{{ procesado.cafe_primera|floatformat:2 }}"
-                               class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
-                        <select name="unidad_cafe_primera" class="w-32 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
-                            <option value="kg" {% if procesado.unidad_cafe_primera == 'kg' %}selected{% endif %}>kg</option>
-                            <option value="libras" {% if procesado.unidad_cafe_primera == 'libras' %}selected{% endif %}>libras</option>
-                            <option value="gramos" {% if procesado.unidad_cafe_primera == 'gramos' %}selected{% endif %}>gramos</option>
-                        </select>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Café de Segunda</label>
-                    <div class="flex gap-2">
-                        <input type="number" step="0.01" name="cafe_segunda" value="{{ procesado.cafe_segunda|floatformat:2 }}"
-                               class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
-                        <select name="unidad_cafe_segunda" class="w-32 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
-                            <option value="kg" {% if procesado.unidad_cafe_segunda == 'kg' %}selected{% endif %}>kg</option>
-                            <option value="libras" {% if procesado.unidad_cafe_segunda == 'libras' %}selected{% endif %}>libras</option>
-                            <option value="gramos" {% if procesado.unidad_cafe_segunda == 'gramos' %}selected{% endif %}>gramos</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Indicador de Rendimiento -->
-        <div id="rendimiento-display" class="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+        <!-- Encabezado -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
             <div class="flex items-center justify-between">
-                <span class="text-sm font-medium text-blue-700">Rendimiento Actual:</span>
-                <span class="text-2xl font-bold text-blue-900" id="rendimiento-valor">{{ procesado.rendimiento|floatformat:2 }}%</span>
-            </div>
-        </div>
-
-        <!-- Mermas -->
-        <div>
-            <h3 class="font-bold text-gray-700 mb-3">Mermas del Proceso</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Catadura (kg)</label>
-                    <input type="number" step="0.01" name="catadura" value="{{ procesado.catadura|floatformat:2 }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600">
+                    <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                        <i class="fas fa-edit text-blue-600"></i>
+                        Editar Procesado/Trilla
+                    </h1>
+                    <p class="mt-2 text-gray-600">
+                        Modificar datos del procesado <strong class="text-blue-700">#{{ procesado.numero_trilla }}</strong> del lote <strong class="text-amber-700">{{ procesado.lote.codigo }}</strong>
+                    </p>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Rechazo Electrónica (kg)</label>
-                    <input type="number" step="0.01" name="rechazo_electronica" value="{{ procesado.rechazo_electronica|floatformat:2 }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Bajo Zaranda (kg)</label>
-                    <input type="number" step="0.01" name="bajo_zaranda" value="{{ procesado.bajo_zaranda|floatformat:2 }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Barridos (kg)</label>
-                    <input type="number" step="0.01" name="barridos" value="{{ procesado.barridos|floatformat:2 }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600">
+                <div class="text-right">
+                    <p class="text-xs text-gray-500 uppercase font-semibold">Fecha de Creación</p>
+                    <p class="text-lg font-bold text-gray-900">{{ procesado.fecha_procesado|date:"d/m/Y" }}</p>
                 </div>
             </div>
         </div>
 
-        <!-- Observaciones -->
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Observaciones / Notas de Seguimiento</label>
-            <textarea name="observaciones" rows="4"
-                      placeholder="Agrega notas sobre el progreso del procesado..."
-                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600">{{ procesado.observaciones }}</textarea>
+        <!-- Información del Lote (Solo lectura) -->
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-lg p-6 mb-8 border-2 border-blue-200">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <i class="fas fa-info-circle text-blue-600"></i>
+                Información del Lote (Solo lectura)
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div class="bg-white p-4 rounded-lg">
+                    <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Código</p>
+                    <p class="text-lg font-bold text-gray-900">{{ procesado.lote.codigo }}</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg">
+                    <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Tipo</p>
+                    <p class="text-lg font-bold text-gray-900">{{ procesado.lote.tipo_cafe }}</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg">
+                    <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Bodega</p>
+                    <p class="text-lg font-bold text-gray-900">{{ procesado.lote.bodega.codigo }}</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg">
+                    <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Peso Lote</p>
+                    <p class="text-lg font-bold text-gray-900">{{ procesado.lote.peso_kg }} kg</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg">
+                    <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Rendimiento Actual</p>
+                    <p class="text-lg font-bold text-green-700">{{ procesado.rendimiento|floatformat:2 }}%</p>
+                </div>
+            </div>
         </div>
 
-        <!-- Botones -->
-        <div class="flex justify-end space-x-4">
-            <a href="{% url 'detalle_procesado' procesado.id %}" 
-               class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
-                Cancelar
-            </a>
-            <button type="submit" 
-                    class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                <i class="fas fa-save mr-2"></i>Actualizar Procesado
-            </button>
-        </div>
-    </form>
+        <!-- Formulario de Edición -->
+        <form method="post" class="bg-white rounded-xl shadow-lg p-8 space-y-8">
+            {% csrf_token %}
+
+            <!-- Alerta informativa -->
+            <div class="bg-amber-50 border-l-4 border-amber-500 p-4">
+                <div class="flex">
+                    <i class="fas fa-exclamation-triangle text-amber-600 text-xl mr-3"></i>
+                    <div>
+                        <p class="text-sm text-amber-800">
+                            <strong>Importante:</strong> Estás editando un procesado existente. Los cambios afectarán los cálculos de rendimiento y disponibilidad del lote.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN: HORARIO DEL PROCESO -->
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border-2 border-blue-300">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-clock text-blue-600"></i>
+                    Horario del Proceso
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Hora de Inicio
+                        </label>
+                        <input type="time" 
+                               name="hora_inicio"
+                               id="hora_inicio"
+                               value="{{ procesado.hora_inicio|time:'H:i' }}"
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+                        <p class="text-xs text-gray-500 mt-1">Hora en que inició el procesamiento</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Hora Final
+                        </label>
+                        <input type="time" 
+                               name="hora_final"
+                               id="hora_final"
+                               value="{{ procesado.hora_final|time:'H:i' }}"
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">
+                        <p class="text-xs text-gray-500 mt-1">Hora en que finalizó el procesamiento</p>
+                    </div>
+                </div>
+                
+                <!-- Horas Trabajadas -->
+                <div id="container-horas" class="hidden mt-4 bg-white rounded-lg p-4 border-2 border-blue-300">
+                    <div class="flex items-center justify-between">
+                        <span class="font-semibold text-gray-700">
+                            <i class="fas fa-hourglass-half text-blue-600 mr-2"></i>
+                            Total de Horas Trabajadas:
+                        </span>
+                        <span class="text-2xl font-bold text-blue-600" id="horas-trabajadas">0.00 hrs</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN: PESOS DEL PROCESADO -->
+            <div class="border-l-4 border-blue-500 bg-blue-50 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-balance-scale text-blue-600"></i>
+                    Pesos del Procesado
+                </h2>
+                
+                <!-- Peso Inicial -->
+                <div class="mb-6">
+                    <label class="flex items-center text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-arrow-down text-green-600 mr-2"></i>
+                        Peso Inicial <span class="text-red-500 ml-1">*</span>
+                    </label>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Operación <span class="text-green-600">⚡ Auto</span></label>
+                            <input type="text" 
+                                   id="op_peso_inicial"
+                                   placeholder="13*1.52+0.58"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Resultado</label>
+                            <input type="number" 
+                                   step="0.01"
+                                   name="peso_inicial_kg"
+                                   id="peso_inicial_kg"
+                                   value="{{ procesado.peso_inicial_kg }}"
+                                   required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 font-semibold text-lg bg-yellow-50">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Unidad</label>
+                            <select name="unidad_peso_inicial" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 bg-white font-semibold text-center">
+                                <option value="kg" {% if procesado.unidad_peso_inicial == 'kg' %}selected{% endif %}>kg</option>
+                                <option value="qq" {% if procesado.unidad_peso_inicial == 'qq' %}selected{% endif %}>qq</option>
+                                <option value="lb" {% if procesado.unidad_peso_inicial == 'lb' %}selected{% endif %}>lb</option>
+                            </select>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Valor original: {{ procesado.peso_inicial_kg }} kg
+                    </p>
+                </div>
+
+                <!-- Peso Final -->
+                <div>
+                    <label class="flex items-center text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-arrow-up text-blue-600 mr-2"></i>
+                        Peso Final <span class="text-red-500 ml-1">*</span>
+                    </label>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Operación <span class="text-green-600">⚡ Auto</span></label>
+                            <input type="text" 
+                                   id="op_peso_final"
+                                   placeholder="8*1.52"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Resultado</label>
+                            <input type="number" 
+                                   step="0.01"
+                                   name="peso_final_kg"
+                                   id="peso_final_kg"
+                                   value="{{ procesado.peso_final_kg }}"
+                                   required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 font-semibold text-lg bg-yellow-50">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Unidad</label>
+                            <select name="unidad_peso_final" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 bg-white font-semibold text-center">
+                                <option value="kg" {% if procesado.unidad_peso_final == 'kg' %}selected{% endif %}>kg</option>
+                                <option value="qq" {% if procesado.unidad_peso_final == 'qq' %}selected{% endif %}>qq</option>
+                                <option value="lb" {% if procesado.unidad_peso_final == 'lb' %}selected{% endif %}>lb</option>
+                            </select>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Valor original: {{ procesado.peso_final_kg }} kg
+                    </p>
+                </div>
+
+                <!-- Rendimiento Calculado -->
+                <div class="mt-6 bg-white p-4 rounded-lg border-2 border-blue-300">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="text-sm font-medium text-gray-700">
+                                <i class="fas fa-percent text-blue-600 mr-2"></i>
+                                Rendimiento Calculado:
+                            </span>
+                            <p class="text-xs text-gray-500 mt-1">Original: {{ procesado.rendimiento|floatformat:2 }}%</p>
+                        </div>
+                        <span class="text-2xl font-bold text-gray-600" id="rendimiento">{{ procesado.rendimiento|floatformat:2 }}%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN: CLASIFICACIÓN DEL CAFÉ -->
+            <div class="border-l-4 border-yellow-500 bg-yellow-50 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-star text-yellow-600"></i>
+                    Clasificación del Café
+                </h2>
+                
+                <!-- Café de Primera -->
+                <div class="mb-4">
+                    <label class="flex items-center text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-trophy text-yellow-600 mr-2"></i>
+                        Café de Primera
+                    </label>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Operación <span class="text-green-600">⚡</span></label>
+                            <input type="text" 
+                                   id="op_cafe_primera"
+                                   placeholder="8*1.52"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-600">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Resultado</label>
+                            <input type="number" 
+                                   step="0.01"
+                                   name="cafe_primera"
+                                   id="cafe_primera"
+                                   value="{{ procesado.cafe_primera }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-600 font-semibold bg-yellow-50">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Unidad</label>
+                            <select name="unidad_cafe_primera" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-600 bg-white font-semibold text-center">
+                                <option value="kg" {% if procesado.unidad_cafe_primera == 'kg' %}selected{% endif %}>kg</option>
+                                <option value="qq" {% if procesado.unidad_cafe_primera == 'qq' %}selected{% endif %}>qq</option>
+                                <option value="lb" {% if procesado.unidad_cafe_primera == 'lb' %}selected{% endif %}>lb</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Café de Segunda -->
+                <div>
+                    <label class="flex items-center text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-medal text-gray-500 mr-2"></i>
+                        Café de Segunda
+                    </label>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Operación <span class="text-green-600">⚡</span></label>
+                            <input type="text" 
+                                   id="op_cafe_segunda"
+                                   placeholder="2*1.52"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-600">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Resultado</label>
+                            <input type="number" 
+                                   step="0.01"
+                                   name="cafe_segunda"
+                                   id="cafe_segunda"
+                                   value="{{ procesado.cafe_segunda }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-600 font-semibold bg-yellow-50">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Unidad</label>
+                            <select name="unidad_cafe_segunda" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-600 bg-white font-semibold text-center">
+                                <option value="kg" {% if procesado.unidad_cafe_segunda == 'kg' %}selected{% endif %}>kg</option>
+                                <option value="qq" {% if procesado.unidad_cafe_segunda == 'qq' %}selected{% endif %}>qq</option>
+                                <option value="lb" {% if procesado.unidad_cafe_segunda == 'lb' %}selected{% endif %}>lb</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN: MERMAS Y RECHAZOS -->
+            <div class="border-l-4 border-red-500 bg-red-50 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-exclamation-triangle text-red-600"></i>
+                    Mermas del Procesado
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Catadura -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Catadura</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">Operación <span class="text-green-600">⚡</span></label>
+                                <input type="text" 
+                                       id="op_catadura"
+                                       placeholder="2*1.52"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">Resultado (kg)</label>
+                                <input type="number" 
+                                       step="0.01" 
+                                       name="catadura" 
+                                       id="catadura"
+                                       value="{{ procesado.catadura }}"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 font-semibold bg-red-50">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rechazo Electrónica -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Rechazo Electrónica</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">Operación <span class="text-green-600">⚡</span></label>
+                                <input type="text" 
+                                       id="op_rechazo"
+                                       placeholder="1.5*2"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">Resultado (kg)</label>
+                                <input type="number" 
+                                       step="0.01" 
+                                       name="rechazo_electronica" 
+                                       id="rechazo_electronica"
+                                       value="{{ procesado.rechazo_electronica }}"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 font-semibold bg-red-50">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bajo Zaranda -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Bajo Zaranda</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">Operación <span class="text-green-600">⚡</span></label>
+                                <input type="text" 
+                                       id="op_zaranda"
+                                       placeholder="3*0.5"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">Resultado (kg)</label>
+                                <input type="number" 
+                                       step="0.01" 
+                                       name="bajo_zaranda" 
+                                       id="bajo_zaranda"
+                                       value="{{ procesado.bajo_zaranda }}"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 font-semibold bg-red-50">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Barridos -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Barridos</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">Operación <span class="text-green-600">⚡</span></label>
+                                <input type="text" 
+                                       id="op_barridos"
+                                       placeholder="4*0.25"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">Resultado (kg)</label>
+                                <input type="number" 
+                                       step="0.01" 
+                                       name="barridos" 
+                                       id="barridos"
+                                       value="{{ procesado.barridos }}"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 font-semibold bg-red-50">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total de Mermas -->
+                <div id="container-mermas" class="hidden mt-6 bg-white rounded-lg p-4 border-2 border-red-300">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="font-semibold text-gray-700">
+                                <i class="fas fa-calculator text-red-600 mr-2"></i>
+                                Total de Mermas:
+                            </span>
+                            <p class="text-xs text-gray-500 mt-1">Original: {{ procesado.total_mermas|floatformat:2 }} kg</p>
+                        </div>
+                        <span class="text-2xl font-bold text-red-600" id="total-mermas">0.00 kg</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN: OBSERVACIONES -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-comment-alt text-gray-600 mr-2"></i>
+                    Observaciones
+                </label>
+                <textarea name="observaciones" 
+                          rows="4"
+                          placeholder="Notas adicionales sobre el procesado..."
+                          class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600">{{ procesado.observaciones }}</textarea>
+            </div>
+
+            <!-- Botones -->
+            <div class="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t">
+                <a href="{% url 'detalle_procesado' procesado.pk %}" 
+                   class="px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium text-gray-700 text-center">
+                    <i class="fas fa-times mr-2"></i>
+                    Cancelar
+                </a>
+                <button type="submit" 
+                        class="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition font-medium shadow-lg hover:shadow-xl">
+                    <i class="fas fa-save mr-2"></i>
+                    Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <script>
-function calcularRendimiento() {
-    const pesoInicial = parseFloat(document.getElementById('peso-inicial').value) || 0;
-    const pesoFinal = parseFloat(document.getElementById('peso-final').value) || 0;
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ Script de edición iniciado');
     
-    if (pesoInicial > 0 && pesoFinal > 0) {
-        const rendimiento = (pesoFinal / pesoInicial * 100).toFixed(2);
-        document.getElementById('rendimiento-valor').textContent = rendimiento + '%';
-        
-        const display = document.getElementById('rendimiento-display');
-        if (rendimiento >= 80) {
-            display.className = 'bg-green-50 border border-green-200 p-4 rounded-lg';
-            document.getElementById('rendimiento-valor').className = 'text-2xl font-bold text-green-900';
-        } else if (rendimiento >= 70) {
-            display.className = 'bg-yellow-50 border border-yellow-200 p-4 rounded-lg';
-            document.getElementById('rendimiento-valor').className = 'text-2xl font-bold text-yellow-900';
-        } else {
-            display.className = 'bg-red-50 border border-red-200 p-4 rounded-lg';
-            document.getElementById('rendimiento-valor').className = 'text-2xl font-bold text-red-900';
+    // Función simple para calcular
+    function calc(expr) {
+        if (!expr) return 0;
+        try {
+            expr = expr.replace(/x/gi, '*').replace(/\s/g, '');
+            return parseFloat(Function('return ' + expr)().toFixed(2));
+        } catch {
+            return 0;
         }
     }
-}
-
-// Calcular rendimiento al cargar la página
-window.addEventListener('DOMContentLoaded', calcularRendimiento);
+    
+    // Configurar cada par operación/resultado
+    function setup(opId, resId) {
+        const op = document.getElementById(opId);
+        const res = document.getElementById(resId);
+        
+        if (!op || !res) return;
+        
+        // CALCULAR MIENTRAS ESCRIBES
+        op.addEventListener('input', function() {
+            const resultado = calc(this.value);
+            res.value = resultado;
+            res.dispatchEvent(new Event('input'));
+        });
+    }
+    
+    // Configurar todas las calculadoras
+    setup('op_peso_inicial', 'peso_inicial_kg');
+    setup('op_peso_final', 'peso_final_kg');
+    setup('op_cafe_primera', 'cafe_primera');
+    setup('op_cafe_segunda', 'cafe_segunda');
+    setup('op_catadura', 'catadura');
+    setup('op_rechazo', 'rechazo_electronica');
+    setup('op_zaranda', 'bajo_zaranda');
+    setup('op_barridos', 'barridos');
+    
+    // Rendimiento
+    function updateRendimiento() {
+        const pi = parseFloat(document.getElementById('peso_inicial_kg').value) || 0;
+        const pf = parseFloat(document.getElementById('peso_final_kg').value) || 0;
+        const r = document.getElementById('rendimiento');
+        
+        if (pi > 0) {
+            const rend = (pf / pi) * 100;
+            r.textContent = rend.toFixed(2) + '%';
+            r.className = 'text-2xl font-bold';
+            if (rend >= 82) r.classList.add('text-green-600');
+            else if (rend >= 75) r.classList.add('text-yellow-600');
+            else r.classList.add('text-red-600');
+        } else {
+            r.textContent = '0.00%';
+            r.className = 'text-2xl font-bold text-gray-600';
+        }
+    }
+    
+    document.getElementById('peso_inicial_kg').addEventListener('input', updateRendimiento);
+    document.getElementById('peso_final_kg').addEventListener('input', updateRendimiento);
+    
+    // Horas
+    function updateHoras() {
+        const hi = document.getElementById('hora_inicio').value;
+        const hf = document.getElementById('hora_final').value;
+        const h = document.getElementById('horas-trabajadas');
+        const c = document.getElementById('container-horas');
+        
+        if (hi && hf) {
+            const [h1, m1] = hi.split(':').map(Number);
+            const [h2, m2] = hf.split(':').map(Number);
+            let mins = (h2 * 60 + m2) - (h1 * 60 + m1);
+            if (mins < 0) mins += 1440;
+            h.textContent = (mins / 60).toFixed(2) + ' hrs';
+            c.classList.remove('hidden');
+        } else {
+            c.classList.add('hidden');
+        }
+    }
+    
+    document.getElementById('hora_inicio').addEventListener('change', updateHoras);
+    document.getElementById('hora_final').addEventListener('change', updateHoras);
+    
+    // Mermas
+    function updateMermas() {
+        const cat = parseFloat(document.getElementById('catadura').value) || 0;
+        const rec = parseFloat(document.getElementById('rechazo_electronica').value) || 0;
+        const zar = parseFloat(document.getElementById('bajo_zaranda').value) || 0;
+        const bar = parseFloat(document.getElementById('barridos').value) || 0;
+        const total = cat + rec + zar + bar;
+        const m = document.getElementById('total-mermas');
+        const c = document.getElementById('container-mermas');
+        
+        if (total > 0) {
+            m.textContent = total.toFixed(2) + ' kg';
+            c.classList.remove('hidden');
+        } else {
+            c.classList.add('hidden');
+        }
+    }
+    
+    document.getElementById('catadura').addEventListener('input', updateMermas);
+    document.getElementById('rechazo_electronica').addEventListener('input', updateMermas);
+    document.getElementById('bajo_zaranda').addEventListener('input', updateMermas);
+    document.getElementById('barridos').addEventListener('input', updateMermas);
+    
+    // Calcular iniciales
+    updateRendimiento();
+    updateHoras();
+    updateMermas();
+    
+    console.log('✅ Todo configurado');
+});
 </script>
+
 {% endblock %}

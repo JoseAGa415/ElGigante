@@ -16,9 +16,66 @@
         .sidebar-hover:hover {
             background-color: rgba(255, 255, 255, 0.1);
             transition: all 0.3s ease;
+            padding-left: 1.75rem;
         }
         .card-shadow {
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Estilos mejorados para el sidebar */
+        #sidebar {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Links del sidebar con hover mejorado */
+        #sidebar a {
+            color: white !important;
+            transition: all 0.3s ease;
+            display: block;
+        }
+
+        #sidebar a:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+            border-left: 4px solid #FFD700;
+        }
+
+        #sidebar a.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid #FFD700;
+            font-weight: 600;
+        }
+
+        /* Títulos de sección */
+        #sidebar .section-title {
+            color: #FFD700 !important;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+        }
+
+        /* Iconos del sidebar */
+        #sidebar i {
+            color: white !important;
+            width: 20px;
+            text-align: center;
         }
     </style>
     
@@ -58,63 +115,72 @@
         <div id="sidebar" class="w-64 coffee-gradient text-white fixed h-full top-16 overflow-y-auto 
                                 transform -translate-x-full md:translate-x-0 
                                 transition-transform duration-300 ease-in-out z-40">
-        <nav class="mt-8 pb-8">
-                <a href="{% url 'dashboard' %}" class="block px-6 py-3 sidebar-hover">
+            <nav class="mt-8 pb-8">
+                <a href="{% url 'dashboard' %}" class="block px-6 py-3 sidebar-hover {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
                     <i class="fas fa-dashboard mr-3"></i>Dashboard
                 </a>
                 
-                <div class="mt-4 px-6">
-                    <p class="text-xs uppercase text-yellow-200 font-semibold">Gestión</p>
+                <!-- Sección Gestión -->
+                <div class="mt-6 px-6">
+                    <p class="text-xs uppercase section-title">Gestión</p>
                 </div>
                 
-                <a href="{% url 'lista_lotes' %}" class="block px-6 py-3 sidebar-hover">
+                <a href="{% url 'lista_lotes' %}" class="block px-6 py-3 sidebar-hover {% if request.resolver_match.url_name == 'lista_lotes' %}active{% endif %}">
                     <i class="fas fa-box mr-3"></i>Lotes
                 </a>
                 
-                <a href="{% url 'lista_procesados' %}" class="block px-6 py-3 sidebar-hover">
+                <a href="{% url 'lista_procesados' %}" class="block px-6 py-3 sidebar-hover {% if request.resolver_match.url_name == 'lista_procesados' %}active{% endif %}">
                     <i class="fas fa-cogs mr-3"></i>Procesado/Trilla
                 </a>
                 
-                <a href="{% url 'lista_reprocesos' %}" class="block px-6 py-3 sidebar-hover">
+                <a href="{% url 'lista_reprocesos' %}" class="block px-6 py-3 sidebar-hover {% if request.resolver_match.url_name == 'lista_reprocesos' %}active{% endif %}">
                     <i class="fas fa-sync mr-3"></i>Reprocesos
                 </a>
                 
-                <a href="{% url 'lista_mezclas' %}" class="block px-6 py-3 sidebar-hover">
+                <a href="{% url 'lista_mezclas' %}" class="block px-6 py-3 sidebar-hover {% if request.resolver_match.url_name == 'lista_mezclas' %}active{% endif %}">
                     <i class="fas fa-blender mr-3"></i>Mezclas
                 </a>
                 
-                <a href="{% url 'lista_cataciones' %}" class="block px-6 py-3 sidebar-hover">
+                <a href="{% url 'lista_cataciones' %}" class="block px-6 py-3 sidebar-hover {% if request.resolver_match.url_name == 'lista_cataciones' %}active{% endif %}">
                     <i class="fas fa-coffee mr-3"></i>Cataciones
                 </a>
 
-                    {% if user.is_superuser %}
-                <a href="{% url 'lista_compradores' %}" class="block px-6 py-3 sidebar-hover">
+                {% if user.is_superuser %}
+                <a href="{% url 'lista_compradores' %}" class="block px-6 py-3 sidebar-hover {% if request.resolver_match.url_name == 'lista_compradores' %}active{% endif %}">
                     <i class="fas fa-handshake mr-3"></i>Compradores
                 </a>
 
-                 <a href="{% url 'lista_compras' %}" class="block px-6 py-3 sidebar-hover">
+                <a href="{% url 'lista_compras' %}" class="block px-6 py-3 sidebar-hover {% if request.resolver_match.url_name == 'lista_compras' %}active{% endif %}">
                     <i class="fas fa-file-invoice-dollar mr-3"></i>Compras maduro
                 </a>
+                {% endif %}
 
-                    {% endif %}
-                <div class="mt-4 px-6">
-                    <p class="text-xs uppercase text-yellow-200 font-semibold">Reportes</p>
+                <!-- Sección Reportes -->
+                <div class="mt-6 px-6">
+                    <p class="text-xs uppercase section-title">Reportes</p>
                 </div>
                 
-                <a href="{% url 'historial' %}" class="block px-6 py-3 sidebar-hover">
+                <a href="{% url 'historial' %}" class="block px-6 py-3 sidebar-hover {% if request.resolver_match.url_name == 'historial' %}active{% endif %}">
                     <i class="fas fa-history mr-3"></i>Historial
                 </a>
 
-                <a href="{% url 'eventos_lista' %}" class="block px-6 py-3 sidebar-hover">
+                <a href="{% url 'resumen_beneficio' %}" class="block px-6 py-3 sidebar-hover {% if request.resolver_match.url_name == 'resumen_beneficio' %}active{% endif %}">
+                    <i class="fas fa-chart-line mr-3"></i>Resumen del Beneficio
+                </a>
+
+                {% if user.is_superuser %}
+                <a href="{% url 'eventos_lista' %}" class="block px-6 py-3 sidebar-hover {% if request.resolver_match.url_name == 'eventos_lista' %}active{% endif %}">
                     <i class="fas fa-shipping-fast mr-3"></i>Eventos
                 </a>
-                
+                {% endif %}
+
+                <!-- Sección Administración -->
                 {% if user.is_superuser %}
-                <div class="mt-4 px-6">
-                    <p class="text-xs uppercase text-yellow-200 font-semibold">Administración</p>
+                <div class="mt-6 px-6">
+                    <p class="text-xs uppercase section-title">Administración</p>
                 </div>
                 
-                <a href="/admin/" class="block px-6 py-3 sidebar-hover">
+                <a href="/admin/" class="block px-6 py-3 sidebar-hover" target="_blank">
                     <i class="fas fa-user-cog mr-3"></i>Panel Admin
                 </a>
                 {% endif %}
@@ -122,8 +188,9 @@
         </div>
 
         <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden"></div>
+        
         <div class="flex-1 md:ml-64">
-        <main class="p-6">
+            <main class="p-6">
                 {% if messages %}
                 <div class="mb-4">
                     {% for message in messages %}
@@ -156,6 +223,7 @@
     {% endif %}
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -182,6 +250,16 @@
             // Event listener para el overlay (para cerrar el menú al tocar fuera)
             if (overlay) {
                 overlay.addEventListener('click', toggleSidebar);
+            }
+
+            // Cerrar sidebar en móvil al hacer click en un link
+            if (window.innerWidth < 768) {
+                const sidebarLinks = sidebar.querySelectorAll('a');
+                sidebarLinks.forEach(link => {
+                    link.addEventListener('click', () => {
+                        toggleSidebar();
+                    });
+                });
             }
         });
     </script>

@@ -90,4 +90,8 @@ urlpatterns = [
     path('eventos/exportacion/crear/<str:tipo_producto>/<int:producto_id>/', views.exportacion_crear, name='exportacion_crear'),
     path('eventos/exportacion/<int:exportacion_id>/', views.exportacion_detalle, name='exportacion_detalle'),
     path('eventos/exportaciones/', views.exportaciones_lista, name='exportaciones_lista'),
+
+     # Resumen
+    path('resumen-beneficio/', views.resumen_beneficio, name='resumen_beneficio'),
+
 ]

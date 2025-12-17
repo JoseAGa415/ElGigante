@@ -3102,6 +3102,63 @@ def exportaciones_lista(request):
     
     return render(request, 'beneficio/eventos/exportaciones_lista.html', context)
 
+@login_required
+def resumen_beneficio(request):
+    """Vista del resumen completo del beneficio"""
+    from datetime import timedelta
+    from django.utils import timezone
+    
+    # Últimos 30 días
+    fecha_inicio = timezone.now().date() - timedelta(days=30)
+    
+    # Datos de Procesados
+    procesados = Procesado.objects.filter(fecha__date__gte=fecha_inicio)
+    reprocesos = Reproceso.objects.filter(fecha__date__gte=fecha_inicio)
+    mezclas = Mezcla.objects.filter(fecha__date__gte=fecha_inicio)
+    
+    # Estadísticas
+    stats = {
+        'total_procesado': sum(p.peso_inicial_kg for p in procesados) or 0,
+        'total_reproceso': sum(r.peso_inicial_kg for r in reprocesos) or 0,
+        'total_mezclas': sum(m.peso_total_kg for m in mezclas) or 0,
+        'variacion_procesado': 5.2,  # Puedes calcular esto comparando períodos
+        'variacion_reproceso': -2.1,
+        'variacion_mezclas': 3.8,
+        'rendimiento_promedio': 81.5,
+        'defectos_procesados_total': 0,
+        'tasa_defectos_procesados': 0.0,
+        'defectos_reprocesos_total': 0,
+        'tasa_defectos_reprocesos': 0.0,
+        'rendimiento_promedio_procesados': 81.5,
+        'rendimiento_max_procesados': 95.0,
+        'rendimiento_min_procesados': 65.0,
+        'rendimiento_promedio_reprocesos': 78.2,
+        'rendimiento_max_reprocesos': 90.0,
+        'rendimiento_min_reprocesos': 60.0,
+        'total_mezclas_count': mezclas.count(),
+        'peso_promedio_mezclas': (sum(m.peso_total_kg for m in mezclas) / mezclas.count()) if mezclas.exists() else 0,
+        'mezclas_premium': 5,
+        'mezclas_estandar': 8,
+        'mezclas_comercial': 3,
+    }
+    
+    context = {
+        'stats': stats,
+        'procesados': procesados,
+        'reprocesos': reprocesos,
+        'mezclas': mezclas,
+        'defectos_procesados_data': [12, 8, 5, 3, 2],  # Datos de ejemplo
+        'rendimiento_procesados_labels': ['Trilla 1', 'Trilla 2', 'Trilla 3'],
+        'rendimiento_procesados_data': [85, 82, 79],
+        'defectos_reprocesos_data': [8, 5, 3, 2, 1],
+        'rendimiento_reprocesos_labels': ['Rep 1', 'Rep 2', 'Rep 3'],
+        'rendimiento_reprocesos_data': [80, 75, 82],
+        'distribucion_mezclas_labels': ['Destino A', 'Destino B', 'Destino C'],
+        'distribucion_mezclas_data': [40, 35, 25],
+    }
+    
+    return render(request, 'beneficio/resumen/resumen_beneficio.html', context)
+
 
 
 

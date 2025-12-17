@@ -7,7 +7,7 @@
 <div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <form method="post" class="bg-white rounded-xl shadow-lg p-8 space-y-6">
+        <form method="post" class="bg-white rounded-xl shadow-lg p-8 space-y-6" x-data="compraForm()">
             {% csrf_token %}
             
             <div>
@@ -23,6 +23,7 @@
 
             <hr>
 
+            <!-- Detalles de la Transacción -->
             <h2 class="text-xl font-semibold text-gray-800">Detalles de la Transacción</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -32,7 +33,8 @@
                     <input type="datetime-local" 
                            name="fecha_compra"
                            required
-                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                           x-model="fecha_compra"
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600 focus:border-amber-600">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -41,10 +43,11 @@
                     <input type="text" 
                            name="descripcion" 
                            placeholder="Ej: Venta de café especial"
-                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600 focus:border-amber-600">
                 </div>
             </div>
 
+            <!-- Cantidad y Unidad -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -54,14 +57,18 @@
                            step="0.01"
                            name="cantidad" 
                            required
+                           x-model="cantidad"
+                           @input="calcularTotal()"
                            placeholder="Ej: 10"
-                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600 focus:border-amber-600">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         Unidad <span class="text-red-500">*</span>
                     </label>
-                    <select name="unidad" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                    <select name="unidad" 
+                            x-model="unidad"
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600 focus:border-amber-600">
                         <option value="qq">Quintales (qq)</option>
                         <option value="kg">Kilogramos (kg)</option>
                         <option value="lb">Libras (lb)</option>
@@ -69,18 +76,60 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Precio Unitario (Q) <span class="text-red-500">*</span>
+                    <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                        Precio Unitario (Q)
+                        <span class="text-xs text-gray-500 font-normal">(Opcional)</span>
                     </label>
                     <input type="number" 
                            step="0.01"
                            name="precio_unitario" 
-                           required
+                           x-model="precio_unitario"
+                           @input="calcularTotal()"
                            placeholder="Ej: 150.00"
-                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600 focus:border-amber-600">
+                    <p class="mt-1 text-xs text-gray-500">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Puede dejarlo vacío si aún no conoce el precio
+                    </p>
                 </div>
             </div>
 
+            <!-- Cálculo del Total -->
+            <div x-show="precio_unitario > 0" 
+                 x-transition
+                 class="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Monto Total Calculado</p>
+                        <p class="text-3xl font-bold text-green-700">
+                            Q <span x-text="formatNumber(total)"></span>
+                        </p>
+                        <p class="text-xs text-gray-500 mt-1">
+                            <span x-text="cantidad || 0"></span> 
+                            <span x-text="unidad"></span> × Q
+                            <span x-text="formatNumber(precio_unitario)"></span>
+                        </p>
+                    </div>
+                    <div class="text-green-600">
+                        <i class="fas fa-calculator text-5xl opacity-20"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alerta si no hay precio -->
+            <div x-show="!precio_unitario || precio_unitario <= 0" 
+                 x-transition
+                 class="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-4 flex items-start gap-3">
+                <i class="fas fa-exclamation-triangle text-yellow-600 text-xl mt-1"></i>
+                <div>
+                    <p class="font-semibold text-yellow-800">Precio no especificado</p>
+                    <p class="text-sm text-yellow-700 mt-1">
+                        Esta compra se registrará sin precio. Podrá actualizarlo más adelante cuando conozca el precio final.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Información de Pago -->
             <h2 class="text-xl font-semibold text-gray-800 pt-4 border-t">Información de Pago</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
@@ -90,7 +139,7 @@
                     <input type="text" 
                            name="numero_factura" 
                            placeholder="Ej: F-1234"
-                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600 focus:border-amber-600">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -99,13 +148,14 @@
                     <input type="text" 
                            name="metodo_pago" 
                            placeholder="Ej: Transferencia, Efectivo"
-                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600 focus:border-amber-600">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         Estado de Pago
                     </label>
-                    <select name="estado_pago" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                    <select name="estado_pago" 
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600 focus:border-amber-600">
                         <option value="pendiente">Pendiente</option>
                         <option value="parcial">Pago Parcial</option>
                         <option value="pagado">Pagado</option>
@@ -113,14 +163,20 @@
                 </div>
             </div>
 
+            <!-- Vincular Producto -->
             <h2 class="text-xl font-semibold text-gray-800 pt-4 border-t">Vincular Producto (Opcional)</h2>
-            <p class="text-sm text-gray-600 -mt-4">Seleccione el producto que está vendiendo, si aplica.</p>
+            <p class="text-sm text-gray-600 -mt-4">
+                <i class="fas fa-link mr-1"></i>
+                Seleccione el producto que está vendiendo, si aplica.
+            </p>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-box mr-1 text-blue-600"></i>
                         Lote
                     </label>
-                    <select name="lote_id" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                    <select name="lote_id" 
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600 focus:border-amber-600">
                         <option value="">-- Ninguno --</option>
                         {% for lote in lotes %}
                         <option value="{{ lote.pk }}">{{ lote.codigo }} - {{ lote.tipo_cafe }}</option>
@@ -129,9 +185,11 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-cogs mr-1 text-green-600"></i>
                         Procesado (Trilla)
                     </label>
-                    <select name="procesado_id" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                    <select name="procesado_id" 
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600 focus:border-amber-600">
                         <option value="">-- Ninguno --</option>
                         {% for procesado in procesados %}
                         <option value="{{ procesado.pk }}">Trilla #{{ procesado.numero_trilla }} (Lote: {{ procesado.lote.codigo }})</option>
@@ -140,9 +198,11 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-blender mr-1 text-purple-600"></i>
                         Mezcla
                     </label>
-                    <select name="mezcla_id" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                    <select name="mezcla_id" 
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600 focus:border-amber-600">
                         <option value="">-- Ninguno --</option>
                         {% for mezcla in mezclas %}
                         <option value="{{ mezcla.pk }}">Mezcla #{{ mezcla.numero }} - {{ mezcla.destino }}</option>
@@ -151,9 +211,11 @@
                 </div>
             </div>
             
-            <div class="flex justify-end space-x-4 pt-6 border-t">
+            <!-- Botones de Acción -->
+            <div class="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t">
                 <a href="{% url 'detalle_comprador' comprador.pk %}" 
-                   class="px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium text-gray-700">
+                   class="px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium text-gray-700 text-center">
+                    <i class="fas fa-times mr-2"></i>
                     Cancelar
                 </a>
                 <button type="submit" 
@@ -166,4 +228,36 @@
         </form>
     </div>
 </div>
+
+<script>
+function compraForm() {
+    return {
+        cantidad: 0,
+        precio_unitario: 0,
+        unidad: 'qq',
+        total: 0,
+        fecha_compra: '',
+        
+        init() {
+            // Establecer fecha actual como predeterminada
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            this.fecha_compra = `${year}-${month}-${day}T${hours}:${minutes}`;
+        },
+        
+        calcularTotal() {
+            this.total = (parseFloat(this.cantidad) || 0) * (parseFloat(this.precio_unitario) || 0);
+        },
+        
+        formatNumber(num) {
+            return parseFloat(num || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+    }
+}
+</script>
+
 {% endblock %}

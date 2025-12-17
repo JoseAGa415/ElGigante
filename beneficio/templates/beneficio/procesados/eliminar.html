@@ -1,0 +1,269 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Eliminar Procesado #{{ procesado.numero_trilla }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Encabezado con Advertencia -->
+        <div class="bg-gradient-to-r from-red-600 to-red-700 rounded-xl shadow-2xl p-8 mb-8 text-white">
+            <div class="flex items-start gap-6">
+                <div class="flex-shrink-0">
+                    <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center">
+                        <i class="fas fa-exclamation-triangle text-red-600 text-4xl"></i>
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <h1 class="text-3xl font-bold mb-2">
+                        ⚠️ Confirmar Eliminación de Procesado
+                    </h1>
+                    <p class="text-red-100 text-lg">
+                        Estás a punto de eliminar permanentemente el procesado <strong class="text-white">#{{ procesado.numero_trilla }}</strong>
+                    </p>
+                    <div class="mt-4 bg-red-800 bg-opacity-50 rounded-lg p-3">
+                        <p class="text-sm text-red-100">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            <strong>Esta acción NO se puede deshacer.</strong> Todos los datos del procesado se perderán permanentemente.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información del Procesado a Eliminar -->
+        <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                <i class="fas fa-file-alt text-blue-600"></i>
+                Detalles del Procesado a Eliminar
+            </h2>
+
+            <!-- Grid de Información Principal -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-blue-50 p-5 rounded-lg border-2 border-blue-200">
+                    <p class="text-xs text-blue-600 uppercase font-semibold mb-2">Número de Trilla</p>
+                    <p class="text-3xl font-bold text-blue-900">#{{ procesado.numero_trilla }}</p>
+                </div>
+                <div class="bg-amber-50 p-5 rounded-lg border-2 border-amber-200">
+                    <p class="text-xs text-amber-600 uppercase font-semibold mb-2">Lote</p>
+                    <p class="text-3xl font-bold text-amber-900">{{ procesado.lote.codigo }}</p>
+                    <p class="text-xs text-amber-600 mt-1">{{ procesado.lote.tipo_cafe }}</p>
+                </div>
+                <div class="bg-green-50 p-5 rounded-lg border-2 border-green-200">
+                    <p class="text-xs text-green-600 uppercase font-semibold mb-2">Fecha de Procesado</p>
+                    <p class="text-2xl font-bold text-green-900">{{ procesado.fecha_procesado|date:"d/m/Y" }}</p>
+                </div>
+            </div>
+
+            <!-- Detalles de Pesos -->
+            <div class="border-t border-gray-200 pt-6 mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-balance-scale text-indigo-600"></i>
+                    Información de Pesos
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Peso Inicial</p>
+                        <p class="text-xl font-bold text-gray-900">{{ procesado.peso_inicial_kg|floatformat:2 }} kg</p>
+                        <p class="text-xs text-gray-500">{{ procesado.peso_inicial_qq|floatformat:2 }} qq</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Peso Final</p>
+                        <p class="text-xl font-bold text-gray-900">{{ procesado.peso_final_kg|floatformat:2 }} kg</p>
+                        <p class="text-xs text-gray-500">{{ procesado.peso_final_qq|floatformat:2 }} qq</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Rendimiento</p>
+                        <p class="text-xl font-bold text-green-600">{{ procesado.rendimiento|floatformat:2 }}%</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Total Mermas</p>
+                        <p class="text-xl font-bold text-red-600">{{ procesado.total_mermas|floatformat:2 }} kg</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clasificación del Café -->
+            {% if procesado.cafe_primera > 0 or procesado.cafe_segunda > 0 %}
+            <div class="border-t border-gray-200 pt-6 mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-star text-yellow-600"></i>
+                    Clasificación del Café
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% if procesado.cafe_primera > 0 %}
+                    <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                        <p class="text-xs text-yellow-600 uppercase font-semibold mb-1">
+                            <i class="fas fa-trophy mr-1"></i> Café de Primera
+                        </p>
+                        <p class="text-xl font-bold text-yellow-900">{{ procesado.cafe_primera|floatformat:2 }} kg</p>
+                    </div>
+                    {% endif %}
+                    {% if procesado.cafe_segunda > 0 %}
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <p class="text-xs text-gray-600 uppercase font-semibold mb-1">
+                            <i class="fas fa-medal mr-1"></i> Café de Segunda
+                        </p>
+                        <p class="text-xl font-bold text-gray-700">{{ procesado.cafe_segunda|floatformat:2 }} kg</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Detalles de Mermas -->
+            {% if procesado.total_mermas > 0 %}
+            <div class="border-t border-gray-200 pt-6 mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-exclamation-circle text-red-600"></i>
+                    Desglose de Mermas
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {% if procesado.catadura > 0 %}
+                    <div class="bg-red-50 p-3 rounded-lg">
+                        <p class="text-xs text-red-600 font-semibold mb-1">Catadura</p>
+                        <p class="text-lg font-bold text-red-900">{{ procesado.catadura|floatformat:2 }} kg</p>
+                    </div>
+                    {% endif %}
+                    {% if procesado.rechazo_electronica > 0 %}
+                    <div class="bg-red-50 p-3 rounded-lg">
+                        <p class="text-xs text-red-600 font-semibold mb-1">Rechazo Elect.</p>
+                        <p class="text-lg font-bold text-red-900">{{ procesado.rechazo_electronica|floatformat:2 }} kg</p>
+                    </div>
+                    {% endif %}
+                    {% if procesado.bajo_zaranda > 0 %}
+                    <div class="bg-red-50 p-3 rounded-lg">
+                        <p class="text-xs text-red-600 font-semibold mb-1">Bajo Zaranda</p>
+                        <p class="text-lg font-bold text-red-900">{{ procesado.bajo_zaranda|floatformat:2 }} kg</p>
+                    </div>
+                    {% endif %}
+                    {% if procesado.barridos > 0 %}
+                    <div class="bg-red-50 p-3 rounded-lg">
+                        <p class="text-xs text-red-600 font-semibold mb-1">Barridos</p>
+                        <p class="text-lg font-bold text-red-900">{{ procesado.barridos|floatformat:2 }} kg</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Horario -->
+            {% if procesado.hora_inicio or procesado.hora_final %}
+            <div class="border-t border-gray-200 pt-6 mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-clock text-blue-600"></i>
+                    Horario del Proceso
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% if procesado.hora_inicio %}
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="text-xs text-blue-600 font-semibold mb-1">Hora de Inicio</p>
+                        <p class="text-xl font-bold text-blue-900">{{ procesado.hora_inicio|time:"H:i" }}</p>
+                    </div>
+                    {% endif %}
+                    {% if procesado.hora_final %}
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="text-xs text-blue-600 font-semibold mb-1">Hora Final</p>
+                        <p class="text-xl font-bold text-blue-900">{{ procesado.hora_final|time:"H:i" }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Observaciones -->
+            {% if procesado.observaciones %}
+            <div class="border-t border-gray-200 pt-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                    <i class="fas fa-comment-alt text-gray-600"></i>
+                    Observaciones
+                </h3>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-gray-700 whitespace-pre-line">{{ procesado.observaciones }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Advertencias Finales -->
+        <div class="bg-red-50 border-2 border-red-300 rounded-xl p-6 mb-8">
+            <div class="flex items-start gap-4">
+                <i class="fas fa-exclamation-triangle text-red-600 text-3xl flex-shrink-0 mt-1"></i>
+                <div>
+                    <h3 class="text-xl font-bold text-red-900 mb-3">Consecuencias de Eliminar este Procesado:</h3>
+                    <ul class="space-y-2 text-red-800">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-times-circle text-red-600 mt-1"></i>
+                            <span><strong>Se perderán todos los datos</strong> del procesado #{{ procesado.numero_trilla }}</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-times-circle text-red-600 mt-1"></i>
+                            <span><strong>El peso del lote se ajustará</strong> automáticamente (se devolverán {{ procesado.peso_inicial_kg|floatformat:2 }} kg al lote)</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-times-circle text-red-600 mt-1"></i>
+                            <span><strong>Los registros de rendimiento</strong> y estadísticas se verán afectados</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-times-circle text-red-600 mt-1"></i>
+                            <span><strong>Esta acción NO SE PUEDE DESHACER</strong></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulario de Confirmación -->
+        <form method="post" id="deleteForm" class="bg-white rounded-xl shadow-lg p-8">
+            {% csrf_token %}
+            
+            <!-- Checkbox de Confirmación -->
+            <div class="mb-6">
+                <label class="flex items-start gap-3 cursor-pointer group">
+                    <input type="checkbox" 
+                           id="confirmDelete" 
+                           required
+                           class="w-6 h-6 text-red-600 border-2 border-gray-300 rounded focus:ring-2 focus:ring-red-600 mt-1">
+                    <span class="text-gray-700 group-hover:text-gray-900 select-none">
+                        <strong class="text-red-600">Confirmo que entiendo las consecuencias</strong> y deseo eliminar permanentemente el procesado <strong>#{{ procesado.numero_trilla }}</strong>. Esta acción no se puede deshacer.
+                    </span>
+                </label>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="flex flex-col sm:flex-row justify-end gap-4 pt-6 border-t">
+                <a href="{% url 'detalle_procesado' procesado.pk %}" 
+                   class="px-8 py-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-semibold text-center border-2 border-gray-300">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    No, Volver Atrás
+                </a>
+                <button type="submit" 
+                        id="deleteButton"
+                        disabled
+                        class="px-8 py-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-600">
+                    <i class="fas fa-trash-alt mr-2"></i>
+                    Sí, Eliminar Permanentemente
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Habilitar botón solo cuando se marque el checkbox
+document.getElementById('confirmDelete').addEventListener('change', function() {
+    const deleteButton = document.getElementById('deleteButton');
+    deleteButton.disabled = !this.checked;
+});
+
+// Confirmación adicional al enviar
+document.getElementById('deleteForm').addEventListener('submit', function(e) {
+    if (!confirm('⚠️ ÚLTIMA ADVERTENCIA:\n\n¿Estás COMPLETAMENTE SEGURO de que deseas eliminar el procesado #{{ procesado.numero_trilla }}?\n\nEsta acción es PERMANENTE y NO se puede deshacer.\n\n¿Continuar con la eliminación?')) {
+        e.preventDefault();
+        return false;
+    }
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,96 @@
+[33mcommit 566a21a2b99470da8b1ebf3e10d961c1783ff159[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: Titi <titi.galvez63@gmail.com>
+Date:   Mon Dec 8 10:30:57 2025 -0600
+
+    feat: Sistema completo ventas/exportaciones multi-unidad + PostgreSQ
+
+ .gitignore                                         |   32 [32m+[m
+ beneficio/__pycache__/__init__.cpython-313.pyc     |  Bin [31m168[m -> [32m0[m bytes
+ beneficio/__pycache__/admin.cpython-313.pyc        |  Bin [31m4028[m -> [32m0[m bytes
+ beneficio/__pycache__/apps.cpython-313.pyc         |  Bin [31m538[m -> [32m0[m bytes
+ beneficio/__pycache__/forms.cpython-313.pyc        |  Bin [31m5428[m -> [32m0[m bytes
+ beneficio/__pycache__/models.cpython-313.pyc       |  Bin [31m20825[m -> [32m0[m bytes
+ beneficio/__pycache__/urls.cpython-313.pyc         |  Bin [31m3567[m -> [32m0[m bytes
+ beneficio/__pycache__/views.cpython-313.pyc        |  Bin [31m57911[m -> [32m0[m bytes
+ beneficio/admin.py                                 |   40 [32m+[m[31m-[m
+ ...on_codigo_muestra_alter_lote_codigo_and_more.py |   38 [32m+[m
+ beneficio/migrations/0009_comprador_compra.py      |   64 [32m+[m
+ .../0010_remove_compra_registrado_por_and_more.py  |   37 [32m+[m
+ ...ezcla_hora_final_mezcla_hora_inicio_and_more.py |   43 [32m+[m
+ ...2_mantenimientoplanta_historialmantenimiento.py |   56 [32m+[m
+ ...argado_reproceso_reproceso_hora_fin_and_more.py |   28 [32m+[m
+ beneficio/migrations/0014_recibocafe.py            |   42 [32m+[m
+ ..._procesado_recibo_recibocafe_estado_and_more.py |   44 [32m+[m
+ .../migrations/0016_alter_procesado_recibo.py      |   19 [32m+[m
+ ...ga_destino_procesado_bodega_destino_and_more.py |   29 [32m+[m
+ .../0018_alter_mezcla_bodega_destino_and_more.py   |   29 [32m+[m
+ ...0019_procesado_peso_saco_referencia_and_more.py |   33 [32m+[m
+ ...move_procesado_peso_saco_referencia_and_more.py |   38 [32m+[m
+ ...ion_actividad_agua_catacion_altitud_and_more.py |  384 [32m+++[m
+ ...22_alter_catacion_intensidad_acidez_and_more.py |   44 [32m+[m
+ beneficio/migrations/0023_procesado_finalizado.py  |   18 [32m+[m
+ ...atacion_defecto_acido_parcial_count_and_more.py |  233 [32m++[m
+ beneficio/migrations/0025_exportacion_venta.py     |   86 [32m+[m
+ .../__pycache__/0001_initial.cpython-313.pyc       |  Bin [31m8280[m -> [32m0[m bytes
+ .../0002_catacion_defectocatacion.cpython-313.pyc  |  Bin [31m5992[m -> [32m0[m bytes
+ .../0003_reproceso_nombre.cpython-313.pyc          |  Bin [31m832[m -> [32m0[m bytes
+ ...lter_reproceso_options_and_more.cpython-313.pyc |  Bin [31m3681[m -> [32m0[m bytes
+ ...d_at_alter_lote_bodega_and_more.cpython-313.pyc |  Bin [31m2010[m -> [32m0[m bytes
+ .../0006_auto_20251003_1841.cpython-313.pyc        |  Bin [31m627[m -> [32m0[m bytes
+ ...lter_reproceso_options_and_more.cpython-313.pyc |  Bin [31m1346[m -> [32m0[m bytes
+ .../__pycache__/__init__.cpython-313.pyc           |  Bin [31m179[m -> [32m0[m bytes
+ beneficio/models.py                                | 1490 [32m+++++++++[m[31m-[m
+ beneficio/templates/base.html                      |   89 [32m+[m[31m-[m
+ beneficio/templates/beneficio/catacion/crear.html  | 1702 [32m++++++++[m[31m----[m
+ .../templates/beneficio/catacion/detalle.html      |  390 [32m++[m[31m-[m
+ .../beneficio/compradores/agregar_compra.html      |  169 [32m++[m
+ .../templates/beneficio/compradores/crear.html     |  103 [32m+[m
+ .../templates/beneficio/compradores/detalle.html   |  316 [32m+++[m
+ .../templates/beneficio/compradores/editar.html    |  101 [32m+[m
+ .../beneficio/compradores/editar_compra.html       |  178 [32m++[m
+ .../templates/beneficio/compradores/eliminar.html  |   74 [32m+[m
+ .../templates/beneficio/compradores/lista.html     |  155 [32m++[m
+ .../beneficio/compradores/lista_compras.html       |  295 [32m++[m
+ beneficio/templates/beneficio/dashboard.html       | 1148 [32m+++++++[m[31m-[m
+ .../beneficio/eventos/exportacion_crear.html       |  328 [32m+++[m
+ .../beneficio/eventos/exportacion_detalle.html     |  307 [32m+++[m
+ .../beneficio/eventos/exportaciones_lista.html     |  187 [32m++[m
+ beneficio/templates/beneficio/eventos/lista.html   |  202 [32m++[m
+ .../templates/beneficio/eventos/venta_crear.html   |  245 [32m++[m
+ .../templates/beneficio/eventos/venta_detalle.html |  250 [32m++[m
+ .../templates/beneficio/eventos/ventas_lista.html  |  183 [32m++[m
+ .../templates/beneficio/lotes/agregar_recibo.html  |  127 [32m+[m
+ beneficio/templates/beneficio/lotes/crear.html     |   43 [32m+[m[31m-[m
+ beneficio/templates/beneficio/lotes/detalle.html   |  545 [32m++[m[31m--[m
+ beneficio/templates/beneficio/lotes/lista.html     |  303 [32m+[m[31m-[m
+ beneficio/templates/beneficio/lotes/procesar.html  |   75 [32m+[m
+ .../templates/beneficio/mantenimiento/control.html |  230 [32m++[m
+ .../beneficio/mantenimiento/historial.html         |    0
+ .../templates/beneficio/mezclas/continuar.html     |  319 [32m+++[m
+ beneficio/templates/beneficio/mezclas/crear.html   |  126 [32m+[m[31m-[m
+ beneficio/templates/beneficio/mezclas/editar.html  |  437 [32m+++[m
+ beneficio/templates/beneficio/mezclas/lista.html   |    7 [32m+[m[31m-[m
+ .../templates/beneficio/procesados/continuar.html  |  576 [32m++[m[31m--[m
+ .../templates/beneficio/procesados/crear.html      |  815 [32m++++[m[31m--[m
+ .../beneficio/procesados/crear_desde_recibo.html   |  523 [32m++++[m
+ .../templates/beneficio/procesados/detalle.html    |   16 [32m+[m
+ .../templates/beneficio/procesados/lista.html      |  331 [32m+[m[31m--[m
+ .../beneficio/procesados/seleccionar_lote.html     |  321 [32m++[m[31m-[m
+ beneficio/templates/beneficio/recibos/agregar.html |  147 [32m+[m
+ beneficio/templates/beneficio/recibos/editar.html  |  335 [32m+++[m
+ .../templates/beneficio/recibos/eliminar.html      |   95 [32m+[m
+ .../templates/beneficio/recibos/procesar.html      |  496 [32m++++[m
+ .../templates/beneficio/reprocesos/crear.html      |  513 [32m+++[m[31m-[m
+ .../reprocesos/crear_desde_reproceso.html          |  507 [32m+++[m[31m-[m
+ .../templates/beneficio/reprocesos/editar.html     |  539 [32m+++[m[31m-[m
+ .../templates/beneficio/reprocesos/eliminar.html   |   84 [32m+[m
+ .../templates/beneficio/reprocesos/lista.html      |  384 [32m++[m[31m-[m
+ beneficio/urls.py                                  |   44 [32m+[m[31m-[m
+ beneficio/views.py                                 | 2882 [32m+++++++++++++++++[m[31m---[m
+ .../__pycache__/__init__.cpython-313.pyc           |  Bin [31m176[m -> [32m0[m bytes
+ .../__pycache__/settings.cpython-313.pyc           |  Bin [31m2653[m -> [32m0[m bytes
+ coffee_processing/__pycache__/urls.cpython-313.pyc |  Bin [31m860[m -> [32m0[m bytes
+ coffee_processing/__pycache__/wsgi.cpython-313.pyc |  Bin [31m684[m -> [32m0[m bytes
+ coffee_processing/settings.py                      |   11 [32m+[m[31m-[m
+ db.sqlite3                                         |  Bin [31m278528[m -> [32m0[m bytes
+ 89 files changed, 17410 insertions(+), 2670 deletions(-)

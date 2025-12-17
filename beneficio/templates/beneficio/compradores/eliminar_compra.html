@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Eliminar Compra{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 py-8">
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Card de Confirmación -->
+        <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
+            
+            <!-- Header con icono de advertencia -->
+            <div class="bg-gradient-to-r from-red-600 to-red-700 px-8 py-6">
+                <div class="flex items-center gap-4">
+                    <div class="bg-white/20 backdrop-blur-sm p-4 rounded-full">
+                        <i class="fas fa-exclamation-triangle text-white text-3xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-white">Confirmar Eliminación</h1>
+                        <p class="text-red-100 mt-1">Esta acción no se puede deshacer</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenido -->
+            <div class="p-8">
+                
+                <!-- Mensaje de advertencia -->
+                <div class="bg-red-50 border-2 border-red-200 rounded-xl p-6 mb-6">
+                    <div class="flex items-start gap-4">
+                        <i class="fas fa-exclamation-circle text-red-600 text-2xl mt-1"></i>
+                        <div>
+                            <h3 class="font-bold text-red-900 text-lg mb-2">
+                                ¿Está seguro que desea eliminar esta compra?
+                            </h3>
+                            <p class="text-red-700 text-sm">
+                                Esta acción eliminará permanentemente el registro de la compra. 
+                                Todos los datos asociados se perderán.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detalles de la compra -->
+                <div class="bg-gray-50 rounded-xl p-6 mb-6">
+                    <h3 class="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-info-circle text-blue-600"></i>
+                        Detalles de la Compra
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Comprador -->
+                        <div class="bg-white rounded-lg p-4 border border-gray-200">
+                            <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Comprador</p>
+                            <p class="font-semibold text-gray-900 flex items-center gap-2">
+                                <i class="fas fa-user text-blue-600"></i>
+                                {{ compra.comprador.nombre }}
+                            </p>
+                        </div>
+
+                        <!-- Fecha -->
+                        <div class="bg-white rounded-lg p-4 border border-gray-200">
+                            <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Fecha</p>
+                            <p class="font-semibold text-gray-900 flex items-center gap-2">
+                                <i class="fas fa-calendar text-green-600"></i>
+                                {{ compra.fecha_compra|date:"d/m/Y H:i" }}
+                            </p>
+                        </div>
+
+                        <!-- Cantidad -->
+                        <div class="bg-white rounded-lg p-4 border border-gray-200">
+                            <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Cantidad</p>
+                            <p class="font-semibold text-gray-900 flex items-center gap-2">
+                                <i class="fas fa-balance-scale text-purple-600"></i>
+                                {{ compra.cantidad }} {{ compra.get_unidad_display }}
+                            </p>
+                        </div>
+
+                        <!-- Monto Total -->
+                        <div class="bg-white rounded-lg p-4 border border-gray-200">
+                            <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Monto Total</p>
+                            <p class="font-semibold text-gray-900 flex items-center gap-2">
+                                <i class="fas fa-dollar-sign text-green-600"></i>
+                                {% if compra.monto_total > 0 %}
+                                    Q {{ compra.monto_total|floatformat:2 }}
+                                {% else %}
+                                    <span class="text-gray-400">Sin precio definido</span>
+                                {% endif %}
+                            </p>
+                        </div>
+
+                        <!-- Descripción (si existe) -->
+                        {% if compra.descripcion %}
+                        <div class="bg-white rounded-lg p-4 border border-gray-200 md:col-span-2">
+                            <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Descripción</p>
+                            <p class="text-gray-700">{{ compra.descripcion }}</p>
+                        </div>
+                        {% endif %}
+
+                        <!-- Número de Factura (si existe) -->
+                        {% if compra.numero_factura %}
+                        <div class="bg-white rounded-lg p-4 border border-gray-200">
+                            <p class="text-xs text-gray-500 uppercase font-semibold mb-1">No. Factura</p>
+                            <p class="font-semibold text-gray-900">{{ compra.numero_factura }}</p>
+                        </div>
+                        {% endif %}
+
+                        <!-- Estado de Pago -->
+                        <div class="bg-white rounded-lg p-4 border border-gray-200">
+                            <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Estado de Pago</p>
+                            <p class="font-semibold">
+                                {% if compra.estado_pago == 'pagado' %}
+                                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-800">
+                                    <i class="fas fa-check-circle"></i>
+                                    Pagado
+                                </span>
+                                {% elif compra.estado_pago == 'parcial' %}
+                                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-100 text-yellow-800">
+                                    <i class="fas fa-clock"></i>
+                                    Parcial
+                                </span>
+                                {% else %}
+                                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 text-red-800">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    Pendiente
+                                </span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Productos vinculados -->
+                    {% if compra.lote or compra.procesado or compra.mezcla %}
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <p class="text-xs text-gray-500 uppercase font-semibold mb-2">Productos Vinculados</p>
+                        <div class="flex flex-wrap gap-2">
+                            {% if compra.lote %}
+                            <span class="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-lg text-sm">
+                                <i class="fas fa-box"></i>
+                                Lote: {{ compra.lote.codigo }}
+                            </span>
+                            {% endif %}
+                            {% if compra.procesado %}
+                            <span class="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 rounded-lg text-sm">
+                                <i class="fas fa-cogs"></i>
+                                Trilla #{{ compra.procesado.numero_trilla }}
+                            </span>
+                            {% endif %}
+                            {% if compra.mezcla %}
+                            <span class="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 text-purple-800 rounded-lg text-sm">
+                                <i class="fas fa-blender"></i>
+                                Mezcla #{{ compra.mezcla.numero }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Formulario de confirmación -->
+                <form method="post" class="space-y-4">
+                    {% csrf_token %}
+                    
+                    <!-- Checkbox de confirmación -->
+                    <div class="flex items-start gap-3 bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4">
+                        <input type="checkbox" 
+                               id="confirmar" 
+                               required
+                               class="mt-1 w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500">
+                        <label for="confirmar" class="text-sm text-gray-700">
+                            <span class="font-semibold">Confirmo que deseo eliminar esta compra.</span>
+                            <span class="block text-xs text-gray-600 mt-1">
+                                He leído la advertencia y comprendo que esta acción es permanente.
+                            </span>
+                        </label>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="flex flex-col sm:flex-row gap-3 pt-4">
+                        <a href="{% url 'detalle_comprador' compra.comprador.pk %}" 
+                           class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium text-center">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            Cancelar
+                        </a>
+                        <button type="submit" 
+                                class="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition font-medium shadow-lg hover:shadow-xl">
+                            <i class="fas fa-trash-alt mr-2"></i>
+                            Eliminar Compra
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+        <!-- Nota informativa -->
+        <div class="mt-6 text-center">
+            <p class="text-sm text-gray-500">
+                <i class="fas fa-info-circle mr-1"></i>
+                Si eliminó esta compra por error, deberá registrarla nuevamente
+            </p>
+        </div>
+
+    </div>
+</div>
+
+<!-- Script para confirmación adicional -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const checkbox = document.getElementById('confirmar');
+    
+    form.addEventListener('submit', function(e) {
+        if (!checkbox.checked) {
+            e.preventDefault();
+            alert('⚠️ Debe confirmar que desea eliminar esta compra marcando la casilla.');
+            return false;
+        }
+        
+        // Confirmación adicional
+        const confirmacion = confirm(
+            '⚠️ ÚLTIMA ADVERTENCIA\n\n' +
+            '¿Está completamente seguro de eliminar esta compra?\n\n' +
+            'Esta acción NO se puede deshacer.'
+        );
+        
+        if (!confirmacion) {
+            e.preventDefault();
+            return false;
+        }
+    });
+});
+</script>
+
+{% endblock %}
