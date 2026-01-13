@@ -1572,6 +1572,7 @@ class Venta(models.Model):
     cantidad = models.DecimalField(
         max_digits=10,
         decimal_places=4,
+        default=0,
         help_text="Cantidad vendida en la unidad seleccionada"
     )
     peso_por_unidad = models.DecimalField(
