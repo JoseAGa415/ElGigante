@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ subpartida.numero_subpartida }} - INPROCAF{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50 py-8">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Encabezado -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <div class="flex items-start justify-between">
+                <div>
+                    <span class="px-4 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-bold">
+                        {{ subpartida.numero_subpartida }}
+                    </span>
+                    <h1 class="text-3xl font-bold text-gray-900 mt-3">{{ subpartida.nombre }}</h1>
+                    <p class="mt-2 text-gray-600">
+                        Pertenece a: 
+                        <a href="{% url 'detalle_partida' subpartida.partida.pk %}" class="text-purple-600 hover:text-purple-800 font-semibold">
+                            {{ subpartida.partida.numero_partida }} - {{ subpartida.partida.nombre }}
+                        </a>
+                    </p>
+                </div>
+                <div class="flex gap-3">
+                    <a href="{% url 'editar_subpartida' subpartida.pk %}" 
+                       class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-edit mr-2"></i>Editar
+                    </a>
+                    <a href="{% url 'eliminar_subpartida' subpartida.pk %}" 
+                       class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                        <i class="fas fa-trash mr-2"></i>Eliminar
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pesos -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
+                <p class="text-gray-500 text-sm font-semibold uppercase mb-2">Peso Bruto</p>
+                <p class="text-3xl font-bold text-blue-700">{{ subpartida.peso_bruto_kg|floatformat:2 }}</p>
+                <p class="text-sm text-gray-500">kg</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-amber-500">
+                <p class="text-gray-500 text-sm font-semibold uppercase mb-2">Tara</p>
+                <p class="text-3xl font-bold text-amber-700">{{ subpartida.tara_kg|floatformat:2 }}</p>
+                <p class="text-sm text-gray-500">kg ({{ subpartida.porcentaje_tara|floatformat:1 }}%)</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500">
+                <p class="text-gray-500 text-sm font-semibold uppercase mb-2">Peso Neto</p>
+                <p class="text-3xl font-bold text-green-700">{{ subpartida.peso_neto_kg|floatformat:2 }}</p>
+                <p class="text-sm text-gray-500">kg</p>
+            </div>
+        </div>
+
+        <!-- Conversiones -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">
+                <i class="fas fa-exchange-alt text-purple-600 mr-2"></i>
+                Conversiones de Peso
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center p-4 bg-green-50 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Kilogramos</p>
+                    <p class="text-2xl font-bold text-green-700">{{ subpartida.peso_neto_kg|floatformat:2 }} kg</p>
+                </div>
+                <div class="text-center p-4 bg-blue-50 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Quintales</p>
+                    <p class="text-2xl font-bold text-blue-700">{{ subpartida.peso_en_quintales|floatformat:2 }} qq</p>
+                </div>
+                <div class="text-center p-4 bg-purple-50 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Libras</p>
+                    <p class="text-2xl font-bold text-purple-700">{{ subpartida.peso_en_libras|floatformat:2 }} lb</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información Adicional -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">
+                <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                Información Adicional
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% if subpartida.proveedor %}
+                <div>
+                    <p class="text-sm text-gray-500 font-semibold mb-1">Proveedor</p>
+                    <p class="text-gray-900 font-medium">{{ subpartida.proveedor }}</p>
+                </div>
+                {% endif %}
+
+                {% if subpartida.fecha_ingreso %}
+                <div>
+                    <p class="text-sm text-gray-500 font-semibold mb-1">Fecha de Ingreso</p>
+                    <p class="text-gray-900 font-medium">{{ subpartida.fecha_ingreso|date:"d/m/Y H:i" }}</p>
+                </div>
+                {% endif %}
+
+                {% if subpartida.humedad %}
+                <div>
+                    <p class="text-sm text-gray-500 font-semibold mb-1">Humedad</p>
+                    <p class="text-gray-900 font-medium">{{ subpartida.humedad }}%</p>
+                </div>
+                {% endif %}
+
+                {% if subpartida.numero_sacos %}
+                <div>
+                    <p class="text-sm text-gray-500 font-semibold mb-1">Número de Sacos</p>
+                    <p class="text-gray-900 font-medium">{{ subpartida.numero_sacos }}</p>
+                </div>
+                {% endif %}
+
+                <div>
+                    <p class="text-sm text-gray-500 font-semibold mb-1">Unidad de Medida</p>
+                    <p class="text-gray-900 font-medium">
+                        {% if subpartida.unidad_medida == 'kg' %}Kilogramos
+                        {% elif subpartida.unidad_medida == 'qq' %}Quintales
+                        {% elif subpartida.unidad_medida == 'lb' %}Libras
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div>
+                    <p class="text-sm text-gray-500 font-semibold mb-1">Fecha de Creación</p>
+                    <p class="text-gray-900 font-medium">{{ subpartida.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Observaciones -->
+        {% if subpartida.observaciones %}
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">
+                <i class="fas fa-comment-alt text-gray-600 mr-2"></i>
+                Observaciones
+            </h2>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <p class="text-gray-700 whitespace-pre-line">{{ subpartida.observaciones }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Navegación -->
+        <div class="text-center">
+            <a href="{% url 'detalle_partida' subpartida.partida.pk %}" 
+               class="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Volver a la Partida Principal
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

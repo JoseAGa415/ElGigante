@@ -12,10 +12,10 @@ class TipoCafeAdmin(admin.ModelAdmin):
     list_display = ['nombre', 'created_at']
     search_fields = ['nombre']
 
-@admin.register(Bodega)
-class BodegaAdmin(admin.ModelAdmin):
-    list_display = ['codigo', 'capacidad_kg', 'ubicacion', 'responsable', 'espacio_disponible']
-    list_filter = ['codigo']
+#@admin.register(Bodega)
+#class BodegaAdmin(admin.ModelAdmin):
+#    list_display = ['nombre', 'capacidad_kg', 'ubicacion', 'activo', 'responsable']
+#    list_filter = ['codigo']
 
 @admin.register(Lote)
 class LoteAdmin(admin.ModelAdmin):

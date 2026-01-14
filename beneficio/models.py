@@ -38,13 +38,13 @@ class Bodega(models.Model):
     class Meta:
         ordering = ['codigo']
     
-    def __str__(self):
-        return f"Bodega {self.codigo}"
+def __str__(self):
+        return f"Bodega {self.id}"
     
-    def espacio_disponible(self):
-        """Calcula el espacio disponible en la bodega"""
-        ocupado = sum(lote.peso_kg for lote in self.lotes.filter(activo=True))
-        return float(self.capacidad_kg) - ocupado
+    # def espacio_disponible(self):
+    #    """Calcula el espacio disponible en la bodega"""
+     #   ocupado = sum(lote.peso_kg for lote in self.lotes.filter(activo=True))
+     #   return float(self.capacidad_total) - float(self.capacidad_usada)
 
 class Lote(models.Model):
     ESTADO_CHOICES = [
@@ -1789,3 +1789,200 @@ class Exportacion(models.Model):
         elif self.tipo_producto == 'mezcla' and self.mezcla:
             return f"Mezcla {self.mezcla.codigo}"
         return "Producto no especificado"
+    
+class Partida(models.Model):
+    """Partida Principal - Contenedor de sub-partidas"""
+    
+    numero_partida = models.CharField(max_length=50, unique=True, editable=False)
+    nombre = models.CharField(max_length=200)
+    descripcion = models.TextField(blank=True, null=True)
+    
+    # UBICACIÓN FÍSICA ⭐
+    bodega = models.ForeignKey('Bodega', on_delete=models.SET_NULL, null=True, blank=True, related_name='partidas_ubicadas')
+    percha = models.CharField(max_length=100, blank=True, null=True, help_text="Nombre de la percha")
+    
+    peso_total_kg = models.DecimalField(max_digits=12, decimal_places=2, default=0, editable=False)
+    numero_subpartidas = models.IntegerField(default=0, editable=False)
+    activo = models.BooleanField(default=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_modificacion = models.DateTimeField(auto_now=True)
+    creado_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='partidas_creadas')
+    observaciones = models.TextField(blank=True, null=True)
+    
+    class Meta:
+        db_table = 'partidas'
+        verbose_name = 'Partida'
+        verbose_name_plural = 'Partidas'
+        ordering = ['-fecha_creacion']
+    
+    def __str__(self):
+        ubicacion = f" ({self.bodega.nombre} - {self.percha})" if self.bodega and self.percha else ""
+        return f"{self.numero_partida} - {self.nombre}{ubicacion}"
+    
+    def save(self, *args, **kwargs):
+        if not self.numero_partida:
+            ultimo = Partida.objects.filter(
+                numero_partida__startswith='PAR-'
+            ).order_by('-numero_partida').first()
+            
+            if ultimo:
+                try:
+                    ultimo_num = int(ultimo.numero_partida.split('-')[1])
+                    nuevo_num = ultimo_num + 1
+                except:
+                    nuevo_num = 1
+            else:
+                nuevo_num = 1
+            
+            self.numero_partida = f"PAR-{nuevo_num:04d}"
+        
+        super().save(*args, **kwargs)
+    
+    def actualizar_totales(self):
+        from django.db.models import Sum, Count
+        
+        stats = self.subpartidas.filter(activo=True).aggregate(
+            total_peso=Sum('peso_neto_kg'),
+            total_subpartidas=Count('id')
+        )
+        
+        self.peso_total_kg = stats['total_peso'] or 0
+        self.numero_subpartidas = stats['total_subpartidas'] or 0
+        self.save()
+    
+    @property
+    def peso_en_quintales(self):
+        return float(self.peso_total_kg) / 46
+    
+    @property
+    def peso_en_libras(self):
+        return float(self.peso_total_kg) * 2.20462
+    
+    @property
+    def ubicacion_completa(self):
+        """Retorna la ubicación completa formateada"""
+        if self.bodega and self.percha:
+            return f"{self.bodega.nombre} → {self.percha}"
+        elif self.bodega:
+            return f"{self.bodega.nombre}"
+        return "Sin ubicación"
+
+
+
+class SubPartida(models.Model):
+    """Sub-Partida - Entrada individual dentro de una partida"""
+    
+    partida = models.ForeignKey(Partida, on_delete=models.CASCADE, related_name='subpartidas')
+    numero_subpartida = models.CharField(max_length=50, unique=True, editable=False)
+    nombre = models.CharField(max_length=200)
+    
+    # UBICACIÓN FÍSICA ⭐
+    fila = models.CharField(max_length=50, blank=True, null=True, help_text="Fila en la percha")
+    
+    peso_bruto_kg = models.DecimalField(max_digits=10, decimal_places=2)
+    tara_kg = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    peso_neto_kg = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+    unidad_medida = models.CharField(max_length=10, default='kg')
+    fecha_ingreso = models.DateTimeField(blank=True, null=True)
+    proveedor = models.CharField(max_length=200, blank=True, null=True)
+    numero_sacos = models.IntegerField(blank=True, null=True)
+    humedad = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    observaciones = models.TextField(blank=True, null=True)
+    activo = models.BooleanField(default=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    creado_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='subpartidas_creadas')
+    
+    class Meta:
+        db_table = 'subpartidas'
+        verbose_name = 'Sub-Partida'
+        verbose_name_plural = 'Sub-Partidas'
+        ordering = ['numero_subpartida']
+    
+    def __str__(self):
+        ubicacion = f" - Fila {self.fila}" if self.fila else ""
+        return f"{self.numero_subpartida} - {self.nombre}{ubicacion}"
+    
+    def save(self, *args, **kwargs):
+        # Calcular peso neto
+        self.peso_neto_kg = self.peso_bruto_kg - self.tara_kg
+        
+        # Auto-generar número
+        if not self.numero_subpartida:
+            partida_num = self.partida.numero_partida
+            ultimo = SubPartida.objects.filter(
+                partida=self.partida,
+                numero_subpartida__startswith=f"{partida_num}-"
+            ).order_by('-numero_subpartida').first()
+            
+            if ultimo:
+                try:
+                    ultimo_num = int(ultimo.numero_subpartida.split('-')[-1])
+                    nuevo_num = ultimo_num + 1
+                except:
+                    nuevo_num = 1
+            else:
+                nuevo_num = 1
+            
+            self.numero_subpartida = f"{partida_num}-{nuevo_num:03d}"
+        
+        super().save(*args, **kwargs)
+        
+        # Actualizar totales de la partida
+        self.partida.actualizar_totales()
+    
+    def delete(self, *args, **kwargs):
+        partida = self.partida
+        super().delete(*args, **kwargs)
+        partida.actualizar_totales()
+    
+    @staticmethod
+    def convertir_a_kg(valor, unidad):
+        from decimal import Decimal
+        valor = Decimal(str(valor))
+        
+        if unidad == 'qq':
+            return valor * 46
+        elif unidad == 'lb':
+            return valor * Decimal('0.453592')
+        else:
+            return valor
+    
+    @property
+    def peso_en_quintales(self):
+        return float(self.peso_neto_kg) / 46
+    
+    @property
+    def peso_en_libras(self):
+        return float(self.peso_neto_kg) * 2.20462
+    
+    @property
+    def porcentaje_tara(self):
+        if self.peso_bruto_kg > 0:
+            return float((self.tara_kg / self.peso_bruto_kg) * 100)
+        return 0
+    
+    @property
+    def ubicacion_completa(self):
+        """Retorna la ubicación completa incluyendo la de la partida"""
+        base = self.partida.ubicacion_completa
+        if self.fila:
+            return f"{base} → Fila {self.fila}"
+        return base
+
+# ==========================================
+# SEÑALES PARA MANTENER SINCRONIZACIÓN
+# ==========================================
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
+
+@receiver(post_save, sender=SubPartida)
+def actualizar_partida_on_save(sender, instance, **kwargs):
+    """Actualizar totales cuando se guarda una sub-partida"""
+    if instance.partida:
+        instance.partida.actualizar_totales()
+
+@receiver(post_delete, sender=SubPartida)
+def actualizar_partida_on_delete(sender, instance, **kwargs):
+    """Actualizar totales cuando se elimina una sub-partida"""
+    if instance.partida:
+        instance.partida.actualizar_totales()

@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear Partida{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 py-8">
+    <div class="max-w-4xl mx-auto px-4">
+        
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">
+                <i class="fas fa-plus-circle text-green-600 mr-2"></i>
+                Nueva Partida
+            </h1>
+            <p class="mt-2 text-gray-600">
+                Crea un contenedor para agrupar sub-partidas
+            </p>
+        </div>
+
+        <form method="post" class="bg-white rounded-xl shadow-lg p-8 space-y-8">
+            {% csrf_token %}
+
+            <!-- Información Básica -->
+            <div class="border-l-4 border-green-500 bg-green-50 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold mb-6 text-green-900">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Información Básica
+                </h2>
+
+                <div class="space-y-6">
+                    <!-- Nombre -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-tag text-green-600 mr-1"></i>
+                            Nombre de la Partida <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" 
+                               name="nombre"
+                               required
+                               placeholder="Ej: Café de Enero, Cosecha 2026, Café Guatemala"
+                               class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-green-600 font-semibold text-lg">
+                        <p class="text-xs text-gray-500 mt-1">
+                            <i class="fas fa-lightbulb mr-1"></i>
+                            Usa un nombre descriptivo que identifique esta agrupación
+                        </p>
+                    </div>
+
+                    <!-- Descripción -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-align-left text-gray-600 mr-1"></i>
+                            Descripción
+                        </label>
+                        <textarea name="descripcion" 
+                                  rows="3"
+                                  placeholder="Descripción detallada de la partida..."
+                                  class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UBICACIÓN FÍSICA ⭐ -->
+            <div class="border-l-4 border-blue-500 bg-blue-50 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold mb-6 text-blue-900">
+                    <i class="fas fa-map-marker-alt mr-2"></i>
+                    Ubicación Física
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Bodega -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-warehouse text-blue-600 mr-1"></i>
+                            Bodega
+                        </label>
+                        <select name="bodega_id" 
+                                class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-blue-600">
+                            <option value="">Sin bodega</option>
+                            {% for bodega in bodegas %}
+                            <option value="{{ bodega.id }}">
+                                {% if bodega.nombre %}
+                                    {{ bodega.nombre }}
+                                {% elif bodega.codigo %}
+                                    {{ bodega.codigo }}
+                                {% elif bodega.descripcion %}
+                                    {{ bodega.descripcion }}
+                                {% else %}
+                                    Bodega #{{ bodega.id }}
+                                {% endif %}
+                            </option>
+                            {% empty %}
+                            <option disabled>No hay bodegas disponibles</option>
+                            {% endfor %}
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">
+                            En qué bodega se almacenará
+                        </p>
+                    </div>
+
+                    <!-- Percha -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-boxes text-blue-600 mr-1"></i>
+                            Nombre de la Percha
+                        </label>
+                        <input type="text" 
+                               name="percha"
+                               placeholder="Ej: Percha A, Zona 1, Estante Principal"
+                               class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-blue-600">
+                        <p class="text-xs text-gray-500 mt-1">
+                            Identificador de la percha o estantería
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-4 bg-blue-100 border border-blue-300 rounded-lg p-4">
+                    <p class="text-sm text-blue-800">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        <strong>Nota:</strong> La ubicación ayuda a localizar físicamente el café en el almacén
+                    </p>
+                </div>
+            </div>
+
+            <!-- Observaciones -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-comment-alt text-gray-600 mr-1"></i>
+                    Observaciones
+                </label>
+                <textarea name="observaciones" 
+                          rows="2"
+                          placeholder="Notas adicionales..."
+                          class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600"></textarea>
+            </div>
+
+            <!-- Info -->
+            <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-lg">
+                <p class="text-sm text-amber-800">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <strong>Importante:</strong> El número de partida se generará automáticamente (PAR-0001, PAR-0002, etc.)
+                </p>
+            </div>
+
+            <!-- Botones -->
+            <div class="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t">
+                <a href="{% url 'lista_partidas' %}" 
+                   class="px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium text-gray-700 text-center">
+                    <i class="fas fa-times mr-2"></i>
+                    Cancelar
+                </a>
+                <button type="submit" 
+                        class="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition font-medium shadow-lg">
+                    <i class="fas fa-save mr-2"></i>
+                    Crear Partida
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

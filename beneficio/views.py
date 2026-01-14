@@ -21,7 +21,7 @@ from .models import Procesado, Reproceso, Mezcla, Venta, Exportacion, Comprador
 from .models import (
     Lote, Procesado, Reproceso, Mezcla, DetalleMezcla,
     Bodega, TipoCafe, Catacion, DefectoCatacion, Comprador, Compra,
-    MantenimientoPlanta, HistorialMantenimiento, ReciboCafe
+    MantenimientoPlanta, HistorialMantenimiento, ReciboCafe, Partida, SubPartida
 )
 
 # ==========================================
@@ -3159,51 +3159,706 @@ def resumen_beneficio(request):
     
     return render(request, 'beneficio/resumen/resumen_beneficio.html', context)
 
+@login_required
+def lista_partidas(request):
+    """Lista todas las partidas con filtros"""
+    # Obtener filtros
+    lote_id = request.GET.get('lote')
+    proveedor = request.GET.get('proveedor')
+    activo = request.GET.get('activo')
+    
+    # Query base
+    partidas = Partida.objects.select_related(
+        'lote',
+        'lote__bodega',
+        'bodega',
+        'created_by'
+    ).all()
+    
+    # Aplicar filtros
+    if lote_id:
+        partidas = partidas.filter(lote_id=lote_id)
+    
+    if proveedor:
+        partidas = partidas.filter(proveedor__icontains=proveedor)
+    
+    if activo:
+        partidas = partidas.filter(activo=(activo == 'true'))
+    
+    # Contexto
+    context = {
+        'partidas': partidas,
+        'lotes': Lote.objects.filter(activo=True).order_by('-fecha_ingreso'),
+        'total_partidas': partidas.count(),
+        'peso_total': sum(p.peso_neto_kg for p in partidas),
+    }
+    
+    return render(request, 'beneficio/partidas/lista.html', context)
+
+
+# ==========================================
+# CREAR PARTIDA
+# ==========================================
+
+@login_required
+def crear_partida(request):
+    bodegas = Bodega.objects.all()
+    
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                partida = Partida()
+                
+                # Nombre (obligatorio)
+                nombre = request.POST.get('nombre', '').strip()
+                if not nombre:
+                    raise ValueError("El nombre es obligatorio")
+                partida.nombre = nombre
+                
+                # Descripción y observaciones
+                partida.descripcion = request.POST.get('descripcion', '').strip()
+                partida.observaciones = request.POST.get('observaciones', '').strip()
+                
+                # UBICACIÓN ⭐
+                bodega_id = request.POST.get('bodega_id')
+                if bodega_id:
+                    partida.bodega_id = bodega_id
+                
+                percha = request.POST.get('percha', '').strip()
+                if percha:
+                    partida.percha = percha
+                
+                partida.creado_por = request.user
+                partida.save()
+                
+                ubicacion_msg = ""
+                if partida.bodega and partida.percha:
+                    ubicacion_msg = f" | Ubicación: {partida.bodega.nombre} - {partida.percha}"
+                elif partida.bodega:
+                    ubicacion_msg = f" | Bodega: {partida.bodega.nombre}"
+                
+                messages.success(
+                    request,
+                    f'✅ Partida "{nombre}" creada: {partida.numero_partida}{ubicacion_msg}'
+                )
+                
+                return redirect('detalle_partida', pk=partida.pk)
+                
+        except ValueError as ve:
+            messages.error(request, f'❌ Error: {str(ve)}')
+        except Exception as e:
+            messages.error(request, f'❌ Error: {str(e)}')
+    
+    context = {'bodegas': bodegas}  
+    return render(request, 'beneficio/partidas/crear.html', context)
+
+
+# ==========================================
+# DETALLE PARTIDA
+# ==========================================
+
+@login_required
+def detalle_partida(request, pk):
+    """Ver detalle completo de una partida"""
+    partida = get_object_or_404(
+        Partida.objects.select_related(
+            'lote',
+            'lote__bodega',
+            'bodega',
+            'created_by'
+        ),
+        pk=pk
+    )
+    
+    context = {
+        'partida': partida,
+        # Estadísticas del lote padre
+        'otras_partidas': Partida.objects.filter(
+            lote=partida.lote,
+            activo=True
+        ).exclude(pk=pk).order_by('-created_at'),
+        'total_partidas_lote': Partida.objects.filter(
+            lote=partida.lote,
+            activo=True
+        ).count(),
+    }
+    
+    return render(request, 'beneficio/partidas/detalle.html', context)
+
+
+# ==========================================
+# EDITAR PARTIDA
+# ==========================================
+
+@login_required
+def editar_partida(request, pk):
+    partida = get_object_or_404(Partida, pk=pk, activo=True)
+    bodegas = Bodega.objects.all()
+    
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                # Nombre
+                nombre = request.POST.get('nombre', '').strip()
+                if not nombre:
+                    raise ValueError("El nombre es obligatorio")
+                partida.nombre = nombre
+                
+                # Descripción y observaciones
+                partida.descripcion = request.POST.get('descripcion', '').strip()
+                partida.observaciones = request.POST.get('observaciones', '').strip()
+                
+                # UBICACIÓN ⭐
+                bodega_id = request.POST.get('bodega_id')
+                if bodega_id:
+                    partida.bodega_id = bodega_id
+                else:
+                    partida.bodega = None
+                
+                percha = request.POST.get('percha', '').strip()
+                partida.percha = percha if percha else None
+                
+                partida.save()
+                
+                messages.success(request, '✅ Partida actualizada')
+                return redirect('detalle_partida', pk=partida.pk)
+                
+        except Exception as e:
+            messages.error(request, f'❌ Error: {str(e)}')
+    
+    context = {
+        'partida': partida,
+        'bodegas': bodegas
+    }
+    return render(request, 'beneficio/partidas/editar.html', context)
 
 
 
+# ==========================================
+# ELIMINAR PARTIDA
+# ==========================================
+
+@login_required
+def eliminar_partida(request, pk):
+    """Eliminar una partida (marca como inactiva)"""
+    partida = get_object_or_404(Partida, pk=pk)
+    lote = partida.lote
+    
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                numero = partida.numero_partida
+                peso = partida.peso_neto_kg
+                
+                # Marcar como inactiva en lugar de eliminar
+                partida.activo = False
+                partida.save()
+                
+                # Recalcular peso del lote
+                partida.actualizar_peso_lote()
+                
+                messages.success(
+                    request,
+                    f'✅ Partida {numero} eliminada exitosamente. '
+                    f'Se restaron {peso} kg del lote {lote.codigo}'
+                )
+                return redirect('detalle_lote', pk=lote.pk)
+                
+        except Exception as e:
+            messages.error(request, f'❌ Error al eliminar partida: {str(e)}')
+    
+    context = {
+        'partida': partida,
+    }
+    
+    return render(request, 'beneficio/partidas/eliminar.html', context)
 
 
+# ==========================================
+# VISTA: PARTIDAS DE UN LOTE ESPECÍFICO
+# ==========================================
+
+@login_required
+def partidas_de_lote(request, lote_id):
+    """
+    Muestra todas las partidas de un lote específico
+    Vista especializada con estadísticas del lote
+    """
+    lote = get_object_or_404(Lote, pk=lote_id)
+    
+    partidas = Partida.objects.filter(
+        lote=lote,
+        activo=True
+    ).select_related('bodega', 'created_by').order_by('-created_at')
+    
+    # Estadísticas
+    total_partidas = partidas.count()
+    peso_total_bruto = sum(p.peso_bruto_kg for p in partidas)
+    peso_total_tara = sum(p.tara_kg for p in partidas)
+    peso_total_neto = sum(p.peso_neto_kg for p in partidas)
+    
+    context = {
+        'lote': lote,
+        'partidas': partidas,
+        'total_partidas': total_partidas,
+        'peso_total_bruto': peso_total_bruto,
+        'peso_total_tara': peso_total_tara,
+        'peso_total_neto': peso_total_neto,
+        'porcentaje_tara_promedio': (peso_total_tara / peso_total_bruto * 100) if peso_total_bruto > 0 else 0,
+    }
+    
+    return render(request, 'beneficio/partidas/partidas_lote.html', context)
+
+@login_required
+def lista_partidas(request):
+    """
+    Lista de todas las partidas principales
+    """
+    partidas = Partida.objects.filter(activo=True).order_by('-fecha_creacion')
+    
+    # Filtros opcionales
+    buscar = request.GET.get('buscar', '').strip()
+    if buscar:
+        partidas = partidas.filter(
+            Q(numero_partida__icontains=buscar) |
+            Q(nombre__icontains=buscar)
+        )
+    
+    context = {
+        'partidas': partidas,
+        'total_partidas': partidas.count(),
+        'peso_total': partidas.aggregate(Sum('peso_total_kg'))['peso_total_kg__sum'] or 0,
+    }
+    
+    return render(request, 'beneficio/partidas/lista.html', context)
 
 
+@login_required
+def crear_partida(request):
+    bodegas = Bodega.objects.all()
+    
+    if request.method == 'POST':
+        print("\n" + "=" * 60)
+        print("🔍 DEBUG: Formulario recibido")
+        print("=" * 60)
+        
+        # Ver todos los datos recibidos
+        print("\nDatos POST recibidos:")
+        for key, value in request.POST.items():
+            print(f"  {key}: {value}")
+        
+        try:
+            with transaction.atomic():
+                partida = Partida()
+                
+                # Nombre (obligatorio)
+                nombre = request.POST.get('nombre', '').strip()
+                print(f"\n✅ Nombre: '{nombre}'")
+                
+                if not nombre:
+                    print("❌ ERROR: Nombre está vacío")
+                    raise ValueError("El nombre es obligatorio")
+                
+                partida.nombre = nombre
+                
+                # Descripción y observaciones
+                descripcion = request.POST.get('descripcion', '').strip()
+                observaciones = request.POST.get('observaciones', '').strip()
+                
+                print(f"✅ Descripción: '{descripcion}'")
+                print(f"✅ Observaciones: '{observaciones}'")
+                
+                partida.descripcion = descripcion
+                partida.observaciones = observaciones
+                
+                # Ubicación
+                bodega_id = request.POST.get('bodega_id')
+                percha = request.POST.get('percha', '').strip()
+                
+                print(f"✅ Bodega ID: {bodega_id}")
+                print(f"✅ Percha: '{percha}'")
+                
+                if bodega_id and bodega_id != '':
+                    partida.bodega_id = int(bodega_id)
+                    print(f"   → Bodega asignada: ID {bodega_id}")
+                
+                if percha:
+                    partida.percha = percha
+                
+                # Usuario
+                partida.creado_por = request.user
+                print(f"✅ Creado por: {request.user}")
+                
+                # Intentar guardar
+                print("\n💾 Intentando guardar partida...")
+                partida.save()
+                print(f"✅ ¡Partida guardada exitosamente! ID: {partida.id}, Número: {partida.numero_partida}")
+                
+                # Mensaje de éxito
+                ubicacion_msg = ""
+                if partida.bodega and partida.percha:
+                    ubicacion_msg = f" | Ubicación: {partida.bodega} - {partida.percha}"
+                elif partida.bodega:
+                    ubicacion_msg = f" | Bodega: {partida.bodega}"
+                
+                messages.success(
+                    request,
+                    f'✅ Partida "{nombre}" creada: {partida.numero_partida}{ubicacion_msg}'
+                )
+                
+                print(f"✅ Redirigiendo a detalle_partida con pk={partida.pk}")
+                print("=" * 60 + "\n")
+                
+                return redirect('detalle_partida', pk=partida.pk)
+                
+        except ValueError as ve:
+            print(f"❌ ValueError: {str(ve)}")
+            messages.error(request, f'❌ Error: {str(ve)}')
+            print("=" * 60 + "\n")
+            
+        except Exception as e:
+            print(f"❌ Exception: {str(e)}")
+            print(f"   Tipo: {type(e).__name__}")
+            
+            import traceback
+            print("\n📋 Traceback completo:")
+            traceback.print_exc()
+            
+            messages.error(request, f'❌ Error al crear partida: {str(e)}')
+            print("=" * 60 + "\n")
+    
+    # GET request o después de error
+    context = {
+        'bodegas': bodegas,
+        'total_bodegas': bodegas.count()
+    }
+    
+    return render(request, 'beneficio/partidas/crear.html', context)
 
 
+@login_required
+def detalle_partida(request, pk):
+    """
+    Detalle de una partida principal con todas sus sub-partidas
+    """
+    partida = get_object_or_404(Partida, pk=pk, activo=True)
+    
+    # Obtener sub-partidas
+    subpartidas = partida.subpartidas.filter(activo=True).order_by('-fecha_creacion')
+    
+    context = {
+        'partida': partida,
+        'subpartidas': subpartidas,
+        'total_subpartidas': subpartidas.count(),
+    }
+    
+    return render(request, 'beneficio/partidas/detalle_partida.html', context)
 
 
+@login_required
+def editar_partida(request, pk):
+    partida = get_object_or_404(Partida, pk=pk, activo=True)
+    
+    # ⭐ OBTENER BODEGAS
+    bodegas = Bodega.objects.all()
+    
+    if request.method == 'POST':
+        print("\n" + "=" * 60)
+        print("🔍 DEBUG EDITAR: Formulario recibido")
+        print("=" * 60)
+        
+        # Ver todos los datos recibidos
+        print("\nDatos POST recibidos:")
+        for key, value in request.POST.items():
+            print(f"  {key}: {value}")
+        
+        try:
+            with transaction.atomic():
+                # Nombre (obligatorio)
+                nombre = request.POST.get('nombre', '').strip()
+                print(f"\n✅ Nombre: '{nombre}'")
+                
+                if not nombre:
+                    print("❌ ERROR: Nombre está vacío")
+                    raise ValueError("El nombre es obligatorio")
+                
+                partida.nombre = nombre
+                
+                # Descripción y observaciones
+                descripcion = request.POST.get('descripcion', '').strip()
+                observaciones = request.POST.get('observaciones', '').strip()
+                
+                print(f"✅ Descripción: '{descripcion}'")
+                print(f"✅ Observaciones: '{observaciones}'")
+                
+                partida.descripcion = descripcion
+                partida.observaciones = observaciones
+                
+                # Ubicación
+                bodega_id = request.POST.get('bodega_id')
+                percha = request.POST.get('percha', '').strip()
+                
+                print(f"✅ Bodega ID: {bodega_id}")
+                print(f"✅ Percha: '{percha}'")
+                
+                if bodega_id and bodega_id != '':
+                    partida.bodega_id = int(bodega_id)
+                    print(f"   → Bodega asignada: ID {bodega_id}")
+                else:
+                    partida.bodega = None
+                    print(f"   → Bodega removida")
+                
+                if percha:
+                    partida.percha = percha
+                else:
+                    partida.percha = None
+                
+                # Guardar
+                print("\n💾 Intentando guardar cambios...")
+                partida.save()
+                print(f"✅ ¡Partida actualizada exitosamente! ID: {partida.id}")
+                
+                # Mensaje de éxito
+                ubicacion_msg = ""
+                if partida.bodega and partida.percha:
+                    ubicacion_msg = f" | Ubicación: Bodega #{partida.bodega.id} - {partida.percha}"
+                elif partida.bodega:
+                    ubicacion_msg = f" | Bodega: Bodega #{partida.bodega.id}"
+                
+                messages.success(
+                    request,
+                    f'✅ Partida "{nombre}" actualizada{ubicacion_msg}'
+                )
+                
+                print(f"✅ Redirigiendo a detalle_partida con pk={partida.pk}")
+                print("=" * 60 + "\n")
+                
+                return redirect('detalle_partida', pk=partida.pk)
+                
+        except ValueError as ve:
+            print(f"❌ ValueError: {str(ve)}")
+            messages.error(request, f'❌ Error: {str(ve)}')
+            print("=" * 60 + "\n")
+            
+        except Exception as e:
+            print(f"❌ Exception: {str(e)}")
+            print(f"   Tipo: {type(e).__name__}")
+            
+            import traceback
+            print("\n📋 Traceback completo:")
+            traceback.print_exc()
+            
+            messages.error(request, f'❌ Error al actualizar partida: {str(e)}')
+            print("=" * 60 + "\n")
+    
+    # GET request o después de error
+    print(f"\n📄 Mostrando formulario de edición para partida {partida.numero_partida}")
+    print(f"   Bodegas disponibles: {bodegas.count()}")
+    
+    context = {
+        'partida': partida,
+        'bodegas': bodegas,
+        'total_bodegas': bodegas.count()
+    }
+    
+    return render(request, 'beneficio/partidas/editar.html', context)
 
 
+@login_required
+def eliminar_partida(request, pk):
+    """
+    Eliminar (desactivar) partida principal
+    """
+    partida = get_object_or_404(Partida, pk=pk, activo=True)
+    
+    if request.method == 'POST':
+        try:
+            # Soft delete
+            partida.activo = False
+            partida.save()
+            
+            # También desactivar todas las sub-partidas
+            partida.subpartidas.all().update(activo=False)
+            
+            messages.success(request, f'✅ Partida "{partida.nombre}" eliminada')
+            return redirect('lista_partidas')
+            
+        except Exception as e:
+            messages.error(request, f'❌ Error al eliminar: {str(e)}')
+    
+    context = {'partida': partida}
+    return render(request, 'beneficio/partidas/eliminar.html', context)
 
 
+# ==========================================
+# SUB-PARTIDAS
+# ==========================================
+
+@login_required
+def agregar_subpartida(request, partida_id):
+    partida = get_object_or_404(Partida, pk=partida_id, activo=True)
+    
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                subpartida = SubPartida()
+                subpartida.partida = partida
+                
+                # Nombre (obligatorio)
+                nombre = request.POST.get('nombre', '').strip()
+                if not nombre:
+                    raise ValueError("El nombre es obligatorio")
+                subpartida.nombre = nombre
+                
+                # UBICACIÓN (Fila) ⭐
+                fila = request.POST.get('fila', '').strip()
+                if fila:
+                    subpartida.fila = fila
+                
+                # Pesos (obligatorios)
+                peso_bruto = request.POST.get('peso_bruto')
+                if not peso_bruto:
+                    raise ValueError("El peso bruto es obligatorio")
+                
+                unidad = request.POST.get('unidad_medida', 'kg')
+                tara = request.POST.get('tara', '0')
+                
+                subpartida.peso_bruto_kg = SubPartida.convertir_a_kg(peso_bruto, unidad)
+                subpartida.tara_kg = SubPartida.convertir_a_kg(tara, unidad)
+                subpartida.unidad_medida = unidad
+                
+                # Campos opcionales
+                fecha_ingreso = request.POST.get('fecha_ingreso')
+                if fecha_ingreso:
+                    subpartida.fecha_ingreso = fecha_ingreso
+                
+                proveedor = request.POST.get('proveedor', '').strip()
+                if proveedor:
+                    subpartida.proveedor = proveedor
+                
+                numero_sacos = request.POST.get('numero_sacos', '').strip()
+                if numero_sacos:
+                    subpartida.numero_sacos = int(numero_sacos)
+                
+                humedad = request.POST.get('humedad', '').strip()
+                if humedad:
+                    subpartida.humedad = Decimal(humedad)
+                
+                subpartida.observaciones = request.POST.get('observaciones', '').strip()
+                subpartida.creado_por = request.user
+                
+                subpartida.save()
+                
+                ubicacion_msg = f" | Fila: {fila}" if fila else ""
+                
+                messages.success(
+                    request,
+                    f'✅ Sub-partida agregada: {subpartida.numero_subpartida}{ubicacion_msg}'
+                )
+                
+                return redirect('detalle_partida', pk=partida.pk)
+                
+        except ValueError as ve:
+            messages.error(request, f'❌ Error: {str(ve)}')
+        except Exception as e:
+            messages.error(request, f'❌ Error: {str(e)}')
+    
+    context = {'partida': partida}
+    return render(request, 'beneficio/partidas/agregar_subpartida.html', context)
+
+@login_required
+def editar_subpartida(request, pk):
+    subpartida = get_object_or_404(SubPartida, pk=pk, activo=True)
+    
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                # Nombre
+                nombre = request.POST.get('nombre', '').strip()
+                if not nombre:
+                    raise ValueError("El nombre es obligatorio")
+                subpartida.nombre = nombre
+                
+                # UBICACIÓN (Fila) ⭐
+                fila = request.POST.get('fila', '').strip()
+                subpartida.fila = fila if fila else None
+                
+                # Pesos
+                peso_bruto = request.POST.get('peso_bruto')
+                if not peso_bruto:
+                    raise ValueError("El peso bruto es obligatorio")
+                
+                unidad = request.POST.get('unidad_medida', 'kg')
+                tara = request.POST.get('tara', '0')
+                
+                subpartida.peso_bruto_kg = SubPartida.convertir_a_kg(peso_bruto, unidad)
+                subpartida.tara_kg = SubPartida.convertir_a_kg(tara, unidad)
+                subpartida.unidad_medida = unidad
+                
+                # Campos opcionales
+                fecha_ingreso = request.POST.get('fecha_ingreso')
+                subpartida.fecha_ingreso = fecha_ingreso if fecha_ingreso else None
+                
+                proveedor = request.POST.get('proveedor', '').strip()
+                subpartida.proveedor = proveedor if proveedor else None
+                
+                numero_sacos = request.POST.get('numero_sacos', '').strip()
+                subpartida.numero_sacos = int(numero_sacos) if numero_sacos else None
+                
+                humedad = request.POST.get('humedad', '').strip()
+                subpartida.humedad = Decimal(humedad) if humedad else None
+                
+                subpartida.observaciones = request.POST.get('observaciones', '').strip()
+                
+                subpartida.save()
+                
+                messages.success(request, '✅ Sub-partida actualizada')
+                return redirect('detalle_partida', pk=subpartida.partida.pk)
+                
+        except Exception as e:
+            messages.error(request, f'❌ Error: {str(e)}')
+    
+    context = {'subpartida': subpartida}
+    return render(request, 'beneficio/partidas/editar_subpartida.html', context)
 
 
+@login_required
+def eliminar_subpartida(request, pk):
+    """
+    Eliminar sub-partida
+    """
+    subpartida = get_object_or_404(SubPartida, pk=pk, activo=True)
+    partida_id = subpartida.partida.pk
+    
+    if request.method == 'POST':
+        try:
+            # Soft delete
+            subpartida.activo = False
+            subpartida.save()
+            
+            messages.success(request, '✅ Sub-partida eliminada')
+            return redirect('detalle_partida', pk=partida_id)
+            
+        except Exception as e:
+            messages.error(request, f'❌ Error al eliminar: {str(e)}')
+    
+    context = {'subpartida': subpartida}
+    return render(request, 'beneficio/partidas/eliminar_subpartida.html', context)
 
 
+# ==========================================
+# VISTA DE DETALLE DE SUB-PARTIDA
+# ==========================================
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+@login_required
+def detalle_subpartida(request, pk):
+    """
+    Ver detalle completo de una sub-partida
+    """
+    subpartida = get_object_or_404(SubPartida, pk=pk, activo=True)
+    
+    context = {'subpartida': subpartida}
+    return render(request, 'beneficio/partidas/detalle_subpartida.html', context)
 
 
 

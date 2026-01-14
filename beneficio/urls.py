@@ -94,4 +94,18 @@ urlpatterns = [
      # Resumen
     path('resumen-beneficio/', views.resumen_beneficio, name='resumen_beneficio'),
 
+
+    # Lista de partidas
+    path('partidas/', views.lista_partidas, name='lista_partidas'),
+    path('partidas/crear/', views.crear_partida, name='crear_partida'),
+    path('partidas/<int:pk>/', views.detalle_partida, name='detalle_partida'),
+    path('partidas/<int:pk>/editar/', views.editar_partida, name='editar_partida'),
+    path('partidas/<int:pk>/eliminar/', views.eliminar_partida, name='eliminar_partida'),
+
+# SUB-PARTIDAS
+path('partidas/<int:partida_id>/agregar/', views.agregar_subpartida, name='agregar_subpartida'),
+path('subpartidas/<int:pk>/', views.detalle_subpartida, name='detalle_subpartida'),
+path('subpartidas/<int:pk>/editar/', views.editar_subpartida, name='editar_subpartida'),
+path('subpartidas/<int:pk>/eliminar/', views.eliminar_subpartida, name='eliminar_subpartida'),
+
 ]

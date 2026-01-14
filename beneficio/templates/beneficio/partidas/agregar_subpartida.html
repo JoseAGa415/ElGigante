@@ -1,0 +1,324 @@
+{% extends 'base.html' %}
+
+{% block title %}Agregar Sub-Partida{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50 py-8">
+    <div class="max-w-5xl mx-auto px-4">
+        
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-purple-100 rounded-full -mr-32 -mt-32 opacity-50"></div>
+            <div class="relative">
+                <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                    <i class="fas fa-plus-circle text-purple-600"></i>
+                    Agregar Sub-Partida
+                </h1>
+                <p class="mt-2 text-gray-600">
+                    Agregar a la partida 
+                    <strong class="text-purple-700">{{ partida.numero_partida }} - {{ partida.nombre }}</strong>
+                </p>
+                
+                <!-- Mostrar ubicación de la partida -->
+                {% if partida.bodega or partida.percha %}
+                <div class="mt-3 flex items-center gap-2 text-sm text-blue-700 bg-blue-50 px-3 py-2 rounded-lg inline-block">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>
+                        {% if partida.bodega %}{{ partida.bodega.nombre }}{% endif %}
+                        {% if partida.percha %} → {{ partida.percha }}{% endif %}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="absolute top-4 right-4 bg-green-100 px-4 py-2 rounded-lg">
+                <p class="text-sm text-green-800 font-semibold">
+                    PESO ACTUAL
+                </p>
+                <p class="text-2xl font-bold text-green-700">{{ partida.peso_total_kg|floatformat:2 }} kg</p>
+            </div>
+        </div>
+
+        <form method="post" class="bg-white rounded-xl shadow-lg p-8 space-y-8">
+            {% csrf_token %}
+
+            <!-- Calculadora -->
+            <div class="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-calculator text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900">💡 Calculadora Automática</h3>
+                        <p class="text-sm text-gray-600">Escribe operaciones y el peso neto se calculará automáticamente (Bruto - Tara).</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información Básica -->
+            <div class="border-l-4 border-purple-500 bg-purple-50 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold mb-6">Información Básica</h2>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Nombre de la Sub-Partida <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" 
+                           name="nombre"
+                           required
+                           placeholder="Ej: Entrega Mañana, Lote A, Proveedor Juan"
+                           class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-purple-600 font-semibold text-lg">
+                </div>
+            </div>
+
+            <!-- UBICACIÓN (Fila) ⭐ -->
+            <div class="border-l-4 border-blue-500 bg-blue-50 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                    <i class="fas fa-layer-group text-blue-600"></i>
+                    Ubicación en la Percha
+                </h2>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-bars text-blue-600 mr-1"></i>
+                        Fila / Nivel
+                    </label>
+                    <input type="text" 
+                           name="fila"
+                           placeholder="Ej: Fila 1, Nivel A, Posición 3"
+                           class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-blue-600 font-semibold">
+                    <p class="text-xs text-gray-500 mt-1">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Indica en qué fila o nivel de la percha se encuentra esta sub-partida
+                    </p>
+                </div>
+
+                <!-- Vista previa de ubicación completa -->
+                <div class="mt-4 bg-blue-100 border border-blue-300 rounded-lg p-4">
+                    <p class="text-sm text-blue-900 font-semibold mb-2">
+                        <i class="fas fa-map-marked-alt mr-2"></i>
+                        Ubicación completa:
+                    </p>
+                    <div class="flex items-center gap-2 text-blue-800">
+                        {% if partida.bodega %}
+                        <span class="bg-blue-200 px-3 py-1 rounded-full text-sm font-medium">
+                            {{ partida.bodega.nombre }}
+                        </span>
+                        <i class="fas fa-arrow-right text-blue-600"></i>
+                        {% endif %}
+                        
+                        {% if partida.percha %}
+                        <span class="bg-blue-200 px-3 py-1 rounded-full text-sm font-medium">
+                            {{ partida.percha }}
+                        </span>
+                        <i class="fas fa-arrow-right text-blue-600"></i>
+                        {% endif %}
+                        
+                        <span class="bg-blue-300 px-3 py-1 rounded-full text-sm font-bold">
+                            Fila (a definir)
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pesos -->
+            <div class="border-l-4 border-green-500 bg-green-50 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold mb-6">Pesos</h2>
+
+                <!-- Peso Bruto -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        Peso BRUTO <span class="text-red-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <input type="text" 
+                                   id="op_peso_bruto"
+                                   placeholder="Operación: 10*2+5"
+                                   class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg font-mono text-sm">
+                            <p class="text-xs text-gray-500 mt-1">Operación</p>
+                        </div>
+                        <div>
+                            <input type="number" 
+                                   step="0.01"
+                                   name="peso_bruto"
+                                   id="peso_bruto"
+                                   required
+                                   class="w-full px-3 py-2 border-2 border-blue-300 rounded-lg font-bold text-lg bg-blue-50">
+                            <p class="text-xs text-gray-500 mt-1">Resultado</p>
+                        </div>
+                        <div>
+                            <select name="unidad_medida" 
+                                    id="unidad_medida"
+                                    class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-center font-semibold">
+                                <option value="kg">kg</option>
+                                <option value="qq">qq</option>
+                                <option value="lb">lb</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Unidad</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tara -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Tara</label>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <input type="text" 
+                                   id="op_tara"
+                                   placeholder="Operación: 2+0.5"
+                                   class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg font-mono text-sm">
+                        </div>
+                        <div>
+                            <input type="number" 
+                                   step="0.01"
+                                   name="tara"
+                                   id="tara"
+                                   value="0"
+                                   class="w-full px-3 py-2 border-2 border-amber-300 rounded-lg font-bold text-lg bg-amber-50">
+                        </div>
+                        <div>
+                            <span class="block w-full px-3 py-2 text-center bg-gray-100 rounded-lg border-2 border-gray-300 text-sm">
+                                (misma unidad)
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Peso Neto -->
+                <div class="bg-gradient-to-r from-green-100 to-emerald-100 p-5 rounded-lg border-2 border-green-400">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-700 mb-1">Peso NETO (Bruto - Tara)</p>
+                            <p class="text-xs text-gray-500">Se calculará automáticamente</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-4xl font-bold text-green-700" id="peso_neto">0.00</p>
+                            <p class="text-sm text-green-600 font-semibold" id="unidad_display">kg</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Porcentaje de Tara -->
+                <div id="tara_info" class="mt-4 p-4 rounded-lg border-2 hidden">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-semibold">% Tara:</span>
+                        <span id="porcentaje_tara" class="text-lg font-bold"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información Adicional -->
+            <div class="bg-gray-50 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold mb-6">Información Adicional</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Proveedor</label>
+                        <input type="text" name="proveedor" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Fecha de Ingreso</label>
+                        <input type="datetime-local" name="fecha_ingreso" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Humedad (%)</label>
+                        <input type="number" step="0.01" name="humedad" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Número de Sacos</label>
+                        <input type="number" name="numero_sacos" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Observaciones -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Observaciones</label>
+                <textarea name="observaciones" rows="3" class="w-full px-4 py-2 rounded-lg border border-gray-300"></textarea>
+            </div>
+
+            <!-- Botones -->
+            <div class="flex gap-3 pt-6 border-t">
+                <a href="{% url 'detalle_partida' partida.pk %}" 
+                   class="flex-1 px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 text-center font-medium">
+                    Cancelar
+                </a>
+                <button type="submit" 
+                        class="flex-1 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium">
+                    Agregar Sub-Partida
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function calc(expr) {
+        if (!expr) return 0;
+        try {
+            expr = expr.replace(/x/gi, '*').replace(/\s/g, '');
+            return parseFloat(Function('return ' + expr)().toFixed(2));
+        } catch {
+            return 0;
+        }
+    }
+    
+    function setup(opId, resId) {
+        const op = document.getElementById(opId);
+        const res = document.getElementById(resId);
+        if (!op || !res) return;
+        op.addEventListener('input', function() {
+            res.value = calc(this.value);
+            res.dispatchEvent(new Event('input'));
+        });
+    }
+    
+    setup('op_peso_bruto', 'peso_bruto');
+    setup('op_tara', 'tara');
+    
+    function calcularPesoNeto() {
+        const bruto = parseFloat(document.getElementById('peso_bruto').value) || 0;
+        const tara = parseFloat(document.getElementById('tara').value) || 0;
+        const unidad = document.getElementById('unidad_medida').value;
+        const neto = bruto - tara;
+        
+        document.getElementById('peso_neto').textContent = neto.toFixed(2);
+        document.getElementById('unidad_display').textContent = unidad;
+        
+        // Porcentaje de tara
+        if (bruto > 0) {
+            const porcentaje = (tara / bruto) * 100;
+            const taraInfo = document.getElementById('tara_info');
+            const porcentajeTara = document.getElementById('porcentaje_tara');
+            
+            taraInfo.classList.remove('hidden');
+            porcentajeTara.textContent = porcentaje.toFixed(2) + '%';
+            
+            // Colores según porcentaje
+            taraInfo.classList.remove('border-green-400', 'bg-green-50', 'border-yellow-400', 'bg-yellow-50', 'border-red-400', 'bg-red-50');
+            porcentajeTara.classList.remove('text-green-700', 'text-yellow-700', 'text-red-700');
+            
+            if (porcentaje < 5) {
+                taraInfo.classList.add('border-green-400', 'bg-green-50');
+                porcentajeTara.classList.add('text-green-700');
+            } else if (porcentaje <= 10) {
+                taraInfo.classList.add('border-yellow-400', 'bg-yellow-50');
+                porcentajeTara.classList.add('text-yellow-700');
+            } else {
+                taraInfo.classList.add('border-red-400', 'bg-red-50');
+                porcentajeTara.classList.add('text-red-700');
+            }
+        } else {
+            document.getElementById('tara_info').classList.add('hidden');
+        }
+    }
+    
+    document.getElementById('peso_bruto').addEventListener('input', calcularPesoNeto);
+    document.getElementById('tara').addEventListener('input', calcularPesoNeto);
+    document.getElementById('unidad_medida').addEventListener('change', calcularPesoNeto);
+    
+    calcularPesoNeto();
+});
+</script>
+{% endblock %}
