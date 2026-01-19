@@ -1684,7 +1684,11 @@ def agregar_compra(request, comprador_id):
                 compra.numero_factura = request.POST.get('numero_factura', '')
                 compra.metodo_pago = request.POST.get('metodo_pago', '')
                 compra.estado_pago = request.POST.get('estado_pago', 'pendiente')
-                
+
+                # Manejar archivo comprobante
+                if 'comprobante' in request.FILES:
+                    compra.comprobante = request.FILES['comprobante']
+
                 lote_id = request.POST.get('lote_id')
                 procesado_id = request.POST.get('procesado_id')
                 mezcla_id = request.POST.get('mezcla_id')
@@ -1729,6 +1733,10 @@ def editar_compra(request, pk):
             compra.numero_factura = request.POST.get('numero_factura', '')
             compra.metodo_pago = request.POST.get('metodo_pago', '')
             compra.estado_pago = request.POST.get('estado_pago', 'pendiente')
+
+            # Manejar archivo comprobante
+            if 'comprobante' in request.FILES:
+                compra.comprobante = request.FILES['comprobante']
 
             compra.monto_total = cantidad * precio_unitario
 

@@ -1241,6 +1241,12 @@ class Compra(models.Model):
     numero_factura = models.CharField(max_length=100, blank=True, null=True)
     metodo_pago = models.CharField(max_length=100, blank=True, null=True)
     estado_pago = models.CharField(max_length=20, choices=ESTADO_PAGO_CHOICES, default='pendiente')
+    comprobante = models.FileField(
+        upload_to='comprobantes/%Y/%m/',
+        blank=True,
+        null=True,
+        help_text='Comprobante de pago (foto o documento)'
+    )
     
     # Relaciones opcionales con productos
     lote = models.ForeignKey(Lote, on_delete=models.SET_NULL, null=True, blank=True, related_name='compras')

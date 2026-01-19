@@ -7,7 +7,7 @@
 <div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <form method="post" class="bg-white rounded-xl shadow-lg p-8 space-y-6" x-data="compraForm()">
+        <form method="post" enctype="multipart/form-data" class="bg-white rounded-xl shadow-lg p-8 space-y-6" x-data="compraForm()">
             {% csrf_token %}
             
             <div>
@@ -160,6 +160,29 @@
                         <option value="parcial">Pago Parcial</option>
                         <option value="pagado">Pagado</option>
                     </select>
+                </div>
+            </div>
+
+            <!-- Comprobante de Pago -->
+            <div class="pt-4 border-t">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-file-upload mr-2 text-blue-600"></i>
+                    Comprobante de Pago (Opcional)
+                </label>
+                <p class="text-xs text-gray-500 mb-3">
+                    Sube una foto o archivo del comprobante de pago (recibo, transferencia, etc.)
+                </p>
+                <div class="relative">
+                    <input type="file"
+                           name="comprobante"
+                           id="comprobante"
+                           accept="image/*,application/pdf"
+                           capture="environment"
+                           class="w-full px-4 py-3 rounded-lg border-2 border-dashed border-gray-300 focus:ring-2 focus:ring-amber-600 focus:border-amber-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100">
+                    <p class="mt-2 text-xs text-gray-500">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Formatos aceptados: imágenes (JPG, PNG, etc.) y PDF. En móviles puedes tomar foto directamente.
+                    </p>
                 </div>
             </div>
 

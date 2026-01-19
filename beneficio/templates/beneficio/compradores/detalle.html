@@ -230,6 +230,13 @@
                                 Factura: {{ compra.numero_factura }}
                             </div>
                             {% endif %}
+                            {% if compra.comprobante %}
+                            <div class="text-xs text-indigo-600 mt-1">
+                                <a href="{{ compra.comprobante.url }}" target="_blank" class="hover:text-indigo-800 hover:underline">
+                                    <i class="fas fa-paperclip mr-1"></i>Comprobante
+                                </a>
+                            </div>
+                            {% endif %}
                             <!-- Producto vinculado -->
                             {% if compra.lote %}
                             <div class="text-xs text-blue-600 mt-1">
