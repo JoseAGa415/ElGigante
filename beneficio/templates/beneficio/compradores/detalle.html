@@ -1,79 +1,83 @@
 <artifact identifier="detalle-comprador-html" type="application/vnd.ant.code" language="html" title="detalle.html - Vista del Comprador con Historial de Compras">
 {% extends 'base.html' %}
 {% load static %}{% block title %}{{ comprador.nombre }} - Detalle{% endblock %}{% block content %}
-<div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">    <!-- Encabezado del Comprador -->
-    <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
-        <div class="flex items-start justify-between">
-            <div class="flex items-center gap-6">
-                <div class="flex-shrink-0 flex items-center justify-center h-24 w-24 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 text-amber-600 text-3xl font-bold shadow-lg">
+<div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-4 md:py-8">
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+
+    <!-- Encabezado del Comprador -->
+    <div class="bg-white rounded-xl shadow-lg p-4 md:p-8 mb-4 md:mb-8">
+        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+                <div class="flex-shrink-0 flex items-center justify-center h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 text-amber-600 text-2xl sm:text-3xl font-bold shadow-lg">
                     <i class="fas fa-user"></i>
                 </div>
-                <div>
-                    <h1 class="text-4xl font-bold text-gray-900">{{ comprador.nombre }}</h1>
+                <div class="text-center sm:text-left">
+                    <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">{{ comprador.nombre }}</h1>
                     {% if comprador.empresa %}
-                    <p class="text-xl text-gray-600 mt-1">{{ comprador.empresa }}</p>
+                    <p class="text-base sm:text-lg md:text-xl text-gray-600 mt-1">{{ comprador.empresa }}</p>
                     {% endif %}
-                    <div class="flex items-center gap-4 mt-3">
+                    <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 mt-3">
                         {% if comprador.activo %}
-                        <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        <span class="px-3 py-1 inline-flex text-xs sm:text-sm leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                             ✓ Activo
                         </span>
                         {% else %}
-                        <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                        <span class="px-3 py-1 inline-flex text-xs sm:text-sm leading-5 font-semibold rounded-full bg-red-100 text-red-800">
                             ✗ Inactivo
                         </span>
                         {% endif %}
-                        <span class="text-sm text-gray-500">
+                        <span class="text-xs sm:text-sm text-gray-500">
                             <i class="fas fa-calendar"></i>
                             Registrado el {{ comprador.created_at|date:"d/m/Y" }}
                         </span>
                     </div>
                 </div>
             </div>
-            <div class="flex gap-3">
-                <a href="{% url 'editar_comprador' comprador.pk %}" 
-                   class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-lg">
+            <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+                <a href="{% url 'editar_comprador' comprador.pk %}"
+                   class="px-4 py-2 sm:px-6 sm:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg text-sm sm:text-base">
                     <i class="fas fa-edit"></i>
-                    Editar
+                    <span class="hidden sm:inline">Editar</span>
                 </a>
-                <a href="{% url 'eliminar_comprador' comprador.pk %}" 
-                   class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 shadow-lg">
+                <a href="{% url 'eliminar_comprador' comprador.pk %}"
+                   class="px-4 py-2 sm:px-6 sm:py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 shadow-lg text-sm sm:text-base">
                     <i class="fas fa-user-slash"></i>
-                    Desactivar
+                    <span class="hidden sm:inline">Desactivar</span>
                 </a>
             </div>
-        </div>        <!-- Información de Contacto -->
-        <div class="mt-8 pt-8 border-t grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        </div>
+
+        <!-- Información de Contacto -->
+        <div class="mt-6 md:mt-8 pt-6 md:pt-8 border-t grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             <div>
-                <p class="text-sm font-medium text-gray-500 mb-1">
+                <p class="text-xs sm:text-sm font-medium text-gray-500 mb-1">
                     <i class="fas fa-phone text-amber-600"></i> Teléfono
                 </p>
-                <p class="text-lg font-semibold text-gray-900">
+                <p class="text-base sm:text-lg font-semibold text-gray-900 break-all">
                     {{ comprador.telefono|default:"No registrado" }}
                 </p>
             </div>
             <div>
-                <p class="text-sm font-medium text-gray-500 mb-1">
+                <p class="text-xs sm:text-sm font-medium text-gray-500 mb-1">
                     <i class="fas fa-envelope text-amber-600"></i> Email
                 </p>
-                <p class="text-lg font-semibold text-gray-900">
+                <p class="text-base sm:text-lg font-semibold text-gray-900 break-all">
                     {{ comprador.email|default:"No registrado" }}
                 </p>
             </div>
             <div>
-                <p class="text-sm font-medium text-gray-500 mb-1">
+                <p class="text-xs sm:text-sm font-medium text-gray-500 mb-1">
                     <i class="fas fa-map-marker-alt text-amber-600"></i> Dirección
                 </p>
-                <p class="text-sm text-gray-900">
+                <p class="text-xs sm:text-sm text-gray-900">
                     {{ comprador.direccion|default:"No registrada"|truncatewords:10 }}
                 </p>
             </div>
             <div>
-                <p class="text-sm font-medium text-gray-500 mb-1">
+                <p class="text-xs sm:text-sm font-medium text-gray-500 mb-1">
                     <i class="fas fa-sticky-note text-amber-600"></i> Notas
                 </p>
-                <p class="text-sm text-gray-900">
+                <p class="text-xs sm:text-sm text-gray-900">
                     {{ comprador.notas|default:"Sin notas"|truncatewords:8 }}
                 </p>
             </div>
