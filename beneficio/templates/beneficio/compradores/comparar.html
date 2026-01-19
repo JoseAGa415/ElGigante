@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+
+{% block title %}Comparar Compradores{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- Header -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <i class="fas fa-balance-scale text-amber-600 text-3xl"></i>
+                        <h1 class="text-3xl font-bold text-gray-900">Comparar Compradores</h1>
+                    </div>
+                    <p class="text-gray-600">
+                        Selecciona los compradores que deseas comparar
+                    </p>
+                </div>
+                <a href="{% url 'lista_compradores' %}"
+                   class="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition font-medium">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Volver
+                </a>
+            </div>
+        </div>
+
+        <form method="POST" id="formComparar">
+            {% csrf_token %}
+
+            <!-- Instrucciones -->
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-r-lg">
+                <div class="flex items-start">
+                    <i class="fas fa-info-circle text-blue-600 text-xl mr-3 mt-1"></i>
+                    <div>
+                        <p class="font-medium text-blue-900">Instrucciones:</p>
+                        <ul class="text-sm text-blue-800 mt-2 space-y-1">
+                            <li>• Selecciona los compradores marcando las casillas</li>
+                            <li>• Puedes seleccionar entre 2 y 10 compradores</li>
+                            <li>• Haz clic en "Comparar Seleccionados" para ver la comparación</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="bg-white rounded-lg shadow p-4 mb-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <button type="button" onclick="seleccionarTodos()"
+                                class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm font-medium">
+                            <i class="fas fa-check-double mr-2"></i>
+                            Seleccionar Todos
+                        </button>
+                        <button type="button" onclick="deseleccionarTodos()"
+                                class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm font-medium">
+                            <i class="fas fa-times mr-2"></i>
+                            Deseleccionar Todos
+                        </button>
+                        <span id="contador" class="text-sm text-gray-600 font-medium">
+                            0 compradores seleccionados
+                        </span>
+                    </div>
+                    <button type="submit"
+                            class="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:from-amber-600 hover:to-orange-600 transition font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                            id="btnComparar" disabled>
+                        <i class="fas fa-balance-scale mr-2"></i>
+                        Comparar Seleccionados
+                    </button>
+                </div>
+            </div>
+
+            <!-- Lista de Compradores -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for comprador in compradores %}
+                <label class="cursor-pointer">
+                    <input type="checkbox" name="compradores" value="{{ comprador.id }}"
+                           class="hidden checkbox-comprador"
+                           onchange="actualizarContador()">
+                    <div class="bg-white rounded-lg shadow hover:shadow-lg transition-all p-4 border-2 border-transparent checkbox-card">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex-1">
+                                <h3 class="font-bold text-gray-900 text-lg">{{ comprador.nombre }}</h3>
+                                {% if comprador.empresa %}
+                                <p class="text-sm text-gray-600">{{ comprador.empresa }}</p>
+                                {% endif %}
+                            </div>
+                            <div class="flex-shrink-0 ml-3">
+                                <div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center checkbox-icon">
+                                    <i class="fas fa-check text-white text-sm hidden check-mark"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2 text-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-600">Total Compras:</span>
+                                <span class="font-semibold text-gray-900">{{ comprador.total_compras|default:0 }}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-600">Monto Total:</span>
+                                <span class="font-semibold text-amber-600">Q{{ comprador.monto_total|default:0|floatformat:2 }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </label>
+                {% empty %}
+                <div class="col-span-full text-center py-12">
+                    <i class="fas fa-users text-gray-300 text-6xl mb-4"></i>
+                    <p class="text-gray-500 text-lg">No hay compradores activos disponibles</p>
+                </div>
+                {% endfor %}
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<script>
+function actualizarContador() {
+    const checkboxes = document.querySelectorAll('.checkbox-comprador:checked');
+    const contador = document.getElementById('contador');
+    const btnComparar = document.getElementById('btnComparar');
+    const count = checkboxes.length;
+
+    contador.textContent = `${count} comprador${count !== 1 ? 'es' : ''} seleccionado${count !== 1 ? 's' : ''}`;
+
+    // Habilitar botón si hay al menos 1 seleccionado
+    btnComparar.disabled = count < 1;
+
+    // Actualizar estilos de las tarjetas
+    document.querySelectorAll('.checkbox-comprador').forEach(checkbox => {
+        const card = checkbox.nextElementSibling;
+        const icon = card.querySelector('.checkbox-icon');
+        const checkMark = card.querySelector('.check-mark');
+
+        if (checkbox.checked) {
+            card.classList.add('border-amber-500', 'bg-amber-50');
+            card.classList.remove('border-transparent');
+            icon.classList.add('bg-amber-500', 'border-amber-500');
+            icon.classList.remove('border-gray-300');
+            checkMark.classList.remove('hidden');
+        } else {
+            card.classList.remove('border-amber-500', 'bg-amber-50');
+            card.classList.add('border-transparent');
+            icon.classList.remove('bg-amber-500', 'border-amber-500');
+            icon.classList.add('border-gray-300');
+            checkMark.classList.add('hidden');
+        }
+    });
+}
+
+function seleccionarTodos() {
+    document.querySelectorAll('.checkbox-comprador').forEach(checkbox => {
+        checkbox.checked = true;
+    });
+    actualizarContador();
+}
+
+function deseleccionarTodos() {
+    document.querySelectorAll('.checkbox-comprador').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    actualizarContador();
+}
+
+// Prevenir envío si no hay selección
+document.getElementById('formComparar').addEventListener('submit', function(e) {
+    const checkboxes = document.querySelectorAll('.checkbox-comprador:checked');
+    if (checkboxes.length < 1) {
+        e.preventDefault();
+        alert('Debes seleccionar al menos un comprador');
+    }
+});
+</script>
+
+{% endblock %}

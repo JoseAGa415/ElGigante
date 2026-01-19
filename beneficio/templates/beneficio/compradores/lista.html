@@ -17,11 +17,18 @@
                     </h1>
                     <p class="mt-2 text-gray-600">Administra tus clientes y compradores de café</p>
                 </div>
-                <a href="{% url 'crear_comprador' %}" 
-                   class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg shadow-lg hover:from-amber-700 hover:to-orange-700 transition-all duration-300 font-semibold">
-                    <i class="fas fa-plus mr-2"></i>
-                    Nuevo Comprador
-                </a>
+                <div class="flex gap-3">
+                    <a href="{% url 'comparar_compradores' %}"
+                       class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg shadow-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-semibold">
+                        <i class="fas fa-balance-scale mr-2"></i>
+                        Comparar Compradores
+                    </a>
+                    <a href="{% url 'crear_comprador' %}"
+                       class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg shadow-lg hover:from-amber-700 hover:to-orange-700 transition-all duration-300 font-semibold">
+                        <i class="fas fa-plus mr-2"></i>
+                        Nuevo Comprador
+                    </a>
+                </div>
             </div>
         </div>
 

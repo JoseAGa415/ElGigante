@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block title %}Comparación de Compradores{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- Header -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <i class="fas fa-chart-bar text-amber-600 text-3xl"></i>
+                        <h1 class="text-3xl font-bold text-gray-900">Comparación de Compradores</h1>
+                    </div>
+                    <p class="text-gray-600">
+                        Comparando {{ total_compradores }} comprador{{ total_compradores|pluralize:"es" }}
+                    </p>
+                </div>
+                <div class="flex gap-3">
+                    <a href="{% url 'comparar_compradores' %}"
+                       class="px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition font-medium">
+                        <i class="fas fa-redo mr-2"></i>
+                        Nueva Comparación
+                    </a>
+                    <a href="{% url 'lista_compradores' %}"
+                       class="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition font-medium">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Volver
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjetas de Comparación -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {% for data in comparacion_data %}
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow">
+                <!-- Header de Tarjeta -->
+                <div class="bg-gradient-to-r from-amber-500 to-orange-500 p-6 text-white">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-white bg-opacity-20 rounded-full p-3">
+                            <i class="fas fa-user text-2xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h2 class="text-xl font-bold">{{ data.comprador.nombre }}</h2>
+                            {% if data.comprador.empresa %}
+                            <p class="text-sm text-white text-opacity-90">{{ data.comprador.empresa }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contenido de Tarjeta -->
+                <div class="p-6">
+                    <!-- Estadísticas Principales -->
+                    <div class="space-y-4">
+                        <!-- Total Compras -->
+                        <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                <div class="bg-blue-100 rounded-full p-2">
+                                    <i class="fas fa-shopping-cart text-blue-600"></i>
+                                </div>
+                                <span class="text-sm font-medium text-gray-700">Total Compras</span>
+                            </div>
+                            <span class="text-lg font-bold text-blue-600">{{ data.total_compras }}</span>
+                        </div>
+
+                        <!-- Cantidad Total -->
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                <div class="bg-green-100 rounded-full p-2">
+                                    <i class="fas fa-weight text-green-600"></i>
+                                </div>
+                                <span class="text-sm font-medium text-gray-700">Cantidad Total</span>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-lg font-bold text-green-600">{{ data.total_cantidad|floatformat:2 }}</div>
+                                <div class="text-xs text-gray-500">unidades</div>
+                            </div>
+                        </div>
+
+                        <!-- Peso Total -->
+                        <div class="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                <div class="bg-purple-100 rounded-full p-2">
+                                    <i class="fas fa-balance-scale text-purple-600"></i>
+                                </div>
+                                <span class="text-sm font-medium text-gray-700">Peso Total</span>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-lg font-bold text-purple-600">{{ data.peso_total_kg|floatformat:2 }}</div>
+                                <div class="text-xs text-gray-500">kg ({{ data.peso_quintales|floatformat:2 }} qq)</div>
+                            </div>
+                        </div>
+
+                        <!-- Monto Total -->
+                        <div class="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                <div class="bg-amber-100 rounded-full p-2">
+                                    <i class="fas fa-dollar-sign text-amber-600"></i>
+                                </div>
+                                <span class="text-sm font-medium text-gray-700">Monto Total</span>
+                            </div>
+                            <span class="text-lg font-bold text-amber-600">Q{{ data.total_monto|floatformat:2 }}</span>
+                        </div>
+
+                        <!-- Precio Promedio -->
+                        <div class="flex items-center justify-between p-3 bg-indigo-50 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                <div class="bg-indigo-100 rounded-full p-2">
+                                    <i class="fas fa-tags text-indigo-600"></i>
+                                </div>
+                                <span class="text-sm font-medium text-gray-700">Precio Promedio</span>
+                            </div>
+                            <span class="text-lg font-bold text-indigo-600">Q{{ data.precio_promedio|floatformat:2 }}</span>
+                        </div>
+
+                        <!-- Humedad Promedio -->
+                        <div class="flex items-center justify-between p-3 bg-cyan-50 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                <div class="bg-cyan-100 rounded-full p-2">
+                                    <i class="fas fa-tint text-cyan-600"></i>
+                                </div>
+                                <span class="text-sm font-medium text-gray-700">Humedad Promedio</span>
+                            </div>
+                            <span class="text-lg font-bold text-cyan-600">{{ data.humedad_promedio|floatformat:2 }}%</span>
+                        </div>
+
+                        <!-- Última Compra -->
+                        {% if data.ultima_compra %}
+                        <div class="pt-4 border-t border-gray-200">
+                            <div class="text-xs text-gray-600 mb-2">
+                                <i class="fas fa-clock mr-1"></i>
+                                Última compra
+                            </div>
+                            <div class="text-sm">
+                                <div class="font-medium text-gray-900">{{ data.ultima_compra.fecha_compra|date:"d/m/Y" }}</div>
+                                <div class="text-gray-600">Q{{ data.ultima_compra.monto_total|floatformat:2 }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Botón Ver Detalles -->
+                    <div class="mt-6">
+                        <a href="{% url 'detalle_comprador' data.comprador.pk %}"
+                           class="block w-full text-center px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:from-amber-600 hover:to-orange-600 transition font-medium">
+                            <i class="fas fa-eye mr-2"></i>
+                            Ver Detalles Completos
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full text-center py-12 bg-white rounded-xl shadow">
+                <i class="fas fa-exclamation-triangle text-yellow-500 text-6xl mb-4"></i>
+                <p class="text-gray-600 text-lg">No se encontraron datos para comparar</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Resumen General -->
+        {% if comparacion_data %}
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <i class="fas fa-chart-pie text-amber-600"></i>
+                Resumen General
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <div class="text-2xl font-bold text-gray-900">
+                        {% widthratio comparacion_data|length 1 1 %}
+                    </div>
+                    <div class="text-sm text-gray-600 mt-1">Compradores Comparados</div>
+                </div>
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <div class="text-2xl font-bold text-blue-600">
+                        {% for data in comparacion_data %}{{ data.total_compras }}{% if not forloop.last %} + {% endif %}{% endfor %} = {{ comparacion_data|length }}
+                    </div>
+                    <div class="text-sm text-gray-600 mt-1">Compras Totales</div>
+                </div>
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <div class="text-2xl font-bold text-green-600">
+                        {% for data in comparacion_data %}{{ data.peso_quintales|floatformat:0 }}{% if not forloop.last %} + {% endif %}{% endfor %} qq
+                    </div>
+                    <div class="text-sm text-gray-600 mt-1">Peso Total Combinado</div>
+                </div>
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <div class="text-2xl font-bold text-amber-600">
+                        Q{% for data in comparacion_data %}{{ data.total_monto|floatformat:0 }}{% if not forloop.last %} + {% endif %}{% endfor %}
+                    </div>
+                    <div class="text-sm text-gray-600 mt-1">Monto Total Combinado</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

@@ -1810,6 +1810,80 @@ def lista_compras(request):
     }
     return render(request, 'beneficio/compradores/lista_compras.html', context)
 
+
+@login_required
+def comparar_compradores(request):
+    """Comparar múltiples compradores seleccionados"""
+
+    # Si es POST, procesamos la comparación
+    if request.method == 'POST':
+        compradores_ids = request.POST.getlist('compradores')
+
+        if not compradores_ids:
+            messages.warning(request, 'Debes seleccionar al menos un comprador para comparar')
+            return redirect('comparar_compradores')
+
+        # Obtener compradores seleccionados
+        compradores = Comprador.objects.filter(id__in=compradores_ids, activo=True)
+
+        # Preparar datos de comparación
+        comparacion_data = []
+
+        for comprador in compradores:
+            # Obtener todas las compras del comprador
+            compras = Compra.objects.filter(comprador=comprador)
+
+            # Calcular estadísticas
+            stats = compras.aggregate(
+                total_compras=Count('id'),
+                total_cantidad=Sum('cantidad'),
+                total_monto=Sum('monto_total'),
+                precio_promedio=Avg('precio_unitario'),
+                humedad_promedio=Avg('humedad')
+            )
+
+            # Calcular peso total (considerando diferentes productos)
+            peso_total = 0
+            for compra in compras:
+                if compra.lote:
+                    peso_total += float(compra.cantidad or 0)
+                elif compra.procesado:
+                    peso_total += float(compra.cantidad or 0)
+                elif compra.mezcla:
+                    peso_total += float(compra.cantidad or 0)
+
+            comparacion_data.append({
+                'comprador': comprador,
+                'total_compras': stats['total_compras'] or 0,
+                'total_cantidad': stats['total_cantidad'] or 0,
+                'total_monto': stats['total_monto'] or 0,
+                'precio_promedio': stats['precio_promedio'] or 0,
+                'humedad_promedio': stats['humedad_promedio'] or 0,
+                'peso_total_kg': peso_total,
+                'peso_quintales': peso_total / 46 if peso_total > 0 else 0,
+                'ultima_compra': compras.order_by('-fecha_compra').first(),
+            })
+
+        context = {
+            'comparacion_data': comparacion_data,
+            'total_compradores': len(comparacion_data),
+        }
+
+        return render(request, 'beneficio/compradores/comparacion_resultado.html', context)
+
+    # Si es GET, mostrar formulario de selección
+    compradores = Comprador.objects.filter(activo=True).annotate(
+        total_compras=Count('compras'),
+        monto_total=Sum('compras__monto_total')
+    ).order_by('-monto_total')
+
+    context = {
+        'compradores': compradores,
+    }
+
+    return render(request, 'beneficio/compradores/comparar.html', context)
+
+
 # ==========================================
 # VISTAS DE VENTA RÁPIDA (FORMULARIO UNIFICADO)
 # ==========================================

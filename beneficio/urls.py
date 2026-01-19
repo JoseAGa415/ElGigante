@@ -57,10 +57,11 @@ urlpatterns = [
     # Compradores y Compras
     path('compradores/', views.lista_compradores, name='lista_compradores'),
     path('compradores/crear/', views.crear_comprador, name='crear_comprador'),
+    path('compradores/comparar/', views.comparar_compradores, name='comparar_compradores'),
     path('compradores/<int:pk>/', views.detalle_comprador, name='detalle_comprador'),
     path('compradores/<int:pk>/editar/', views.editar_comprador, name='editar_comprador'),
     path('compradores/<int:pk>/eliminar/', views.eliminar_comprador, name='eliminar_comprador'),
-    
+
     # Compras
     path('compras/', views.lista_compras, name='lista_compras'),
     path('compradores/<int:comprador_id>/compras/agregar/', views.agregar_compra, name='agregar_compra'),
