@@ -160,25 +160,25 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="text-center p-4 bg-gray-50 rounded-lg">
                     <div class="text-2xl font-bold text-gray-900">
-                        {% widthratio comparacion_data|length 1 1 %}
+                        {{ total_compradores }}
                     </div>
                     <div class="text-sm text-gray-600 mt-1">Compradores Comparados</div>
                 </div>
                 <div class="text-center p-4 bg-gray-50 rounded-lg">
                     <div class="text-2xl font-bold text-blue-600">
-                        {% for data in comparacion_data %}{{ data.total_compras }}{% if not forloop.last %} + {% endif %}{% endfor %} = {{ comparacion_data|length }}
+                        {{ total_compras_suma }}
                     </div>
                     <div class="text-sm text-gray-600 mt-1">Compras Totales</div>
                 </div>
                 <div class="text-center p-4 bg-gray-50 rounded-lg">
                     <div class="text-2xl font-bold text-green-600">
-                        {% for data in comparacion_data %}{{ data.peso_quintales|floatformat:0 }}{% if not forloop.last %} + {% endif %}{% endfor %} qq
+                        {{ total_peso_qq_suma|floatformat:2 }} qq
                     </div>
                     <div class="text-sm text-gray-600 mt-1">Peso Total Combinado</div>
                 </div>
                 <div class="text-center p-4 bg-gray-50 rounded-lg">
                     <div class="text-2xl font-bold text-amber-600">
-                        Q{% for data in comparacion_data %}{{ data.total_monto|floatformat:0 }}{% if not forloop.last %} + {% endif %}{% endfor %}
+                        Q{{ total_monto_suma|floatformat:2 }}
                     </div>
                     <div class="text-sm text-gray-600 mt-1">Monto Total Combinado</div>
                 </div>

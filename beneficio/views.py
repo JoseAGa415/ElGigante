@@ -1866,9 +1866,17 @@ def comparar_compradores(request):
                 'ultima_compra': compras.order_by('-fecha_compra').first(),
             })
 
+        # Calcular totales generales
+        total_compras_suma = sum(d['total_compras'] for d in comparacion_data)
+        total_peso_qq_suma = sum(d['peso_quintales'] for d in comparacion_data)
+        total_monto_suma = sum(d['total_monto'] for d in comparacion_data)
+
         context = {
             'comparacion_data': comparacion_data,
             'total_compradores': len(comparacion_data),
+            'total_compras_suma': total_compras_suma,
+            'total_peso_qq_suma': total_peso_qq_suma,
+            'total_monto_suma': total_monto_suma,
         }
 
         return render(request, 'beneficio/compradores/comparacion_resultado.html', context)
