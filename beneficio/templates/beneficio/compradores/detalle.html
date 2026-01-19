@@ -79,44 +79,44 @@
             </div>
         </div>
     </div>    <!-- Estadísticas -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-blue-500">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600">Total de Compras</p>
-                    <p class="text-4xl font-bold text-gray-900 mt-2">{{ total_compras }}</p>
+                    <p class="text-xs font-medium text-gray-600">Total de Compras</p>
+                    <p class="text-2xl font-bold text-gray-900 mt-1">{{ total_compras }}</p>
                 </div>
-                <div class="bg-blue-100 rounded-full p-4">
-                    <i class="fas fa-shopping-cart text-3xl text-blue-600"></i>
+                <div class="bg-blue-100 rounded-full p-2">
+                    <i class="fas fa-shopping-cart text-xl text-blue-600"></i>
                 </div>
             </div>
-        </div>        <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500">
+        </div>        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-green-500">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600">Cantidad Total</p>
-                    <p class="text-4xl font-bold text-gray-900 mt-2">{{ cantidad_total|floatformat:2 }}</p>
-                    <p class="text-xs text-gray-500 mt-1">Unidades compradas</p>
+                    <p class="text-xs font-medium text-gray-600">Cantidad Total</p>
+                    <p class="text-2xl font-bold text-gray-900 mt-1">{{ cantidad_total|floatformat:2 }}</p>
+                    <p class="text-xs text-gray-500">Unidades compradas</p>
                 </div>
-                <div class="bg-green-100 rounded-full p-4">
-                    <i class="fas fa-weight text-3xl text-green-600"></i>
+                <div class="bg-green-100 rounded-full p-2">
+                    <i class="fas fa-weight text-xl text-green-600"></i>
                 </div>
             </div>
-        </div>        <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-amber-500">
+        </div>        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-amber-500">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600">Monto Total</p>
-                    <p class="text-4xl font-bold text-gray-900 mt-2">Q{{ monto_total|floatformat:2 }}</p>
+                    <p class="text-xs font-medium text-gray-600">Monto Total</p>
+                    <p class="text-2xl font-bold text-gray-900 mt-1">Q{{ monto_total|floatformat:2 }}</p>
                 </div>
-                <div class="bg-amber-100 rounded-full p-4">
-                    <i class="fas fa-dollar-sign text-3xl text-amber-600"></i>
+                <div class="bg-amber-100 rounded-full p-2">
+                    <i class="fas fa-dollar-sign text-xl text-amber-600"></i>
                 </div>
             </div>
         </div>
     </div>    <!-- Botón para Agregar Nueva Compra -->
-    <div class="mb-6">
-        <a href="{% url 'agregar_compra' comprador.pk %}" 
-           class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl shadow-lg hover:from-green-600 hover:to-green-700 transition-all duration-300 font-semibold text-lg">
-            <i class="fas fa-plus-circle mr-3 text-2xl"></i>
+    <div class="mb-4">
+        <a href="{% url 'agregar_compra' comprador.pk %}"
+           class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg shadow hover:from-green-600 hover:to-green-700 transition font-medium">
+            <i class="fas fa-plus-circle mr-2"></i>
             Agregar Nueva Compra
         </a>
     </div>    <!-- Filtros -->
