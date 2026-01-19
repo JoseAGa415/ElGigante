@@ -589,11 +589,14 @@ def crear_procesado(request, lote_id):
                 if hasattr(procesado, 'unidad_saco_referencia'):
                     procesado.unidad_saco_referencia = unidad_saco
                 
-                # Bodega destino (si existe en tu modelo)
+                # Bodega destino y ubicación
                 bodega_destino_id = request.POST.get('bodega_destino')
                 if bodega_destino_id and hasattr(procesado, 'bodega_destino'):
                     procesado.bodega_destino_id = bodega_destino_id
-                
+
+                procesado.percha = request.POST.get('percha', '')
+                procesado.fila = request.POST.get('fila', '')
+
                 procesado.save()
                 
                 messages.success(
@@ -653,6 +656,13 @@ def editar_procesado(request, pk):
                 procesado.bajo_zaranda = request.POST.get('bajo_zaranda', 0)
                 procesado.barridos = request.POST.get('barridos', 0)
                 procesado.observaciones = request.POST.get('observaciones', '')
+
+                # Ubicación
+                bodega_destino_id = request.POST.get('bodega_destino')
+                procesado.bodega_destino_id = bodega_destino_id if bodega_destino_id else None
+                procesado.percha = request.POST.get('percha', '')
+                procesado.fila = request.POST.get('fila', '')
+
                 procesado.save()
                 
                 messages.success(request, f'Procesado #{procesado.numero_trilla} actualizado exitosamente')
@@ -662,6 +672,7 @@ def editar_procesado(request, pk):
     
     context = {
         'procesado': procesado,
+        'bodegas': Bodega.objects.all(),
     }
     return render(request, 'beneficio/procesados/editar.html', context)
 
@@ -798,7 +809,10 @@ def crear_reproceso(request, procesado_id):
                 bodega_destino_id = request.POST.get('bodega_destino')
                 if bodega_destino_id:
                     reproceso.bodega_destino_id = bodega_destino_id
-                
+
+                reproceso.percha = request.POST.get('percha', '')
+                reproceso.fila = request.POST.get('fila', '')
+
                 reproceso.peso_inicial_kg = request.POST.get('peso_inicial_kg')
                 reproceso.unidad_peso_inicial = request.POST.get('unidad_peso_inicial', 'kg')
                 reproceso.peso_final_kg = request.POST.get('peso_final_kg')
@@ -856,7 +870,11 @@ def editar_reproceso(request, pk):
             bodega_id = request.POST.get('bodega_destino')
             if bodega_id:
                 reproceso.bodega_destino = Bodega.objects.get(id=bodega_id)
-            
+
+            # Ubicación
+            reproceso.percha = request.POST.get('percha', '')
+            reproceso.fila = request.POST.get('fila', '')
+
             # Pesos
             reproceso.peso_inicial_kg = Decimal(request.POST.get('peso_inicial_kg', '0'))
             reproceso.unidad_peso_inicial = request.POST.get('unidad_peso_inicial', 'kg')
@@ -994,6 +1012,10 @@ def crear_mezcla(request):
                 bodega_destino_id = request.POST.get('bodega_destino')
                 if bodega_destino_id:
                     mezcla.bodega_destino_id = bodega_destino_id
+
+                mezcla.percha = request.POST.get('percha', '')
+                mezcla.fila = request.POST.get('fila', '')
+
                 mezcla.descripcion = request.POST.get('descripcion', '')
                 mezcla.destino = request.POST.get('destino', '')
                 mezcla.responsable = request.user
@@ -1095,7 +1117,14 @@ def editar_mezcla(request, pk):
         try:
             mezcla.descripcion = request.POST.get('descripcion', '')
             mezcla.destino = request.POST.get('destino', '')
-            mezcla.save(update_fields=['descripcion', 'destino'])
+
+            # Ubicación
+            bodega_destino_id = request.POST.get('bodega_destino')
+            mezcla.bodega_destino_id = bodega_destino_id if bodega_destino_id else None
+            mezcla.percha = request.POST.get('percha', '')
+            mezcla.fila = request.POST.get('fila', '')
+
+            mezcla.save()
             messages.success(request, 'Mezcla actualizada exitosamente')
             return redirect('detalle_mezcla', pk=mezcla.pk)
         except Exception as e:
@@ -1103,6 +1132,7 @@ def editar_mezcla(request, pk):
 
     context = {
         'mezcla': mezcla,
+        'bodegas': Bodega.objects.all(),
     }
     return render(request, 'beneficio/mezclas/editar.html', context)
 

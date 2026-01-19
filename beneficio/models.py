@@ -233,13 +233,15 @@ class Procesado(models.Model):
     hora_final = models.TimeField(null=True, blank=True, verbose_name="Hora Final")
 
     bodega_destino = models.ForeignKey(
-        Bodega, 
-        on_delete=models.SET_NULL, 
-        null=True, 
+        Bodega,
+        on_delete=models.SET_NULL,
+        null=True,
         blank=True,
         related_name='procesados_almacenados',
         verbose_name="Bodega de Almacenamiento"
     )
+    percha = models.CharField(max_length=100, blank=True, null=True, help_text="Nombre de la percha")
+    fila = models.CharField(max_length=50, blank=True, null=True, help_text="Fila en la percha")
     finalizado = models.BooleanField(
         default=False,
         help_text='Indica si el procesado ha sido completado'
@@ -496,14 +498,16 @@ class Reproceso(models.Model):
     hora_final = models.TimeField(null=True, blank=True, verbose_name="Hora Final")
 
     bodega_destino = models.ForeignKey(
-        Bodega, 
-        on_delete=models.SET_NULL, 
-        null=True, 
+        Bodega,
+        on_delete=models.SET_NULL,
+        null=True,
         blank=True,
         related_name='reprocesos_almacenados',
         verbose_name="Bodega de Almacenamiento"
     )
-    
+    percha = models.CharField(max_length=100, blank=True, null=True, help_text="Nombre de la percha")
+    fila = models.CharField(max_length=50, blank=True, null=True, help_text="Fila en la percha")
+
     # Pesos con unidades
     peso_inicial_kg = models.DecimalField(max_digits=10, decimal_places=2)
     unidad_peso_inicial = models.CharField(max_length=20, default='kg')
@@ -773,14 +777,16 @@ class Mezcla(models.Model):
     hora_final = models.TimeField(null=True, blank=True, verbose_name="Hora Final")
 
     bodega_destino = models.ForeignKey(
-        Bodega, 
-        on_delete=models.SET_NULL, 
-        null=True, 
+        Bodega,
+        on_delete=models.SET_NULL,
+        null=True,
         blank=True,
         related_name='mezclas_almacenadas',
         verbose_name="Bodega de Almacenamiento"
     )
-    
+    percha = models.CharField(max_length=100, blank=True, null=True, help_text="Nombre de la percha")
+    fila = models.CharField(max_length=50, blank=True, null=True, help_text="Fila en la percha")
+
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
