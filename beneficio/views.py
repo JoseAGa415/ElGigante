@@ -1841,15 +1841,19 @@ def comparar_compradores(request):
                 precio_promedio=Avg('precio_unitario')
             )
 
-            # Calcular peso total (considerando diferentes productos)
-            peso_total = 0
+            # Calcular peso total en kg (convertir según unidad)
+            peso_total_kg = 0
             for compra in compras:
-                if compra.lote:
-                    peso_total += float(compra.cantidad or 0)
-                elif compra.procesado:
-                    peso_total += float(compra.cantidad or 0)
-                elif compra.mezcla:
-                    peso_total += float(compra.cantidad or 0)
+                cantidad = float(compra.cantidad or 0)
+                if compra.unidad == 'kg':
+                    peso_total_kg += cantidad
+                elif compra.unidad == 'qq':
+                    peso_total_kg += cantidad * 46  # Convertir quintales a kg
+                elif compra.unidad == 'lb':
+                    peso_total_kg += cantidad * 0.453592  # Convertir libras a kg
+                else:
+                    # Para sacos u otras unidades, usar cantidad directamente
+                    peso_total_kg += cantidad
 
             comparacion_data.append({
                 'comprador': comprador,
@@ -1857,8 +1861,8 @@ def comparar_compradores(request):
                 'total_cantidad': stats['total_cantidad'] or 0,
                 'total_monto': stats['total_monto'] or 0,
                 'precio_promedio': stats['precio_promedio'] or 0,
-                'peso_total_kg': peso_total,
-                'peso_quintales': peso_total / 46 if peso_total > 0 else 0,
+                'peso_total_kg': peso_total_kg,
+                'peso_quintales': peso_total_kg / 46 if peso_total_kg > 0 else 0,
                 'ultima_compra': compras.order_by('-fecha_compra').first(),
             })
 
