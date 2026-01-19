@@ -1838,8 +1838,7 @@ def comparar_compradores(request):
                 total_compras=Count('id'),
                 total_cantidad=Sum('cantidad'),
                 total_monto=Sum('monto_total'),
-                precio_promedio=Avg('precio_unitario'),
-                humedad_promedio=Avg('humedad')
+                precio_promedio=Avg('precio_unitario')
             )
 
             # Calcular peso total (considerando diferentes productos)
@@ -1858,7 +1857,6 @@ def comparar_compradores(request):
                 'total_cantidad': stats['total_cantidad'] or 0,
                 'total_monto': stats['total_monto'] or 0,
                 'precio_promedio': stats['precio_promedio'] or 0,
-                'humedad_promedio': stats['humedad_promedio'] or 0,
                 'peso_total_kg': peso_total,
                 'peso_quintales': peso_total / 46 if peso_total > 0 else 0,
                 'ultima_compra': compras.order_by('-fecha_compra').first(),
