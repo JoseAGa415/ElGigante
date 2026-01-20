@@ -77,8 +77,99 @@
             width: 20px;
             text-align: center;
         }
+
+        /* PRINT STYLES - Global */
+        @media print {
+            /* Hide navigation and non-essential elements */
+            nav, #sidebar, .no-print, button:not(.print-keep),
+            .sidebar-toggle, .coffee-gradient:not(.print-keep) {
+                display: none !important;
+            }
+
+            /* Reset page layout for print */
+            body {
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            /* Full width content */
+            .container, .max-w-7xl, main {
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 1rem !important;
+            }
+
+            /* Remove shadows and rounded corners */
+            .shadow, .shadow-md, .shadow-lg, .shadow-xl,
+            .rounded, .rounded-lg, .rounded-xl {
+                box-shadow: none !important;
+                border-radius: 0 !important;
+            }
+
+            /* Ensure black text on white background */
+            * {
+                color: black !important;
+                background: white !important;
+            }
+
+            /* Keep borders for tables and cards */
+            table, .card, .border {
+                border: 1px solid #ddd !important;
+            }
+
+            /* Page breaks */
+            .page-break {
+                page-break-after: always;
+            }
+
+            .avoid-break {
+                page-break-inside: avoid;
+            }
+
+            /* Optimize tables for printing */
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            thead {
+                display: table-header-group;
+            }
+
+            tr {
+                page-break-inside: avoid;
+            }
+
+            /* Font sizes for readability */
+            body {
+                font-size: 11pt;
+            }
+
+            h1 { font-size: 18pt; }
+            h2 { font-size: 16pt; }
+            h3 { font-size: 14pt; }
+            h4 { font-size: 12pt; }
+
+            /* Show print-specific content */
+            .print-only {
+                display: block !important;
+            }
+
+            /* Adjust chart sizes */
+            canvas {
+                max-width: 100% !important;
+                height: auto !important;
+            }
+
+            /* Ensure proper spacing */
+            p, li {
+                orphans: 3;
+                widows: 3;
+            }
+        }
     </style>
-    
+
     {% block extra_css %}{% endblock %}
 </head>
 <body class="bg-gray-50">
