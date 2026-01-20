@@ -57,6 +57,8 @@ class Lote(models.Model):
     codigo = models.CharField(max_length=50, unique=True, editable=False)
     tipo_cafe = models.CharField(max_length=100)
     bodega = models.ForeignKey(Bodega, on_delete=models.CASCADE, related_name='lotes')
+    percha = models.CharField(max_length=100, blank=True, null=True, help_text="Nombre de la percha")
+    fila = models.CharField(max_length=50, blank=True, null=True, help_text="Fila en la percha")
     peso_kg = models.DecimalField(max_digits=10, decimal_places=2)
     humedad = models.DecimalField(max_digits=5, decimal_places=2)
     fecha_ingreso = models.DateTimeField()

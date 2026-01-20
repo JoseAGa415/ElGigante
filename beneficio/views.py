@@ -394,6 +394,8 @@ def crear_lote(request):
 
                 lote.tipo_cafe = request.POST.get('tipo_cafe')
                 lote.bodega_id = request.POST.get('bodega_id')
+                lote.percha = request.POST.get('percha', '')
+                lote.fila = request.POST.get('fila', '')
                 lote.peso_kg = request.POST.get('peso_kg')
                 lote.humedad = request.POST.get('humedad')
                 lote.fecha_ingreso = request.POST.get('fecha_ingreso')
@@ -434,10 +436,12 @@ def editar_lote(request, pk):
     if request.method == 'POST':
         try:
             with transaction.atomic():
-                lote.codigo = request.POST.get('codigo') 
+                lote.codigo = request.POST.get('codigo')
 
                 lote.tipo_cafe = request.POST.get('tipo_cafe')
                 lote.bodega_id = request.POST.get('bodega_id')
+                lote.percha = request.POST.get('percha', '')
+                lote.fila = request.POST.get('fila', '')
                 lote.peso_kg = request.POST.get('peso_kg')
                 lote.humedad = request.POST.get('humedad')
                 lote.fecha_ingreso = request.POST.get('fecha_ingreso')
