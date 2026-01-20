@@ -1,4 +1,4 @@
-# Guía de Despliegue - Actualización de Sistema de Catación para Partidas
+# Guía de Despliegue - Actualización con Mejoras Responsive
 
 ## Resumen de Cambios
 
@@ -7,12 +7,16 @@ Esta actualización incluye:
 2. ✅ Campos de ubicación (percha, fila) en Lote
 3. ✅ Optimización mobile para detalles de compradores
 4. ✅ Upload de comprobantes de pago
+5. ✅ **NUEVO**: Diseño responsive ~90% (mobile-friendly)
+6. ✅ **NUEVO**: Estilos de impresión profesionales
 
 **Migraciones pendientes:**
 - 0031_compra_comprobante.py
 - 0032_add_ubicacion_fields.py
 - 0033_lote_ubicacion_fields.py
 - 0034_catacion_partida.py
+
+**NOTA**: Esta actualización es **solo frontend** (HTML/CSS/JS). No requiere migraciones adicionales.
 
 ---
 
@@ -145,12 +149,36 @@ sudo systemctl reload nginx
 
 Abre tu navegador y verifica:
 
+#### Funcionalidad Base:
 1. **Página de inicio**: http://inprocaf.com/
 2. **Crear partida**: Verifica que los campos de percha y fila aparecen
 3. **Detalle de partida**: Verifica que el botón "Catar Partida" aparece
 4. **Crear catación**: Verifica que "Partida" aparece en el dropdown de tipo de muestra
 5. **Agregar compra**: Verifica que el campo de comprobante aparece
 6. **Detalle comprador (móvil)**: Verifica el layout horizontal compacto
+
+#### Nuevas Mejoras Responsive (IMPORTANTE):
+7. **Lista de Lotes (móvil)**:
+   - Abre en celular o usa herramientas dev (F12 → toggle device mode)
+   - Verifica que se muestra vista de tarjetas en lugar de tabla
+   - Los botones son fáciles de tocar (mínimo 44px)
+   - Tarjetas con colores según estado (verde=completo, rojo=error, azul=procesando)
+
+8. **Lista de Cataciones (móvil)**:
+   - Verifica vista de tarjetas en móvil
+   - Puntaje prominente visible
+   - Botones touch-friendly
+
+9. **Dashboard y Resumen**:
+   - Gráficos se ajustan al tamaño de pantalla
+   - En móvil, gráficos más pequeños pero legibles
+   - Leyendas y tooltips adaptados
+
+10. **Impresión (Ctrl+P)**:
+    - Prueba imprimir dashboard o página de resumen
+    - No debe mostrar navegación ni sidebar
+    - Fondo blanco con texto negro
+    - Tablas y gráficos optimizados para papel
 
 ---
 
@@ -237,6 +265,7 @@ sudo systemctl restart gunicorn
 
 Antes de cerrar la sesión SSH, verifica:
 
+### Backend y Base de Datos:
 - [ ] Base de datos respaldada
 - [ ] Código actualizado con git pull
 - [ ] Las 4 migraciones aplicadas correctamente
@@ -244,9 +273,19 @@ Antes de cerrar la sesión SSH, verifica:
 - [ ] Archivos estáticos recolectados
 - [ ] Gunicorn reiniciado y activo
 - [ ] Sitio web accesible y sin errores 500
+
+### Funcionalidades Nuevas:
 - [ ] Funcionalidad de catación de partidas probada
 - [ ] Botón "Catar Partida" visible en detalle de partida
 - [ ] Upload de comprobantes funcional
+
+### Responsive Design (NUEVO):
+- [ ] Lista de lotes muestra tarjetas en móvil (<768px)
+- [ ] Lista de cataciones muestra tarjetas en móvil
+- [ ] Botones touch-friendly (mínimo 44px) funcionan bien
+- [ ] Gráficos se redimensionan correctamente
+- [ ] Impresión (Ctrl+P) muestra formato limpio sin navegación
+- [ ] Probado en móvil real o emulador (Chrome DevTools)
 
 ---
 
@@ -259,5 +298,57 @@ Si encuentras algún error durante el despliegue, anota:
 
 Y puedes consultar la documentación de Django o revisar los commits en GitHub.
 
+---
+
+## DETALLES DE MEJORAS RESPONSIVE
+
+### 1. Vista de Tarjetas en Mobile
+**Archivos modificados:**
+- `beneficio/templates/beneficio/lotes/lista.html`
+- `beneficio/templates/beneficio/catacion/lista.html`
+
+**Qué hace:**
+- En pantallas <768px, las tablas se ocultan
+- Se muestran tarjetas verticales con toda la información
+- Colores según estado (verde/rojo/azul)
+- Botones grandes y fáciles de tocar
+
+### 2. Gráficos Adaptativos
+**Archivos modificados:**
+- `beneficio/templates/beneficio/dashboard.html`
+- `beneficio/templates/beneficio/resumen/resumen_beneficio.html`
+
+**Qué hace:**
+- Alturas de gráficos ajustadas por breakpoint:
+  - Desktop: 350px
+  - Tablet: 280px
+  - Mobile: 250px
+- Fuentes más pequeñas en móvil (10px vs 12px)
+- Leyendas y tooltips optimizados
+
+### 3. Estilos de Impresión
+**Archivo modificado:**
+- `beneficio/templates/base.html`
+
+**Qué hace:**
+- Oculta navegación, sidebar, botones
+- Fondo blanco con texto negro (ahorra tinta)
+- Tablas optimizadas para papel
+- Formato profesional para reportes
+
+### 4. Touch-Friendly
+**Cambios globales en listas:**
+- Todos los botones tienen `min-h-[44px]`
+- Estándar iOS/Android Human Interface Guidelines
+- Reduce errores de toque accidental
+
+---
+
 **Última actualización**: 2026-01-20
-**Commits incluidos**: c39d24a hasta 28063f6
+**Commits incluidos**: c39d24a hasta ed17a60 (7 commits nuevos)
+
+**Commits responsive:**
+- `8e9c438` - Card view para lista de lotes
+- `9f7e32a` - Card view para lista de cataciones
+- `2bbbc22` - Gráficos adaptativos
+- `ed17a60` - Print styles globales
