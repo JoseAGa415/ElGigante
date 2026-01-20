@@ -55,40 +55,39 @@
             </div>
         </div>
 
-        <!-- Información de Contacto -->
-        <div class="mt-6 md:mt-8 pt-6 md:pt-8 border-t grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            <div>
-                <p class="text-xs sm:text-sm font-medium text-gray-500 mb-1">
-                    <i class="fas fa-phone text-amber-600"></i> Teléfono
-                </p>
-                <p class="text-base sm:text-lg font-semibold text-gray-900 break-all">
-                    {{ comprador.telefono|default:"No registrado" }}
-                </p>
+        <!-- Información de Contacto - Compacta en móvil -->
+        <div class="mt-4 md:mt-6 pt-4 md:pt-6 border-t space-y-2">
+            <!-- Teléfono y Email en una fila en móvil -->
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm">
+                <div class="flex items-center gap-1">
+                    <i class="fas fa-phone text-amber-600"></i>
+                    <span class="text-gray-500">Tel:</span>
+                    <span class="font-semibold text-gray-900">{{ comprador.telefono|default:"N/A" }}</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <i class="fas fa-envelope text-amber-600"></i>
+                    <span class="text-gray-500">Email:</span>
+                    <span class="font-semibold text-gray-900">{{ comprador.email|default:"N/A" }}</span>
+                </div>
             </div>
-            <div>
-                <p class="text-xs sm:text-sm font-medium text-gray-500 mb-1">
-                    <i class="fas fa-envelope text-amber-600"></i> Email
-                </p>
-                <p class="text-base sm:text-lg font-semibold text-gray-900 break-all">
-                    {{ comprador.email|default:"No registrado" }}
-                </p>
+
+            <!-- Dirección en una fila -->
+            {% if comprador.direccion %}
+            <div class="flex items-start gap-1 text-xs sm:text-sm">
+                <i class="fas fa-map-marker-alt text-amber-600 mt-0.5"></i>
+                <span class="text-gray-500">Dir:</span>
+                <span class="text-gray-900">{{ comprador.direccion|truncatewords:15 }}</span>
             </div>
-            <div>
-                <p class="text-xs sm:text-sm font-medium text-gray-500 mb-1">
-                    <i class="fas fa-map-marker-alt text-amber-600"></i> Dirección
-                </p>
-                <p class="text-xs sm:text-sm text-gray-900">
-                    {{ comprador.direccion|default:"No registrada"|truncatewords:10 }}
-                </p>
+            {% endif %}
+
+            <!-- Notas en una fila -->
+            {% if comprador.notas %}
+            <div class="flex items-start gap-1 text-xs sm:text-sm">
+                <i class="fas fa-sticky-note text-amber-600 mt-0.5"></i>
+                <span class="text-gray-500">Notas:</span>
+                <span class="text-gray-900">{{ comprador.notas|truncatewords:12 }}</span>
             </div>
-            <div>
-                <p class="text-xs sm:text-sm font-medium text-gray-500 mb-1">
-                    <i class="fas fa-sticky-note text-amber-600"></i> Notas
-                </p>
-                <p class="text-xs sm:text-sm text-gray-900">
-                    {{ comprador.notas|default:"Sin notas"|truncatewords:8 }}
-                </p>
-            </div>
+            {% endif %}
         </div>
     </div>    <!-- Estadísticas -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
