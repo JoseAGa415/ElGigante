@@ -24,13 +24,28 @@
                     </p>
                 </div>
                 
-                <div class="flex gap-3">
-                    <a href="{% url 'editar_partida' partida.pk %}" 
+                <div class="flex gap-3 flex-wrap">
+                    {% if partida.cataciones.exists %}
+                    <a href="{% url 'crear_catacion' %}?tipo=partida&partida_id={{ partida.pk }}"
+                       onclick="return confirm('Esta partida ya fue catada. ¿Desea catarla nuevamente?')"
+                       class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium shadow-lg">
+                        <i class="fas fa-flask mr-2"></i>
+                        Catar Partida
+                        <span class="ml-2 px-2 py-1 bg-purple-800 rounded text-xs">Ya catada</span>
+                    </a>
+                    {% else %}
+                    <a href="{% url 'crear_catacion' %}?tipo=partida&partida_id={{ partida.pk }}"
+                       class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium shadow-lg">
+                        <i class="fas fa-flask mr-2"></i>
+                        Catar Partida
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'editar_partida' partida.pk %}"
                        class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-lg">
                         <i class="fas fa-edit mr-2"></i>
                         Editar
                     </a>
-                    <a href="{% url 'eliminar_partida' partida.pk %}" 
+                    <a href="{% url 'eliminar_partida' partida.pk %}"
                        class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium shadow-lg">
                         <i class="fas fa-trash-alt mr-2"></i>
                         Eliminar

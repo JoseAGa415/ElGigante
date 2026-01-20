@@ -888,6 +888,7 @@ class Catacion(models.Model):
         ('procesado', 'Procesado/Trilla'),
         ('reproceso', 'Reproceso'),
         ('mezcla', 'Mezcla'),
+        ('partida', 'Partida'),
     ]
     
     TIPO_TUESTE = [
@@ -901,6 +902,7 @@ class Catacion(models.Model):
     procesado = models.ForeignKey(Procesado, on_delete=models.CASCADE, null=True, blank=True, related_name='cataciones')
     reproceso = models.ForeignKey(Reproceso, on_delete=models.CASCADE, null=True, blank=True, related_name='cataciones')
     mezcla = models.ForeignKey(Mezcla, on_delete=models.CASCADE, null=True, blank=True, related_name='cataciones')
+    partida = models.ForeignKey('Partida', on_delete=models.CASCADE, null=True, blank=True, related_name='cataciones')
     
     codigo_muestra = models.CharField(max_length=50, unique=True, editable=False)
     fecha_catacion = models.DateTimeField(default=timezone.now)
@@ -1119,7 +1121,8 @@ class Catacion(models.Model):
                 'lote': 'CAT-L',
                 'procesado': 'CAT-P',
                 'reproceso': 'CAT-R',
-                'mezcla': 'CAT-M'
+                'mezcla': 'CAT-M',
+                'partida': 'CAT-PAR'
             }.get(self.tipo_muestra, 'CAT')
             
             # Obtener el último número de catación

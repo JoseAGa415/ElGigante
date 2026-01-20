@@ -67,6 +67,13 @@
             <p class="text-purple-900 font-medium">Mezcla #{{ catacion.mezcla.numero }}</p>
         </div>
         {% endif %}
+
+        {% if catacion.partida %}
+        <div class="mt-4 bg-orange-50 p-4 rounded">
+            <label class="text-sm font-semibold text-orange-800">Partida:</label>
+            <p class="text-orange-900 font-medium">{{ catacion.partida.numero_partida }} - {{ catacion.partida.nombre }}</p>
+        </div>
+        {% endif %}
     </div>
 
     <!-- PUNTAJE DESTACADO -->

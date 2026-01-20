@@ -1170,7 +1170,7 @@ def crear_catacion(request):
                 
                 catacion = Catacion()
                 catacion.tipo_muestra = request.POST.get('tipo_muestra')
-                
+
                 if catacion.tipo_muestra == 'lote':
                     catacion.lote_id = request.POST.get('lote_id')
                 elif catacion.tipo_muestra == 'procesado':
@@ -1179,6 +1179,8 @@ def crear_catacion(request):
                     catacion.reproceso_id = request.POST.get('reproceso_id')
                 elif catacion.tipo_muestra == 'mezcla':
                     catacion.mezcla_id = request.POST.get('mezcla_id')
+                elif catacion.tipo_muestra == 'partida':
+                    catacion.partida_id = request.POST.get('partida_id')
                 
                 fecha_catacion_str = request.POST.get('fecha_catacion')
                 if fecha_catacion_str:
@@ -1347,16 +1349,23 @@ def crear_catacion(request):
                 'procesados': Procesado.objects.all(),
                 'mezclas': Mezcla.objects.all(),
                 'reprocesos': Reproceso.objects.all(),
+                'partidas': Partida.objects.filter(activo=True),
                 'form_data': request.POST
             }
             return render(request, 'beneficio/catacion/crear.html', context)
 
     # --- GET - Mostrar formulario ---
+    tipo_preseleccionado = request.GET.get('tipo', '')
+    partida_id_preseleccionada = request.GET.get('partida_id', '')
+
     context = {
         'lotes': Lote.objects.filter(activo=True),
         'procesados': Procesado.objects.all(),
         'mezclas': Mezcla.objects.all(),
         'reprocesos': Reproceso.objects.all(),
+        'partidas': Partida.objects.filter(activo=True),
+        'tipo_preseleccionado': tipo_preseleccionado,
+        'partida_id_preseleccionada': partida_id_preseleccionada,
     }
     return render(request, 'beneficio/catacion/crear.html', context)
 

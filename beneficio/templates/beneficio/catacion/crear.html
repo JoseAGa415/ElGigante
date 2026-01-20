@@ -43,10 +43,11 @@
                     <select name="tipo_muestra" id="tipo_muestra" required onchange="actualizarOpciones()"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600">
                         <option value="">Seleccione...</option>
-                        <option value="lote">Lote</option>
-                        <option value="procesado">Procesado/Trilla</option>
-                        <option value="reproceso">Reproceso</option>
-                        <option value="mezcla">Mezcla</option>
+                        <option value="lote" {% if tipo_preseleccionado == 'lote' %}selected{% endif %}>Lote</option>
+                        <option value="procesado" {% if tipo_preseleccionado == 'procesado' %}selected{% endif %}>Procesado/Trilla</option>
+                        <option value="reproceso" {% if tipo_preseleccionado == 'reproceso' %}selected{% endif %}>Reproceso</option>
+                        <option value="mezcla" {% if tipo_preseleccionado == 'mezcla' %}selected{% endif %}>Mezcla</option>
+                        <option value="partida" {% if tipo_preseleccionado == 'partida' %}selected{% endif %}>Partida</option>
                     </select>
                 </div>
 
@@ -96,6 +97,16 @@
                         <option value="">Seleccione una mezcla...</option>
                         {% for mezcla in mezclas %}
                         <option value="{{ mezcla.id }}">Mezcla #{{ mezcla.numero }} - {{ mezcla.fecha|date:"d/m/Y" }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div id="div-partida" style="display:none;">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Partida</label>
+                    <select name="partida_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600">
+                        <option value="">Seleccione una partida...</option>
+                        {% for partida in partidas %}
+                        <option value="{{ partida.id }}" {% if partida_id_preseleccionada|stringformat:"s" == partida.id|stringformat:"s" %}selected{% endif %}>{{ partida.numero_partida }} - {{ partida.nombre }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -1392,12 +1403,13 @@ function calcularTotal() {
 // ===== FUNCIONES DE OTROS MÓDULOS =====
 function actualizarOpciones() {
     const tipoMuestra = document.getElementById('tipo_muestra').value;
-    
+
     document.getElementById('div-lote').style.display = 'none';
     document.getElementById('div-procesado').style.display = 'none';
     document.getElementById('div-reproceso').style.display = 'none';
     document.getElementById('div-mezcla').style.display = 'none';
-    
+    document.getElementById('div-partida').style.display = 'none';
+
     if (tipoMuestra === 'lote') {
         document.getElementById('div-lote').style.display = 'block';
     } else if (tipoMuestra === 'procesado') {
@@ -1406,6 +1418,8 @@ function actualizarOpciones() {
         document.getElementById('div-reproceso').style.display = 'block';
     } else if (tipoMuestra === 'mezcla') {
         document.getElementById('div-mezcla').style.display = 'block';
+    } else if (tipoMuestra === 'partida') {
+        document.getElementById('div-partida').style.display = 'block';
     }
 }
 
@@ -1810,6 +1824,13 @@ function calcularTotalGreenDefects() {
     document.getElementById('total_green_defects').value = total.toFixed(2);
     calcularTotal();
 }
+
+// Actualizar opciones al cargar la página si hay valores preseleccionados
+document.addEventListener('DOMContentLoaded', function() {
+    {% if tipo_preseleccionado %}
+    actualizarOpciones();
+    {% endif %}
+});
 </script>
 
 
