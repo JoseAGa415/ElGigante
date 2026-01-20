@@ -14,8 +14,8 @@
             </h2>
             <p class="text-gray-600 mt-1">Lotes de café pergamino en bodega.</p>
         </div>
-        <a href="{% url 'crear_lote' %}" 
-           class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
+        <a href="{% url 'crear_lote' %}"
+           class="min-h-[44px] inline-flex items-center justify-center bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-medium shadow-lg">
             <i class="fas fa-plus mr-2"></i>Crear Lote
         </a>
     </div>
@@ -23,8 +23,8 @@
     <!-- Filtros (si los tienes) -->
     <!-- Aquí van tus filtros si existen -->
 
-    <!-- TABLA DE LOTES -->
-    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <!-- TABLA DE LOTES (Desktop) -->
+    <div class="hidden md:block bg-white rounded-lg shadow-md overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-green-100">
@@ -193,6 +193,131 @@
                 </tbody>
             </table>
         </div>
+    </div>
+
+    <!-- CARD VIEW (Mobile) -->
+    <div class="md:hidden space-y-4">
+        {% for lote in lotes %}
+        <div class="bg-white rounded-lg shadow-md overflow-hidden border-l-4 {% if lote.esta_completamente_procesado %}border-green-500 bg-gray-50{% elif lote.tiene_sobreprocesamiento %}border-red-500{% else %}border-blue-500{% endif %}">
+            <!-- Header del Card -->
+            <div class="p-4 bg-gradient-to-r {% if lote.esta_completamente_procesado %}from-green-50 to-emerald-50{% elif lote.tiene_sobreprocesamiento %}from-red-50 to-pink-50{% else %}from-blue-50 to-indigo-50{% endif %}">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">{{ lote.codigo }}</h3>
+                        <p class="text-sm text-gray-600 mt-1">{{ lote.tipo_cafe }}</p>
+                    </div>
+                    <span class="px-3 py-1 text-xs font-semibold rounded-full {{ lote.color_estado }}">
+                        {{ lote.estado_procesamiento }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Body del Card -->
+            <div class="p-4 space-y-3">
+                <!-- Fecha -->
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-gray-600"><i class="fas fa-calendar mr-2"></i>Fecha:</span>
+                    <span class="font-semibold">{{ lote.fecha_recepcion|date:"d/m/Y" }}</span>
+                </div>
+
+                <!-- Pesos -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <p class="text-xs text-gray-600 mb-1">Peso Total</p>
+                        <p class="text-lg font-bold text-gray-900">{{ lote.peso_kg|floatformat:2 }}</p>
+                        <p class="text-xs text-gray-500">kg</p>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <p class="text-xs text-gray-600 mb-1">Disponible</p>
+                        <p class="text-lg font-bold {% if lote.peso_disponible > 0 %}text-green-700{% else %}text-gray-400{% endif %}">
+                            {{ lote.peso_disponible|floatformat:2 }}
+                        </p>
+                        <p class="text-xs text-gray-500">kg</p>
+                    </div>
+                </div>
+
+                <!-- Progreso de Procesamiento -->
+                {% if lote.peso_procesado > 0 %}
+                <div class="bg-orange-50 p-3 rounded-lg">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-semibold text-gray-700">Procesado</span>
+                        <span class="text-sm font-bold text-orange-700">{{ lote.peso_procesado|floatformat:2 }} kg</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="{% if lote.tiene_sobreprocesamiento %}bg-red-500{% else %}bg-orange-500{% endif %} h-3 rounded-full transition-all"
+                             style="width: {{ lote.porcentaje_procesado|floatformat:0 }}%">
+                        </div>
+                    </div>
+                    <p class="text-xs {% if lote.tiene_sobreprocesamiento %}text-red-700 font-bold{% else %}text-gray-600{% endif %} mt-1 text-center">
+                        {{ lote.porcentaje_procesado_real|floatformat:1 }}%
+                        {% if lote.tiene_sobreprocesamiento %}
+                            <i class="fas fa-exclamation-triangle ml-1"></i>
+                        {% endif %}
+                    </p>
+                </div>
+                {% endif %}
+
+                <!-- Alerta de Sobreprocesamiento -->
+                {% if lote.tiene_sobreprocesamiento %}
+                <div class="bg-red-50 border-2 border-red-300 rounded-lg p-3">
+                    <p class="text-sm text-red-800 font-semibold flex items-center">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        Error: +{{ lote.exceso_procesado|floatformat:2 }} kg
+                    </p>
+                    <p class="text-xs text-red-600 mt-1">Se procesó más del peso total</p>
+                </div>
+                {% endif %}
+
+                <!-- Completado -->
+                {% if lote.esta_completamente_procesado %}
+                <div class="bg-green-50 border-2 border-green-300 rounded-lg p-3 text-center">
+                    <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                    <p class="text-sm text-green-700 font-semibold mt-1">Lote Completado</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Footer con Acciones - TOUCH FRIENDLY (min 44px) -->
+            <div class="p-4 bg-gray-50 border-t flex flex-wrap gap-2">
+                <a href="{% url 'detalle_lote' lote.id %}"
+                   class="flex-1 min-h-[44px] flex items-center justify-center bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition font-medium">
+                    <i class="fas fa-eye mr-2"></i>Ver
+                </a>
+
+                <a href="{% url 'editar_lote' lote.id %}"
+                   class="flex-1 min-h-[44px] flex items-center justify-center bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition font-medium">
+                    <i class="fas fa-edit mr-2"></i>Editar
+                </a>
+
+                {% if lote.puede_procesarse %}
+                <a href="{% url 'crear_procesado' lote.id %}"
+                   class="flex-1 min-h-[44px] flex items-center justify-center bg-purple-600 text-white px-4 py-3 rounded-lg hover:bg-purple-700 transition font-medium">
+                    <i class="fas fa-cogs mr-2"></i>Procesar
+                </a>
+                {% else %}
+                <button disabled
+                        class="flex-1 min-h-[44px] flex items-center justify-center bg-gray-300 text-gray-500 px-4 py-3 rounded-lg cursor-not-allowed font-medium">
+                    <i class="fas fa-cogs mr-2"></i>Procesar
+                </button>
+                {% endif %}
+
+                <a href="{% url 'eliminar_lote' lote.id %}"
+                   class="min-h-[44px] flex items-center justify-center bg-red-600 text-white px-4 py-3 rounded-lg hover:bg-red-700 transition font-medium"
+                   onclick="return confirm('¿Está seguro de eliminar este lote?')">
+                    <i class="fas fa-trash"></i>
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="bg-white rounded-lg shadow-md p-12 text-center">
+            <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+            <p class="text-gray-500 text-lg">No hay lotes registrados</p>
+            <a href="{% url 'crear_lote' %}"
+               class="inline-block mt-4 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
+                <i class="fas fa-plus mr-2"></i>Crear primer lote
+            </a>
+        </div>
+        {% endfor %}
     </div>
 
     <!-- Paginación (si existe) -->
