@@ -13,7 +13,7 @@
             </h2>
             <p class="text-gray-600 mt-2">Control de calidad y evaluación sensorial</p>
         </div>
-        <a href="{% url 'crear_catacion' %}" class="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-6 py-3 rounded-lg hover:from-amber-600 hover:to-amber-700 transition duration-200 flex items-center">
+        <a href="{% url 'crear_catacion' %}" class="min-h-[44px] inline-flex items-center justify-center bg-gradient-to-r from-amber-500 to-amber-600 text-white px-6 py-3 rounded-lg hover:from-amber-600 hover:to-amber-700 transition duration-200 shadow-lg font-medium">
             <i class="fas fa-plus mr-2"></i>
             Nueva Catación
         </a>
@@ -52,8 +52,8 @@
         </div>
     </div>
 
-    <!-- Tabla de Cataciones -->
-    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <!-- Tabla de Cataciones (Desktop) -->
+    <div class="hidden md:block bg-white rounded-lg shadow-md overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
@@ -169,6 +169,131 @@
                 </tbody>
             </table>
         </div>
+    </div>
+
+    <!-- CARD VIEW (Mobile) -->
+    <div class="md:hidden space-y-4">
+        {% for catacion in cataciones %}
+        <div class="bg-white rounded-lg shadow-md overflow-hidden border-l-4
+            {% if catacion.puntaje_total >= 90 %}border-green-700
+            {% elif catacion.puntaje_total >= 85 %}border-green-600
+            {% elif catacion.puntaje_total >= 80 %}border-blue-600
+            {% elif catacion.puntaje_total >= 75 %}border-yellow-600
+            {% else %}border-red-600{% endif %}">
+
+            <!-- Header -->
+            <div class="p-4 bg-gradient-to-r
+                {% if catacion.puntaje_total >= 90 %}from-green-50 to-emerald-50
+                {% elif catacion.puntaje_total >= 85 %}from-green-50 to-lime-50
+                {% elif catacion.puntaje_total >= 80 %}from-blue-50 to-indigo-50
+                {% elif catacion.puntaje_total >= 75 %}from-yellow-50 to-amber-50
+                {% else %}from-red-50 to-pink-50{% endif %}">
+
+                <div class="flex justify-between items-start mb-2">
+                    <div class="flex-1">
+                        <h3 class="text-lg font-bold text-gray-900">{{ catacion.codigo_muestra|truncatechars:25 }}</h3>
+                        <span class="inline-block mt-1 px-2 py-1 text-xs font-semibold rounded-full
+                            {% if catacion.tipo_muestra == 'lote' %}bg-blue-100 text-blue-800
+                            {% elif catacion.tipo_muestra == 'procesado' %}bg-amber-100 text-amber-800
+                            {% elif catacion.tipo_muestra == 'reproceso' %}bg-purple-100 text-purple-800
+                            {% elif catacion.tipo_muestra == 'partida' %}bg-orange-100 text-orange-800
+                            {% else %}bg-green-100 text-green-800{% endif %}">
+                            {{ catacion.get_tipo_muestra_display }}
+                        </span>
+                    </div>
+
+                    <!-- Puntaje Destacado -->
+                    <div class="text-right">
+                        <div class="text-3xl font-bold
+                            {% if catacion.puntaje_total >= 90 %}text-green-700
+                            {% elif catacion.puntaje_total >= 85 %}text-green-600
+                            {% elif catacion.puntaje_total >= 80 %}text-blue-600
+                            {% elif catacion.puntaje_total >= 75 %}text-yellow-600
+                            {% else %}text-red-600{% endif %}">
+                            {{ catacion.puntaje_total|floatformat:1 }}
+                        </div>
+                        <p class="text-xs font-semibold
+                            {% if catacion.puntaje_total >= 90 %}text-green-700
+                            {% elif catacion.puntaje_total >= 85 %}text-green-600
+                            {% elif catacion.puntaje_total >= 80 %}text-blue-600
+                            {% elif catacion.puntaje_total >= 75 %}text-yellow-600
+                            {% else %}text-red-600{% endif %}">
+                            {% if catacion.puntaje_total >= 90 %}EXCEPCIONAL
+                            {% elif catacion.puntaje_total >= 85 %}EXCELENTE
+                            {% elif catacion.puntaje_total >= 80 %}MUY BUENO
+                            {% elif catacion.puntaje_total >= 75 %}BUENO
+                            {% else %}COMERCIAL{% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="p-4 space-y-3">
+                <!-- Muestra -->
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-gray-600 flex items-center">
+                        <i class="fas fa-box mr-2"></i>Muestra:
+                    </span>
+                    <span class="font-semibold">
+                        {% if catacion.lote %}{{ catacion.lote.codigo }}
+                        {% elif catacion.procesado %}Trilla #{{ catacion.procesado.numero_trilla }}
+                        {% elif catacion.reproceso %}Reproceso #{{ catacion.reproceso.numero }}
+                        {% elif catacion.mezcla %}Mezcla #{{ catacion.mezcla.numero }}
+                        {% elif catacion.partida %}{{ catacion.partida.numero_partida }}
+                        {% endif %}
+                    </span>
+                </div>
+
+                <!-- Fecha y Catador -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <p class="text-xs text-gray-600 mb-1">Fecha</p>
+                        <p class="text-sm font-semibold">{{ catacion.fecha_catacion|date:"d/m/Y" }}</p>
+                        <p class="text-xs text-gray-500">{{ catacion.fecha_catacion|date:"H:i" }}</p>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <p class="text-xs text-gray-600 mb-1">Catador</p>
+                        <p class="text-sm font-semibold">{{ catacion.catador.username }}</p>
+                    </div>
+                </div>
+
+                <!-- Clasificación -->
+                {% if catacion.clasificacion %}
+                <div class="bg-amber-50 border-2 border-amber-200 rounded-lg p-3 text-center">
+                    <p class="text-xs text-amber-800 font-semibold">{{ catacion.clasificacion }}</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Footer - Acciones Touch Friendly -->
+            <div class="p-4 bg-gray-50 border-t flex flex-wrap gap-2">
+                <a href="{% url 'detalle_catacion' catacion.id %}"
+                   class="flex-1 min-h-[44px] flex items-center justify-center bg-amber-600 text-white px-4 py-3 rounded-lg hover:bg-amber-700 transition font-medium">
+                    <i class="fas fa-eye mr-2"></i>Ver Detalle
+                </a>
+
+                <a href="#" onclick="imprimirCatacion({{ catacion.id }}); return false;"
+                   class="min-h-[44px] flex items-center justify-center bg-purple-600 text-white px-4 py-3 rounded-lg hover:bg-purple-700 transition font-medium">
+                    <i class="fas fa-print"></i>
+                </a>
+
+                <button onclick="if(confirm('¿Eliminar esta catación?')) window.location.href='{% url 'eliminar_catacion' catacion.id %}'"
+                        class="min-h-[44px] flex items-center justify-center bg-red-600 text-white px-4 py-3 rounded-lg hover:bg-red-700 transition font-medium">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+        {% empty %}
+        <div class="bg-white rounded-lg shadow-md p-12 text-center">
+            <i class="fas fa-coffee text-6xl text-gray-300 mb-4"></i>
+            <p class="text-gray-500 text-lg mb-4">No hay cataciones registradas</p>
+            <a href="{% url 'crear_catacion' %}"
+               class="inline-block bg-amber-600 text-white px-6 py-3 rounded-lg hover:bg-amber-700 transition">
+                <i class="fas fa-plus mr-2"></i>Crear primera catación
+            </a>
+        </div>
+        {% endfor %}
     </div>
 
     <!-- Leyenda de Clasificación -->
