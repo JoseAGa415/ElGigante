@@ -69,10 +69,23 @@
         transition: width 1s ease-in-out;
     }
     
-    /* Chart container */
+    /* Chart container - RESPONSIVE */
     .chart-container {
         position: relative;
         height: 350px;
+        max-height: 400px;
+    }
+
+    @media (max-width: 768px) {
+        .chart-container {
+            height: 280px;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .chart-container {
+            height: 250px;
+        }
     }
     
     /* Loading overlay */
@@ -818,6 +831,15 @@ Chart.defaults.plugins.tooltip.padding = 12;
 Chart.defaults.plugins.tooltip.cornerRadius = 8;
 Chart.defaults.plugins.tooltip.titleFont = { size: 14, weight: 'bold' };
 Chart.defaults.plugins.tooltip.bodyFont = { size: 13 };
+Chart.defaults.responsive = true;
+Chart.defaults.maintainAspectRatio = false;
+
+// Ajustes responsive para mobile
+if (window.innerWidth < 768) {
+    Chart.defaults.font.size = 10;
+    Chart.defaults.plugins.legend.labels.padding = 10;
+    Chart.defaults.plugins.tooltip.padding = 8;
+}
 
 // ===== GRÁFICO: DEFECTOS DE TAZA POR MES =====
 const ctxDefectosTaza = document.getElementById('defectosTazaChart');

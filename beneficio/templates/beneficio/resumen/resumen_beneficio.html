@@ -83,7 +83,26 @@
     .chart-wrapper {
         position: relative;
         height: 350px;
+        max-height: 400px;
         margin-top: 1rem;
+    }
+
+    @media (max-width: 1024px) {
+        .chart-wrapper {
+            height: 300px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .chart-wrapper {
+            height: 280px;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .chart-wrapper {
+            height: 250px;
+        }
     }
 
     /* Tabs mejorados */
@@ -168,14 +187,10 @@
 
     /* Responsive */
     @media (max-width: 768px) {
-        .chart-wrapper {
-            height: 250px;
-        }
-        
         .stat-card {
             padding: 1rem;
         }
-        
+
         .data-table {
             font-size: 0.875rem;
         }
@@ -835,16 +850,48 @@ function dashboardBeneficio() {
         },
         
         initCharts() {
-            // Configuración común
+            // Detectar si es mobile
+            const isMobile = window.innerWidth < 768;
+
+            // Configuración común para gráficos circulares (pie, doughnut)
             const commonOptions = {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        position: 'bottom',
+                        position: isMobile ? 'top' : 'bottom',
                         labels: {
-                            padding: 15,
-                            font: { size: 12 }
+                            padding: isMobile ? 10 : 15,
+                            font: { size: isMobile ? 10 : 12 },
+                            boxWidth: isMobile ? 12 : 15
+                        }
+                    },
+                    tooltip: {
+                        titleFont: { size: isMobile ? 11 : 14 },
+                        bodyFont: { size: isMobile ? 10 : 13 },
+                        padding: isMobile ? 8 : 12
+                    }
+                }
+            };
+
+            // Configuración para gráficos con escalas (bar, line)
+            const commonOptionsWithScales = {
+                ...commonOptions,
+                scales: {
+                    x: {
+                        ticks: {
+                            font: { size: isMobile ? 9 : 11 }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            font: { size: isMobile ? 9 : 11 }
+                        },
+                        grid: {
+                            color: '#f3f4f6'
                         }
                     }
                 }
@@ -898,12 +945,13 @@ function dashboardBeneficio() {
                         }]
                     },
                     options: {
-                        ...commonOptions,
+                        ...commonOptionsWithScales,
                         scales: {
                             y: {
                                 beginAtZero: true,
                                 max: 100,
                                 ticks: {
+                                    font: { size: isMobile ? 9 : 11 },
                                     callback: function(value) {
                                         return value + '%';
                                     }
@@ -913,6 +961,9 @@ function dashboardBeneficio() {
                                 }
                             },
                             x: {
+                                ticks: {
+                                    font: { size: isMobile ? 9 : 11 }
+                                },
                                 grid: {
                                     display: false
                                 }
@@ -965,12 +1016,13 @@ function dashboardBeneficio() {
                         }]
                     },
                     options: {
-                        ...commonOptions,
+                        ...commonOptionsWithScales,
                         scales: {
                             y: {
                                 beginAtZero: true,
                                 max: 100,
                                 ticks: {
+                                    font: { size: isMobile ? 9 : 11 },
                                     callback: function(value) {
                                         return value + '%';
                                     }
@@ -980,6 +1032,9 @@ function dashboardBeneficio() {
                                 }
                             },
                             x: {
+                                ticks: {
+                                    font: { size: isMobile ? 9 : 11 }
+                                },
                                 grid: {
                                     display: false
                                 }
@@ -1033,15 +1088,21 @@ function dashboardBeneficio() {
                         }]
                     },
                     options: {
-                        ...commonOptions,
+                        ...commonOptionsWithScales,
                         scales: {
                             y: {
                                 beginAtZero: true,
+                                ticks: {
+                                    font: { size: isMobile ? 9 : 11 }
+                                },
                                 grid: {
                                     color: '#f3f4f6'
                                 }
                             },
                             x: {
+                                ticks: {
+                                    font: { size: isMobile ? 9 : 11 }
+                                },
                                 grid: {
                                     display: false
                                 }
