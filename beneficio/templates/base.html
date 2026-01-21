@@ -253,6 +253,10 @@
                 <a href="{% url 'lista_compras' %}" class="block px-6 py-3 sidebar-hover {% if request.resolver_match.url_name == 'lista_compras' %}active{% endif %}">
                     <i class="fas fa-file-invoice-dollar mr-3"></i>Compras maduro
                 </a>
+
+                <a href="{% url 'lista_planillas' %}" class="block px-6 py-3 sidebar-hover {% if 'lista_planillas' in request.resolver_match.url_name or 'trabajadores' in request.resolver_match.url_name or 'planilla' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-clipboard-list mr-3"></i>Beneficiado Finca
+                </a>
                 {% endif %}
 
                 <!-- Sección Reportes -->

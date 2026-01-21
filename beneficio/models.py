@@ -2003,3 +2003,135 @@ def actualizar_partida_on_delete(sender, instance, **kwargs):
     """Actualizar totales cuando se elimina una sub-partida"""
     if instance.partida:
         instance.partida.actualizar_totales()
+
+
+# =====================================================================
+# MÓDULO: BENEFICIADO FINCA (Control de Corte de Café)
+# =====================================================================
+
+class Trabajador(models.Model):
+    """Modelo para los trabajadores de la finca"""
+    nombre_completo = models.CharField(max_length=200, verbose_name="Nombre Completo")
+    cedula = models.CharField(max_length=50, blank=True, null=True, verbose_name="Cédula")
+    telefono = models.CharField(max_length=20, blank=True, null=True, verbose_name="Teléfono")
+    activo = models.BooleanField(default=True, verbose_name="Activo")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Trabajador"
+        verbose_name_plural = "Trabajadores"
+        ordering = ['nombre_completo']
+
+    def __str__(self):
+        return self.nombre_completo
+
+
+class PlanillaSemanal(models.Model):
+    """Planilla semanal de control de corte de café"""
+    fecha_inicio = models.DateField(verbose_name="Fecha Inicio de Semana")
+    fecha_fin = models.DateField(verbose_name="Fecha Fin de Semana")
+    observaciones = models.TextField(blank=True, null=True, verbose_name="Observaciones")
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='planillas_creadas')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Planilla Semanal"
+        verbose_name_plural = "Planillas Semanales"
+        ordering = ['-fecha_inicio']
+
+    def __str__(self):
+        return f"Planilla {self.fecha_inicio.strftime('%d/%m/%Y')} - {self.fecha_fin.strftime('%d/%m/%Y')}"
+
+    def total_libras_semana(self):
+        """Calcula el total de libras cortadas en la semana"""
+        return self.registros_diarios.aggregate(
+            total=Sum('libras_cortadas')
+        )['total'] or Decimal('0.00')
+
+    def total_quintales_semana(self):
+        """Calcula el total en quintales (qq) de la semana"""
+        return self.total_libras_semana() / Decimal('100.00')
+
+
+class RegistroDiario(models.Model):
+    """Registro diario de corte por trabajador"""
+    DIAS_SEMANA = [
+        ('lunes', 'Lunes'),
+        ('martes', 'Martes'),
+        ('miercoles', 'Miércoles'),
+        ('jueves', 'Jueves'),
+        ('viernes', 'Viernes'),
+        ('sabado', 'Sábado'),
+    ]
+
+    planilla = models.ForeignKey(
+        PlanillaSemanal,
+        on_delete=models.CASCADE,
+        related_name='registros_diarios',
+        verbose_name="Planilla"
+    )
+    trabajador = models.ForeignKey(
+        Trabajador,
+        on_delete=models.CASCADE,
+        related_name='registros',
+        verbose_name="Trabajador"
+    )
+    dia_semana = models.CharField(
+        max_length=10,
+        choices=DIAS_SEMANA,
+        verbose_name="Día"
+    )
+    fecha = models.DateField(verbose_name="Fecha")
+
+    # Libras cortadas
+    libras_cortadas = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        validators=[MinValueValidator(Decimal('0.00'))],
+        verbose_name="Libras Cortadas"
+    )
+
+    # Tipo de café (puede seleccionar de la lista o escribir manualmente)
+    tipo_cafe = models.ForeignKey(
+        TipoCafe,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='registros_corte',
+        verbose_name="Tipo de Café (Lista)"
+    )
+    tipo_cafe_manual = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name="Tipo de Café (Manual)",
+        help_text="Si el tipo de café no está en la lista, escríbelo aquí"
+    )
+
+    observaciones = models.TextField(blank=True, null=True, verbose_name="Observaciones")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Registro Diario"
+        verbose_name_plural = "Registros Diarios"
+        ordering = ['fecha', 'trabajador']
+        unique_together = ['planilla', 'trabajador', 'dia_semana', 'fecha']
+
+    def __str__(self):
+        return f"{self.trabajador.nombre_completo} - {self.get_dia_semana_display()} ({self.libras_cortadas} lb)"
+
+    def get_tipo_cafe_display_full(self):
+        """Retorna el tipo de café, ya sea de la lista o manual"""
+        if self.tipo_cafe:
+            return self.tipo_cafe.nombre
+        elif self.tipo_cafe_manual:
+            return self.tipo_cafe_manual
+        return "No especificado"
+
+    def quintales(self):
+        """Convierte libras a quintales"""
+        return self.libras_cortadas / Decimal('100.00')

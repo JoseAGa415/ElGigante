@@ -1,10 +1,10 @@
 from django.contrib import admin
 from beneficio.models import (
-    TipoCafe, Bodega, Lote, Procesado, 
+    TipoCafe, Bodega, Lote, Procesado,
     Reproceso, Mezcla, DetalleMezcla,
     Catacion, DefectoCatacion, Compra, Comprador,
-    MantenimientoPlanta, HistorialMantenimiento, 
-    ReciboCafe
+    MantenimientoPlanta, HistorialMantenimiento,
+    ReciboCafe, Trabajador, PlanillaSemanal, RegistroDiario
 )
 
 @admin.register(TipoCafe)
@@ -95,3 +95,28 @@ class ReciboCafeAdmin(admin.ModelAdmin):
     search_fields = ['numero_recibo', 'lote__codigo', 'proveedor']
     date_hierarchy = 'fecha_recibo'
     readonly_fields = ['numero_recibo', 'monto_total']
+
+# ========== BENEFICIADO FINCA ==========
+
+@admin.register(Trabajador)
+class TrabajadorAdmin(admin.ModelAdmin):
+    list_display = ['nombre_completo', 'cedula', 'telefono', 'activo', 'created_at']
+    list_filter = ['activo', 'created_at']
+    search_fields = ['nombre_completo', 'cedula', 'telefono']
+    date_hierarchy = 'created_at'
+
+@admin.register(PlanillaSemanal)
+class PlanillaSemanalAdmin(admin.ModelAdmin):
+    list_display = ['fecha_inicio', 'fecha_fin', 'created_by', 'created_at']
+    list_filter = ['fecha_inicio', 'created_at']
+    search_fields = ['observaciones', 'created_by__username']
+    date_hierarchy = 'fecha_inicio'
+    readonly_fields = ['created_at', 'updated_at']
+
+@admin.register(RegistroDiario)
+class RegistroDiarioAdmin(admin.ModelAdmin):
+    list_display = ['planilla', 'trabajador', 'dia_semana', 'fecha', 'libras_cortadas', 'get_tipo_cafe_display_full']
+    list_filter = ['dia_semana', 'fecha', 'planilla']
+    search_fields = ['trabajador__nombre_completo', 'tipo_cafe_manual']
+    date_hierarchy = 'fecha'
+    raw_id_fields = ['planilla', 'trabajador', 'tipo_cafe']

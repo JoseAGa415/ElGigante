@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if registro %}Editar{% else %}Agregar{% endif %} Registro Diario{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6 max-w-2xl">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">
+            {% if registro %}
+            ✏️ Editar Registro Diario
+            {% else %}
+            ➕ Agregar Registro Diario
+            {% endif %}
+        </h1>
+
+        <div class="mb-6 bg-blue-50 border-l-4 border-blue-400 p-4">
+            <p class="text-sm text-blue-700">
+                📋 Planilla: {{ planilla.fecha_inicio|date:"d/m/Y" }} - {{ planilla.fecha_fin|date:"d/m/Y" }}
+            </p>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <!-- Trabajador -->
+            <div class="mb-4">
+                <label for="trabajador_id" class="block text-sm font-medium text-gray-700 mb-2">
+                    Trabajador <span class="text-red-500">*</span>
+                </label>
+                <select
+                    id="trabajador_id"
+                    name="trabajador_id"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                    <option value="">Seleccionar trabajador...</option>
+                    {% for t in trabajadores %}
+                    <option value="{{ t.id }}"
+                        {% if registro and registro.trabajador.id == t.id %}selected{% endif %}>
+                        {{ t.nombre_completo }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <p class="text-xs text-gray-500 mt-1">
+                    ¿No encuentras al trabajador?
+                    <a href="{% url 'crear_trabajador' %}" target="_blank" class="text-blue-600 hover:text-blue-800">
+                        Crear nuevo trabajador
+                    </a>
+                </p>
+            </div>
+
+            <!-- Día de la semana -->
+            <div class="mb-4">
+                <label for="dia_semana" class="block text-sm font-medium text-gray-700 mb-2">
+                    Día de la Semana <span class="text-red-500">*</span>
+                </label>
+                <select
+                    id="dia_semana"
+                    name="dia_semana"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                    <option value="">Seleccionar día...</option>
+                    {% for codigo, nombre in dias_choices %}
+                    <option value="{{ codigo }}"
+                        {% if registro and registro.dia_semana == codigo %}selected{% endif %}>
+                        {{ nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Fecha -->
+            <div class="mb-4">
+                <label for="fecha" class="block text-sm font-medium text-gray-700 mb-2">
+                    Fecha <span class="text-red-500">*</span>
+                </label>
+                <input
+                    type="date"
+                    id="fecha"
+                    name="fecha"
+                    value="{% if registro %}{{ registro.fecha|date:'Y-m-d' }}{% endif %}"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                <p class="text-xs text-gray-500 mt-1">Debe estar dentro del rango de la planilla</p>
+            </div>
+
+            <!-- Libras Cortadas -->
+            <div class="mb-4">
+                <label for="libras_cortadas" class="block text-sm font-medium text-gray-700 mb-2">
+                    Libras Cortadas <span class="text-red-500">*</span>
+                </label>
+                <input
+                    type="number"
+                    id="libras_cortadas"
+                    name="libras_cortadas"
+                    value="{% if registro %}{{ registro.libras_cortadas }}{% else %}0{% endif %}"
+                    step="0.01"
+                    min="0"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Ej: 150.50"
+                >
+            </div>
+
+            <!-- Tipo de Café (Dropdown) -->
+            <div class="mb-4">
+                <label for="tipo_cafe" class="block text-sm font-medium text-gray-700 mb-2">
+                    Tipo de Café (Lista)
+                </label>
+                <select
+                    id="tipo_cafe"
+                    name="tipo_cafe"
+                    class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                    <option value="">Seleccionar de la lista...</option>
+                    {% for tipo in tipos_cafe %}
+                    <option value="{{ tipo.id }}"
+                        {% if registro and registro.tipo_cafe and registro.tipo_cafe.id == tipo.id %}selected{% endif %}>
+                        {{ tipo.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Tipo de Café Manual (O escrito) -->
+            <div class="mb-4">
+                <label for="tipo_cafe_manual" class="block text-sm font-medium text-gray-700 mb-2">
+                    O escribe el Tipo de Café manualmente
+                </label>
+                <input
+                    type="text"
+                    id="tipo_cafe_manual"
+                    name="tipo_cafe_manual"
+                    value="{% if registro %}{{ registro.tipo_cafe_manual|default:'' }}{% endif %}"
+                    class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Ej: Geisha, Catucai, etc."
+                >
+                <p class="text-xs text-gray-500 mt-1">
+                    💡 Usa este campo si el tipo de café no está en la lista
+                </p>
+            </div>
+
+            <!-- Observaciones -->
+            <div class="mb-6">
+                <label for="observaciones" class="block text-sm font-medium text-gray-700 mb-2">
+                    Observaciones
+                </label>
+                <textarea
+                    id="observaciones"
+                    name="observaciones"
+                    rows="3"
+                    class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Notas adicionales..."
+                >{% if registro %}{{ registro.observaciones|default:'' }}{% endif %}</textarea>
+            </div>
+
+            <!-- Botones -->
+            <div class="flex gap-4">
+                <button type="submit" class="flex-1 bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 transition">
+                    {% if registro %}💾 Guardar Cambios{% else %}✅ Agregar Registro{% endif %}
+                </button>
+                <a href="{% url 'detalle_planilla' planilla.pk %}" class="flex-1 bg-gray-400 text-white px-6 py-3 rounded hover:bg-gray-500 transition text-center">
+                    ❌ Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Desactivar el otro campo cuando se selecciona uno
+document.getElementById('tipo_cafe').addEventListener('change', function() {
+    if (this.value) {
+        document.getElementById('tipo_cafe_manual').value = '';
+        document.getElementById('tipo_cafe_manual').disabled = true;
+    } else {
+        document.getElementById('tipo_cafe_manual').disabled = false;
+    }
+});
+
+document.getElementById('tipo_cafe_manual').addEventListener('input', function() {
+    if (this.value) {
+        document.getElementById('tipo_cafe').value = '';
+        document.getElementById('tipo_cafe').disabled = true;
+    } else {
+        document.getElementById('tipo_cafe').disabled = false;
+    }
+});
+</script>
+{% endblock %}

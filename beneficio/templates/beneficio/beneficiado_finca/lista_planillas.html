@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}Planillas Semanales - Beneficiado Finca{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Encabezado -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">📋 Planillas Semanales</h1>
+        <div class="flex gap-3">
+            <a href="{% url 'lista_trabajadores' %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                👷 Gestionar Trabajadores
+            </a>
+            <a href="{% url 'crear_planilla' %}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+                ➕ Nueva Planilla
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+        <form method="GET" class="flex flex-wrap gap-4">
+            <div>
+                <label class="block text-sm text-gray-600 mb-1">Año</label>
+                <select name="anio" class="px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <option value="">Todos</option>
+                    {% for y in "2024,2025,2026"|split:"," %}
+                    <option value="{{ y }}" {% if anio == y %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm text-gray-600 mb-1">Mes</label>
+                <select name="mes" class="px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <option value="">Todos</option>
+                    <option value="1" {% if mes == "1" %}selected{% endif %}>Enero</option>
+                    <option value="2" {% if mes == "2" %}selected{% endif %}>Febrero</option>
+                    <option value="3" {% if mes == "3" %}selected{% endif %}>Marzo</option>
+                    <option value="4" {% if mes == "4" %}selected{% endif %}>Abril</option>
+                    <option value="5" {% if mes == "5" %}selected{% endif %}>Mayo</option>
+                    <option value="6" {% if mes == "6" %}selected{% endif %}>Junio</option>
+                    <option value="7" {% if mes == "7" %}selected{% endif %}>Julio</option>
+                    <option value="8" {% if mes == "8" %}selected{% endif %}>Agosto</option>
+                    <option value="9" {% if mes == "9" %}selected{% endif %}>Septiembre</option>
+                    <option value="10" {% if mes == "10" %}selected{% endif %}>Octubre</option>
+                    <option value="11" {% if mes == "11" %}selected{% endif %}>Noviembre</option>
+                    <option value="12" {% if mes == "12" %}selected{% endif %}>Diciembre</option>
+                </select>
+            </div>
+
+            <div class="flex items-end">
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+                    🔍 Filtrar
+                </button>
+            </div>
+
+            {% if anio or mes %}
+            <div class="flex items-end">
+                <a href="{% url 'lista_planillas' %}" class="bg-gray-400 text-white px-6 py-2 rounded hover:bg-gray-500 transition">
+                    ✖ Limpiar
+                </a>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Lista de Planillas -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        {% if planillas %}
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Semana</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Inicio</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Fin</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Libras</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total qq</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for planilla in planillas %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        Semana {{ forloop.counter }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {{ planilla.fecha_inicio|date:"d/m/Y" }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {{ planilla.fecha_fin|date:"d/m/Y" }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {{ planilla.total_libras_semana|floatformat:2 }} lbs
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {{ planilla.total_quintales_semana|floatformat:2 }} qq
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <a href="{% url 'detalle_planilla' planilla.pk %}" class="text-green-600 hover:text-green-900 mr-3">
+                            👁️ Ver
+                        </a>
+                        <a href="{% url 'editar_planilla' planilla.pk %}" class="text-blue-600 hover:text-blue-900 mr-3">
+                            ✏️ Editar
+                        </a>
+                        <a href="{% url 'eliminar_planilla' planilla.pk %}" class="text-red-600 hover:text-red-900">
+                            🗑️ Eliminar
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="p-8 text-center text-gray-500">
+            <p class="text-lg">No hay planillas registradas</p>
+            {% if anio or mes %}
+            <p class="mt-2">Intenta ajustar los filtros</p>
+            {% endif %}
+            <a href="{% url 'crear_planilla' %}" class="mt-4 inline-block bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition">
+                ➕ Crear Primera Planilla
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

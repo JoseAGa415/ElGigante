@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Registro{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6 max-w-md">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h1 class="text-2xl font-bold text-red-600 mb-4">🗑️ Eliminar Registro</h1>
+
+        <p class="text-gray-700 mb-4">
+            ¿Estás seguro de que deseas eliminar este registro?
+        </p>
+
+        <div class="bg-gray-50 p-4 rounded mb-6">
+            <p class="font-medium">{{ registro.trabajador.nombre_completo }}</p>
+            <p class="text-sm text-gray-600 mt-2">
+                Día: {{ registro.get_dia_semana_display }}<br>
+                Fecha: {{ registro.fecha|date:"d/m/Y" }}<br>
+                Libras: {{ registro.libras_cortadas|floatformat:2 }}<br>
+                Tipo: {{ registro.get_tipo_cafe_display_full }}
+            </p>
+        </div>
+
+        <form method="POST" class="flex gap-4">
+            {% csrf_token %}
+            <button type="submit" class="flex-1 bg-red-600 text-white px-6 py-3 rounded hover:bg-red-700 transition">
+                Confirmar Eliminación
+            </button>
+            <a href="{% url 'detalle_planilla' registro.planilla.pk %}" class="flex-1 bg-gray-400 text-white px-6 py-3 rounded hover:bg-gray-500 transition text-center">
+                Cancelar
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

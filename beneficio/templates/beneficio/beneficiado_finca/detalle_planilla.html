@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block title %}Planilla Semanal - {{ planilla.fecha_inicio|date:"d/m/Y" }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Encabezado -->
+    <div class="flex justify-between items-start mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">📋 Planilla Semanal</h1>
+            <p class="text-gray-600">
+                Semana del {{ planilla.fecha_inicio|date:"d/m/Y" }} al {{ planilla.fecha_fin|date:"d/m/Y" }}
+            </p>
+            {% if planilla.observaciones %}
+            <p class="text-sm text-gray-500 mt-1">{{ planilla.observaciones }}</p>
+            {% endif %}
+        </div>
+        <div class="flex gap-3">
+            <a href="{% url 'editar_planilla' planilla.pk %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                ✏️ Editar Planilla
+            </a>
+            <a href="{% url 'lista_planillas' %}" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 transition">
+                ← Volver
+            </a>
+        </div>
+    </div>
+
+    <!-- Botón para agregar registro -->
+    <div class="mb-4">
+        <a href="{% url 'agregar_registro' planilla.pk %}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition inline-block">
+            ➕ Agregar Registro Diario
+        </a>
+    </div>
+
+    <!-- Tabla principal - Similar al formato físico -->
+    <div class="bg-white rounded-lg shadow-md overflow-x-auto">
+        <table class="min-w-full border-collapse border border-gray-300">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th rowspan="2" class="border border-gray-300 px-4 py-3 text-left text-sm font-bold text-gray-700">
+                        NO.
+                    </th>
+                    <th rowspan="2" class="border border-gray-300 px-4 py-3 text-left text-sm font-bold text-gray-700">
+                        NOMBRE DEL TRABAJADOR
+                    </th>
+                    <th colspan="{{ dias|length }}" class="border border-gray-300 px-4 py-2 text-center text-sm font-bold text-gray-700">
+                        FECHA - LIBRAS CORTADAS / TIPO DE CAFÉ
+                    </th>
+                    <th rowspan="2" class="border border-gray-300 px-4 py-3 text-center text-sm font-bold text-gray-700">
+                        TOTAL<br>LIBRAS
+                    </th>
+                    <th rowspan="2" class="border border-gray-300 px-4 py-3 text-center text-sm font-bold text-gray-700">
+                        TOTAL<br>qq
+                    </th>
+                    <th rowspan="2" class="border border-gray-300 px-4 py-3 text-center text-sm font-bold text-gray-700">
+                        ACCIONES
+                    </th>
+                </tr>
+                <tr>
+                    {% for dia in dias %}
+                    <th class="border border-gray-300 px-3 py-2 text-center text-xs font-semibold text-gray-600 uppercase bg-gray-50">
+                        {{ dia|title }}
+                    </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for fila in tabla_datos %}
+                <tr class="hover:bg-gray-50">
+                    <!-- Número -->
+                    <td class="border border-gray-300 px-4 py-3 text-sm text-gray-700 text-center">
+                        {{ forloop.counter }}
+                    </td>
+
+                    <!-- Nombre del trabajador -->
+                    <td class="border border-gray-300 px-4 py-3 text-sm font-medium text-gray-800">
+                        {{ fila.trabajador.nombre_completo }}
+                    </td>
+
+                    <!-- Días de la semana -->
+                    {% for dia in dias %}
+                    <td class="border border-gray-300 px-2 py-2 text-xs">
+                        {% with registro=fila.registros_dias|get_item:dia %}
+                        {% if registro %}
+                            <div class="text-center">
+                                <div class="font-semibold text-green-700">
+                                    {{ registro.libras_cortadas|floatformat:2 }} lbs
+                                </div>
+                                <div class="text-gray-600 text-[10px] mt-1">
+                                    {{ registro.get_tipo_cafe_display_full }}
+                                </div>
+                                <div class="mt-1">
+                                    <a href="{% url 'agregar_registro' planilla.pk %}?trabajador_id={{ fila.trabajador.id }}&dia_semana={{ dia }}"
+                                       class="text-blue-500 hover:text-blue-700 text-[10px]">
+                                        ✏️
+                                    </a>
+                                    <a href="{% url 'eliminar_registro' registro.pk %}"
+                                       class="text-red-500 hover:text-red-700 text-[10px] ml-1">
+                                        🗑️
+                                    </a>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="text-center text-gray-400">
+                                —
+                                <div class="mt-1">
+                                    <a href="{% url 'agregar_registro' planilla.pk %}?trabajador_id={{ fila.trabajador.id }}&dia_semana={{ dia }}"
+                                       class="text-green-500 hover:text-green-700 text-[10px]">
+                                        ➕
+                                    </a>
+                                </div>
+                            </div>
+                        {% endif %}
+                        {% endwith %}
+                    </td>
+                    {% endfor %}
+
+                    <!-- Total Libras -->
+                    <td class="border border-gray-300 px-3 py-3 text-sm font-bold text-gray-800 text-center bg-yellow-50">
+                        {{ fila.total_libras|floatformat:2 }}
+                    </td>
+
+                    <!-- Total Quintales -->
+                    <td class="border border-gray-300 px-3 py-3 text-sm font-bold text-gray-800 text-center bg-yellow-50">
+                        {{ fila.total_qq|floatformat:2 }}
+                    </td>
+
+                    <!-- Acciones -->
+                    <td class="border border-gray-300 px-3 py-3 text-center">
+                        <a href="{% url 'agregar_registro' planilla.pk %}?trabajador_id={{ fila.trabajador.id }}"
+                           class="text-green-600 hover:text-green-900 text-xs">
+                            ➕ Agregar
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="{{ dias|length|add:5 }}" class="border border-gray-300 px-4 py-8 text-center text-gray-500">
+                        No hay registros.
+                        <a href="{% url 'agregar_registro' planilla.pk %}" class="text-green-600 hover:text-green-800 font-medium">
+                            Agregar el primer registro
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+
+                <!-- TOTALES POR DÍA -->
+                <tr class="bg-blue-50 font-bold">
+                    <td colspan="2" class="border border-gray-300 px-4 py-3 text-sm text-gray-800 text-right">
+                        TOTAL DE LA SEMANA:
+                    </td>
+                    {% for dia in dias %}
+                    <td class="border border-gray-300 px-3 py-3 text-sm text-center text-blue-800">
+                        {{ totales_dias|get_item:dia|floatformat:2 }}
+                    </td>
+                    {% endfor %}
+                    <td class="border border-gray-300 px-3 py-3 text-sm text-center bg-blue-100 text-blue-900">
+                        {{ planilla.total_libras_semana|floatformat:2 }}
+                    </td>
+                    <td class="border border-gray-300 px-3 py-3 text-sm text-center bg-blue-100 text-blue-900">
+                        {{ planilla.total_quintales_semana|floatformat:2 }}
+                    </td>
+                    <td class="border border-gray-300"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Totales por tipo de café -->
+    {% if totales_cafe %}
+    <div class="mt-6 bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">☕ Totales por Tipo de Café</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {% for tipo, libras in totales_cafe.items %}
+            <div class="bg-gray-50 p-4 rounded border-l-4 border-green-500">
+                <p class="text-sm text-gray-600">{{ tipo }}</p>
+                <p class="text-2xl font-bold text-gray-800">{{ libras|floatformat:2 }} lbs</p>
+                <p class="text-sm text-gray-500">{{ libras|divide:100|floatformat:2 }} qq</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Información adicional -->
+    <div class="mt-6 bg-gray-50 rounded-lg p-4 text-sm text-gray-600">
+        <p><strong>Creado por:</strong> {{ planilla.created_by.get_full_name|default:planilla.created_by.username }}</p>
+        <p class="mt-1"><strong>Fecha de creación:</strong> {{ planilla.created_at|date:"d/m/Y H:i" }}</p>
+    </div>
+</div>
+
+<!-- Template tag personalizado para acceder a dict keys -->
+{% endblock %}

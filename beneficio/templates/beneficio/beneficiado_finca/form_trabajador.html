@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if editar %}Editar{% else %}Nuevo{% endif %} Trabajador{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6 max-w-2xl">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">
+            {% if editar %}
+            ✏️ Editar Trabajador
+            {% else %}
+            ➕ Nuevo Trabajador
+            {% endif %}
+        </h1>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <!-- Nombre Completo -->
+            <div class="mb-4">
+                <label for="nombre_completo" class="block text-sm font-medium text-gray-700 mb-2">
+                    Nombre Completo <span class="text-red-500">*</span>
+                </label>
+                <input
+                    type="text"
+                    id="nombre_completo"
+                    name="nombre_completo"
+                    value="{% if trabajador %}{{ trabajador.nombre_completo }}{% endif %}"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Ej: Juan Carlos Pérez"
+                >
+            </div>
+
+            <!-- Cédula -->
+            <div class="mb-4">
+                <label for="cedula" class="block text-sm font-medium text-gray-700 mb-2">
+                    Cédula
+                </label>
+                <input
+                    type="text"
+                    id="cedula"
+                    name="cedula"
+                    value="{% if trabajador %}{{ trabajador.cedula|default:'' }}{% endif %}"
+                    class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Ej: 0801-1990-12345"
+                >
+            </div>
+
+            <!-- Teléfono -->
+            <div class="mb-4">
+                <label for="telefono" class="block text-sm font-medium text-gray-700 mb-2">
+                    Teléfono
+                </label>
+                <input
+                    type="text"
+                    id="telefono"
+                    name="telefono"
+                    value="{% if trabajador %}{{ trabajador.telefono|default:'' }}{% endif %}"
+                    class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Ej: 9999-9999"
+                >
+            </div>
+
+            <!-- Estado (Activo) -->
+            <div class="mb-6">
+                <label class="flex items-center">
+                    <input
+                        type="checkbox"
+                        name="activo"
+                        {% if not editar or trabajador.activo %}checked{% endif %}
+                        class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                    >
+                    <span class="ml-2 text-sm text-gray-700">Activo</span>
+                </label>
+            </div>
+
+            <!-- Botones -->
+            <div class="flex gap-4">
+                <button type="submit" class="flex-1 bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 transition">
+                    {% if editar %}💾 Guardar Cambios{% else %}➕ Crear Trabajador{% endif %}
+                </button>
+                <a href="{% url 'lista_trabajadores' %}" class="flex-1 bg-gray-400 text-white px-6 py-3 rounded hover:bg-gray-500 transition text-center">
+                    ❌ Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

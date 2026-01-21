@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.db import transaction
@@ -21,7 +21,8 @@ from .models import Procesado, Reproceso, Mezcla, Venta, Exportacion, Comprador
 from .models import (
     Lote, Procesado, Reproceso, Mezcla, DetalleMezcla,
     Bodega, TipoCafe, Catacion, DefectoCatacion, Comprador, Compra,
-    MantenimientoPlanta, HistorialMantenimiento, ReciboCafe, Partida, SubPartida
+    MantenimientoPlanta, HistorialMantenimiento, ReciboCafe, Partida, SubPartida,
+    Trabajador, PlanillaSemanal, RegistroDiario
 )
 
 # ==========================================
@@ -3991,11 +3992,430 @@ def detalle_subpartida(request, pk):
     Ver detalle completo de una sub-partida
     """
     subpartida = get_object_or_404(SubPartida, pk=pk, activo=True)
-    
+
     context = {'subpartida': subpartida}
     return render(request, 'beneficio/partidas/detalle_subpartida.html', context)
 
 
+# ==========================================
+# BENEFICIADO FINCA - TRABAJADORES
+# ==========================================
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def lista_trabajadores_view(request):
+    """Lista de trabajadores de la finca - Solo administradores"""
+    trabajadores = Trabajador.objects.all().order_by('nombre_completo')
+
+    # Filtro por estado (activo/inactivo)
+    estado = request.GET.get('estado')
+    if estado == 'activos':
+        trabajadores = trabajadores.filter(activo=True)
+    elif estado == 'inactivos':
+        trabajadores = trabajadores.filter(activo=False)
+
+    # Búsqueda por nombre o cédula
+    busqueda = request.GET.get('busqueda', '').strip()
+    if busqueda:
+        trabajadores = trabajadores.filter(
+            Q(nombre_completo__icontains=busqueda) |
+            Q(cedula__icontains=busqueda)
+        )
+
+    context = {
+        'trabajadores': trabajadores,
+        'estado': estado,
+        'busqueda': busqueda,
+    }
+    return render(request, 'beneficio/beneficiado_finca/lista_trabajadores.html', context)
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def crear_trabajador_view(request):
+    """Crear nuevo trabajador - Solo administradores"""
+    if request.method == 'POST':
+        try:
+            trabajador = Trabajador()
+
+            # Nombre completo (obligatorio)
+            nombre = request.POST.get('nombre_completo', '').strip()
+            if not nombre:
+                raise ValueError("El nombre completo es obligatorio")
+            trabajador.nombre_completo = nombre
+
+            # Campos opcionales
+            trabajador.cedula = request.POST.get('cedula', '').strip() or None
+            trabajador.telefono = request.POST.get('telefono', '').strip() or None
+            trabajador.activo = request.POST.get('activo') == 'on'
+
+            trabajador.save()
+
+            messages.success(request, f'✅ Trabajador "{trabajador.nombre_completo}" creado correctamente')
+            return redirect('lista_trabajadores')
+
+        except ValueError as ve:
+            messages.error(request, f'❌ Error: {str(ve)}')
+        except Exception as e:
+            messages.error(request, f'❌ Error al crear trabajador: {str(e)}')
+
+    return render(request, 'beneficio/beneficiado_finca/form_trabajador.html', {'editar': False})
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def editar_trabajador_view(request, pk):
+    """Editar trabajador existente - Solo administradores"""
+    trabajador = get_object_or_404(Trabajador, pk=pk)
+
+    if request.method == 'POST':
+        try:
+            # Nombre completo (obligatorio)
+            nombre = request.POST.get('nombre_completo', '').strip()
+            if not nombre:
+                raise ValueError("El nombre completo es obligatorio")
+            trabajador.nombre_completo = nombre
+
+            # Campos opcionales
+            trabajador.cedula = request.POST.get('cedula', '').strip() or None
+            trabajador.telefono = request.POST.get('telefono', '').strip() or None
+            trabajador.activo = request.POST.get('activo') == 'on'
+
+            trabajador.save()
+
+            messages.success(request, f'✅ Trabajador "{trabajador.nombre_completo}" actualizado')
+            return redirect('lista_trabajadores')
+
+        except ValueError as ve:
+            messages.error(request, f'❌ Error: {str(ve)}')
+        except Exception as e:
+            messages.error(request, f'❌ Error al actualizar: {str(e)}')
+
+    context = {
+        'trabajador': trabajador,
+        'editar': True,
+    }
+    return render(request, 'beneficio/beneficiado_finca/form_trabajador.html', context)
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def eliminar_trabajador_view(request, pk):
+    """Eliminar trabajador (soft delete) - Solo administradores"""
+    trabajador = get_object_or_404(Trabajador, pk=pk)
+
+    if request.method == 'POST':
+        try:
+            trabajador.activo = False
+            trabajador.save()
+            messages.success(request, f'✅ Trabajador "{trabajador.nombre_completo}" desactivado')
+            return redirect('lista_trabajadores')
+        except Exception as e:
+            messages.error(request, f'❌ Error al desactivar: {str(e)}')
+
+    context = {'trabajador': trabajador}
+    return render(request, 'beneficio/beneficiado_finca/eliminar_trabajador.html', context)
+
+
+# ==========================================
+# BENEFICIADO FINCA - PLANILLAS SEMANALES
+# ==========================================
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def lista_planillas_view(request):
+    """Lista de planillas semanales - Solo administradores"""
+    planillas = PlanillaSemanal.objects.all().order_by('-fecha_inicio')
+
+    # Filtro por año
+    anio = request.GET.get('anio')
+    if anio:
+        planillas = planillas.filter(fecha_inicio__year=anio)
+
+    # Filtro por mes
+    mes = request.GET.get('mes')
+    if mes:
+        planillas = planillas.filter(fecha_inicio__month=mes)
+
+    context = {
+        'planillas': planillas,
+        'anio': anio,
+        'mes': mes,
+    }
+    return render(request, 'beneficio/beneficiado_finca/lista_planillas.html', context)
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def crear_planilla_view(request):
+    """Crear nueva planilla semanal - Solo administradores"""
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                planilla = PlanillaSemanal()
+
+                # Fechas (obligatorias)
+                fecha_inicio = request.POST.get('fecha_inicio')
+                fecha_fin = request.POST.get('fecha_fin')
+
+                if not fecha_inicio or not fecha_fin:
+                    raise ValueError("Las fechas de inicio y fin son obligatorias")
+
+                planilla.fecha_inicio = fecha_inicio
+                planilla.fecha_fin = fecha_fin
+                planilla.observaciones = request.POST.get('observaciones', '').strip()
+                planilla.created_by = request.user
+
+                planilla.save()
+
+                messages.success(request, f'✅ Planilla semanal creada: {planilla.fecha_inicio} - {planilla.fecha_fin}')
+                return redirect('detalle_planilla', pk=planilla.pk)
+
+        except ValueError as ve:
+            messages.error(request, f'❌ Error: {str(ve)}')
+        except Exception as e:
+            messages.error(request, f'❌ Error al crear planilla: {str(e)}')
+
+    return render(request, 'beneficio/beneficiado_finca/crear_planilla.html')
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def detalle_planilla_view(request, pk):
+    """Vista detallada de planilla semanal con tabla de trabajadores × días - Solo administradores"""
+    planilla = get_object_or_404(PlanillaSemanal, pk=pk)
+
+    # Obtener todos los trabajadores activos
+    trabajadores = Trabajador.objects.filter(activo=True).order_by('nombre_completo')
+
+    # Obtener todos los registros de esta planilla
+    registros = planilla.registros_diarios.select_related('trabajador', 'tipo_cafe').all()
+
+    # Crear diccionario de registros: {trabajador_id: {dia: registro}}
+    registros_dict = {}
+    for registro in registros:
+        if registro.trabajador_id not in registros_dict:
+            registros_dict[registro.trabajador_id] = {}
+        registros_dict[registro.trabajador_id][registro.dia_semana] = registro
+
+    # Días de la semana
+    dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado']
+
+    # Preparar datos para la tabla
+    tabla_datos = []
+    for trabajador in trabajadores:
+        fila = {
+            'trabajador': trabajador,
+            'registros_dias': {},
+            'total_libras': Decimal('0.00'),
+        }
+
+        for dia in dias:
+            if trabajador.id in registros_dict and dia in registros_dict[trabajador.id]:
+                registro = registros_dict[trabajador.id][dia]
+                fila['registros_dias'][dia] = registro
+                fila['total_libras'] += registro.libras_cortadas
+            else:
+                fila['registros_dias'][dia] = None
+
+        # Calcular quintales
+        fila['total_qq'] = fila['total_libras'] / Decimal('100.00')
+        tabla_datos.append(fila)
+
+    # Totales por día
+    totales_dias = {}
+    for dia in dias:
+        total = registros.filter(dia_semana=dia).aggregate(
+            total=Sum('libras_cortadas')
+        )['total'] or Decimal('0.00')
+        totales_dias[dia] = total
+
+    # Totales por tipo de café
+    totales_cafe = {}
+    for registro in registros:
+        tipo = registro.get_tipo_cafe_display_full()
+        if tipo not in totales_cafe:
+            totales_cafe[tipo] = Decimal('0.00')
+        totales_cafe[tipo] += registro.libras_cortadas
+
+    context = {
+        'planilla': planilla,
+        'tabla_datos': tabla_datos,
+        'dias': dias,
+        'totales_dias': totales_dias,
+        'totales_cafe': totales_cafe,
+    }
+    return render(request, 'beneficio/beneficiado_finca/detalle_planilla.html', context)
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def editar_planilla_view(request, pk):
+    """Editar planilla semanal - Solo administradores"""
+    planilla = get_object_or_404(PlanillaSemanal, pk=pk)
+
+    if request.method == 'POST':
+        try:
+            # Fechas (obligatorias)
+            fecha_inicio = request.POST.get('fecha_inicio')
+            fecha_fin = request.POST.get('fecha_fin')
+
+            if not fecha_inicio or not fecha_fin:
+                raise ValueError("Las fechas de inicio y fin son obligatorias")
+
+            planilla.fecha_inicio = fecha_inicio
+            planilla.fecha_fin = fecha_fin
+            planilla.observaciones = request.POST.get('observaciones', '').strip()
+
+            planilla.save()
+
+            messages.success(request, '✅ Planilla actualizada correctamente')
+            return redirect('detalle_planilla', pk=planilla.pk)
+
+        except ValueError as ve:
+            messages.error(request, f'❌ Error: {str(ve)}')
+        except Exception as e:
+            messages.error(request, f'❌ Error al actualizar: {str(e)}')
+
+    context = {'planilla': planilla}
+    return render(request, 'beneficio/beneficiado_finca/editar_planilla.html', context)
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def eliminar_planilla_view(request, pk):
+    """Eliminar planilla semanal y todos sus registros - Solo administradores"""
+    planilla = get_object_or_404(PlanillaSemanal, pk=pk)
+
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                # Eliminar todos los registros asociados
+                planilla.registros_diarios.all().delete()
+                # Eliminar la planilla
+                planilla.delete()
+
+                messages.success(request, '✅ Planilla eliminada correctamente')
+                return redirect('lista_planillas')
+
+        except Exception as e:
+            messages.error(request, f'❌ Error al eliminar: {str(e)}')
+
+    context = {'planilla': planilla}
+    return render(request, 'beneficio/beneficiado_finca/eliminar_planilla.html', context)
+
+
+# ==========================================
+# BENEFICIADO FINCA - REGISTROS DIARIOS
+# ==========================================
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def agregar_registro_view(request, planilla_id):
+    """Agregar o editar registro diario - Solo administradores"""
+    planilla = get_object_or_404(PlanillaSemanal, pk=planilla_id)
+
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                # Obtener parámetros
+                trabajador_id = request.POST.get('trabajador_id')
+                dia_semana = request.POST.get('dia_semana')
+                fecha = request.POST.get('fecha')
+
+                if not trabajador_id or not dia_semana or not fecha:
+                    raise ValueError("Trabajador, día y fecha son obligatorios")
+
+                trabajador = get_object_or_404(Trabajador, pk=trabajador_id)
+
+                # Buscar registro existente o crear nuevo
+                registro, created = RegistroDiario.objects.get_or_create(
+                    planilla=planilla,
+                    trabajador=trabajador,
+                    dia_semana=dia_semana,
+                    fecha=fecha,
+                    defaults={
+                        'libras_cortadas': Decimal('0.00')
+                    }
+                )
+
+                # Actualizar campos
+                libras = request.POST.get('libras_cortadas', '0').strip()
+                registro.libras_cortadas = Decimal(libras) if libras else Decimal('0.00')
+
+                # Tipo de café - dual selection
+                tipo_cafe_id = request.POST.get('tipo_cafe')
+                tipo_cafe_manual = request.POST.get('tipo_cafe_manual', '').strip()
+
+                if tipo_cafe_id:
+                    registro.tipo_cafe_id = tipo_cafe_id
+                    registro.tipo_cafe_manual = None
+                elif tipo_cafe_manual:
+                    registro.tipo_cafe = None
+                    registro.tipo_cafe_manual = tipo_cafe_manual
+                else:
+                    registro.tipo_cafe = None
+                    registro.tipo_cafe_manual = None
+
+                registro.observaciones = request.POST.get('observaciones', '').strip()
+
+                registro.save()
+
+                action_text = "agregado" if created else "actualizado"
+                messages.success(request, f'✅ Registro {action_text} correctamente')
+                return redirect('detalle_planilla', pk=planilla.pk)
+
+        except ValueError as ve:
+            messages.error(request, f'❌ Error: {str(ve)}')
+        except Exception as e:
+            messages.error(request, f'❌ Error: {str(e)}')
+
+    # GET request - mostrar formulario
+    trabajadores = Trabajador.objects.filter(activo=True).order_by('nombre_completo')
+    tipos_cafe = TipoCafe.objects.filter(activo=True).order_by('nombre')
+
+    # Obtener registro si existe (para edición)
+    registro = None
+    trabajador_id = request.GET.get('trabajador_id')
+    dia_semana = request.GET.get('dia_semana')
+
+    if trabajador_id and dia_semana:
+        try:
+            registro = RegistroDiario.objects.get(
+                planilla=planilla,
+                trabajador_id=trabajador_id,
+                dia_semana=dia_semana
+            )
+        except RegistroDiario.DoesNotExist:
+            pass
+
+    context = {
+        'planilla': planilla,
+        'trabajadores': trabajadores,
+        'tipos_cafe': tipos_cafe,
+        'registro': registro,
+        'dias_choices': RegistroDiario.DIAS_SEMANA,
+    }
+    return render(request, 'beneficio/beneficiado_finca/agregar_registro.html', context)
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def eliminar_registro_view(request, pk):
+    """Eliminar registro diario - Solo administradores"""
+    registro = get_object_or_404(RegistroDiario, pk=pk)
+    planilla_id = registro.planilla.pk
+
+    if request.method == 'POST':
+        try:
+            registro.delete()
+            messages.success(request, '✅ Registro eliminado correctamente')
+            return redirect('detalle_planilla', pk=planilla_id)
+        except Exception as e:
+            messages.error(request, f'❌ Error al eliminar: {str(e)}')
+
+    context = {'registro': registro}
+    return render(request, 'beneficio/beneficiado_finca/eliminar_registro.html', context)
 
 
 

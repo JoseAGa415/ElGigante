@@ -109,4 +109,22 @@ path('subpartidas/<int:pk>/', views.detalle_subpartida, name='detalle_subpartida
 path('subpartidas/<int:pk>/editar/', views.editar_subpartida, name='editar_subpartida'),
 path('subpartidas/<int:pk>/eliminar/', views.eliminar_subpartida, name='eliminar_subpartida'),
 
+    # ========== BENEFICIADO FINCA (Solo Administradores) ==========
+    # Trabajadores
+    path('beneficiado-finca/trabajadores/', views.lista_trabajadores_view, name='lista_trabajadores'),
+    path('beneficiado-finca/trabajadores/crear/', views.crear_trabajador_view, name='crear_trabajador'),
+    path('beneficiado-finca/trabajadores/<int:pk>/editar/', views.editar_trabajador_view, name='editar_trabajador'),
+    path('beneficiado-finca/trabajadores/<int:pk>/eliminar/', views.eliminar_trabajador_view, name='eliminar_trabajador'),
+
+    # Planillas Semanales
+    path('beneficiado-finca/planillas/', views.lista_planillas_view, name='lista_planillas'),
+    path('beneficiado-finca/planillas/crear/', views.crear_planilla_view, name='crear_planilla'),
+    path('beneficiado-finca/planillas/<int:pk>/', views.detalle_planilla_view, name='detalle_planilla'),
+    path('beneficiado-finca/planillas/<int:pk>/editar/', views.editar_planilla_view, name='editar_planilla'),
+    path('beneficiado-finca/planillas/<int:pk>/eliminar/', views.eliminar_planilla_view, name='eliminar_planilla'),
+
+    # Registros Diarios
+    path('beneficiado-finca/planillas/<int:planilla_id>/registros/agregar/', views.agregar_registro_view, name='agregar_registro'),
+    path('beneficiado-finca/registros/<int:pk>/eliminar/', views.eliminar_registro_view, name='eliminar_registro'),
+
 ]
