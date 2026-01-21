@@ -1,4 +1,4 @@
-# Guía de Despliegue - Actualización con Mejoras Responsive
+# Guía de Despliegue - Módulo Beneficiado Finca
 
 ## Resumen de Cambios
 
@@ -7,16 +7,18 @@ Esta actualización incluye:
 2. ✅ Campos de ubicación (percha, fila) en Lote
 3. ✅ Optimización mobile para detalles de compradores
 4. ✅ Upload de comprobantes de pago
-5. ✅ **NUEVO**: Diseño responsive ~90% (mobile-friendly)
-6. ✅ **NUEVO**: Estilos de impresión profesionales
+5. ✅ Diseño responsive ~90% (mobile-friendly)
+6. ✅ Estilos de impresión profesionales
+7. ✅ **NUEVO**: Módulo Beneficiado Finca (planillas semanales trabajadores)
 
 **Migraciones pendientes:**
 - 0031_compra_comprobante.py
 - 0032_add_ubicacion_fields.py
 - 0033_lote_ubicacion_fields.py
 - 0034_catacion_partida.py
+- 0035_add_beneficiado_finca_models.py ⭐ **NUEVA**
 
-**NOTA**: Esta actualización es **solo frontend** (HTML/CSS/JS). No requiere migraciones adicionales.
+**IMPORTANTE**: Esta actualización incluye nueva migración y modelos de base de datos.
 
 ---
 
@@ -180,6 +182,32 @@ Abre tu navegador y verifica:
     - Fondo blanco con texto negro
     - Tablas y gráficos optimizados para papel
 
+#### Módulo Beneficiado Finca (NUEVO - Solo Administradores):
+11. **Acceso al módulo**:
+    - Iniciar sesión como administrador (superuser)
+    - Verificar que el enlace "Beneficiado Finca" aparece en el menú lateral
+    - Usuarios no-admin NO deben ver este enlace
+
+12. **Gestión de Trabajadores**:
+    - Clic en "Gestionar Trabajadores"
+    - Crear un trabajador de prueba
+    - Verificar lista, editar y desactivar trabajador
+
+13. **Planillas Semanales**:
+    - Crear nueva planilla con rango de fechas (ej: lunes a sábado)
+    - Verificar que se creó correctamente
+
+14. **Detalle de Planilla (Vista Principal)**:
+    - Abrir detalle de planilla creada
+    - Debe mostrar tabla similar al formato físico: trabajadores × días
+    - Agregar registro diario para un trabajador
+    - Probar selección dual de tipo de café:
+      * Seleccionar desde dropdown de tipos existentes
+      * Escribir manualmente tipo de café no listado
+    - Verificar que aparece en la tabla
+    - Verificar totales automáticos (libras y quintales)
+    - Verificar totales por tipo de café al final
+
 ---
 
 ## SI ALGO SALE MAL
@@ -268,7 +296,7 @@ Antes de cerrar la sesión SSH, verifica:
 ### Backend y Base de Datos:
 - [ ] Base de datos respaldada
 - [ ] Código actualizado con git pull
-- [ ] Las 4 migraciones aplicadas correctamente
+- [ ] Las 5 migraciones aplicadas correctamente (0031-0035) ⭐
 - [ ] Directorio media/comprobantes creado con permisos correctos
 - [ ] Archivos estáticos recolectados
 - [ ] Gunicorn reiniciado y activo
@@ -279,13 +307,23 @@ Antes de cerrar la sesión SSH, verifica:
 - [ ] Botón "Catar Partida" visible en detalle de partida
 - [ ] Upload de comprobantes funcional
 
-### Responsive Design (NUEVO):
+### Responsive Design:
 - [ ] Lista de lotes muestra tarjetas en móvil (<768px)
 - [ ] Lista de cataciones muestra tarjetas en móvil
 - [ ] Botones touch-friendly (mínimo 44px) funcionan bien
 - [ ] Gráficos se redimensionan correctamente
 - [ ] Impresión (Ctrl+P) muestra formato limpio sin navegación
 - [ ] Probado en móvil real o emulador (Chrome DevTools)
+
+### Módulo Beneficiado Finca (NUEVO):
+- [ ] Enlace "Beneficiado Finca" visible solo para administradores
+- [ ] Crear trabajador funciona correctamente
+- [ ] Lista de trabajadores con filtros funciona
+- [ ] Crear planilla semanal funciona
+- [ ] Detalle de planilla muestra tabla trabajadores × días
+- [ ] Agregar registro diario funciona (con dual selección de café)
+- [ ] Totales automáticos se calculan correctamente
+- [ ] Totales por tipo de café se muestran correctamente
 
 ---
 
@@ -342,13 +380,52 @@ Y puedes consultar la documentación de Django o revisar los commits en GitHub.
 - Estándar iOS/Android Human Interface Guidelines
 - Reduce errores de toque accidental
 
+### 5. Módulo Beneficiado Finca (NUEVO)
+**Archivos creados:**
+
+**Modelos** (`beneficio/models.py`):
+- `Trabajador` - Gestión de trabajadores (líneas 2012-2027)
+- `PlanillaSemanal` - Planillas semanales con métodos de agregación (líneas 2030-2055)
+- `RegistroDiario` - Registros diarios con dual selección de café (líneas 2058-2137)
+
+**Vistas** (`beneficio/views.py`):
+- 11 vistas nuevas para CRUD completo (líneas 3999-4420)
+- Decorador `@user_passes_test(lambda u: u.is_staff)` en todas las vistas
+
+**Templates** (`beneficio/templates/beneficio/beneficiado_finca/`):
+- 10 templates HTML con diseño consistente y responsive
+- Template principal: `detalle_planilla.html` (tabla trabajadores × días)
+
+**Template Tags** (`beneficio/templatetags/custom_filters.py`):
+- `get_item` - Acceso a diccionarios en templates
+- `divide` - Cálculos de conversión (libras → quintales)
+
+**URLs** (`beneficio/urls.py`, líneas 112-128):
+- Prefijo: `/beneficiado-finca/`
+- 11 rutas para trabajadores, planillas y registros
+
+**Navegación** (`beneficio/templates/base.html`, línea 257-259):
+- Enlace "Beneficiado Finca" dentro de `{% if user.is_superuser %}`
+
+**Migración**:
+- `0035_add_beneficiado_finca_models.py` - Crea 3 tablas nuevas
+
+**Qué hace:**
+- Digitaliza formato físico de control de corte de café
+- Tabla semanal trabajadores × días (lunes-sábado)
+- Dual input para tipo de café: dropdown O texto manual
+- Cálculo automático de totales (libras y quintales)
+- Desglose por tipo de café al final
+- Solo accesible por administradores
+
 ---
 
-**Última actualización**: 2026-01-20
-**Commits incluidos**: c39d24a hasta ed17a60 (7 commits nuevos)
+**Última actualización**: 2026-01-21
+**Commits incluidos**: c39d24a hasta 816ceec (8 commits)
 
-**Commits responsive:**
+**Commits importantes:**
 - `8e9c438` - Card view para lista de lotes
 - `9f7e32a` - Card view para lista de cataciones
 - `2bbbc22` - Gráficos adaptativos
 - `ed17a60` - Print styles globales
+- `816ceec` - **Módulo Beneficiado Finca completo** ⭐
