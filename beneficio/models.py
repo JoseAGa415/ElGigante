@@ -29,17 +29,19 @@ class Bodega(models.Model):
         ('C', 'Bodega C'),
         ('D', 'Bodega D'),
     ]
-    
+
+    nombre = models.CharField(max_length=100, default='Bodega')
     codigo = models.CharField(max_length=1, choices=OPCIONES_BODEGA, unique=True)
     capacidad_kg = models.DecimalField(max_digits=10, decimal_places=2)
     ubicacion = models.CharField(max_length=200)
-    responsable = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='bodegas')
-    
+    responsable = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='bodegas')
+    activo = models.BooleanField(default=True)
+
     class Meta:
         ordering = ['codigo']
-    
-def __str__(self):
-        return f"Bodega {self.id}"
+
+    def __str__(self):
+        return f"Bodega {self.codigo} - {self.nombre}"
     
     # def espacio_disponible(self):
     #    """Calcula el espacio disponible en la bodega"""
