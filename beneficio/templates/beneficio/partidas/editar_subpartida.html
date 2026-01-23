@@ -1,281 +1,298 @@
 {% extends 'base.html' %}
 
-{% block title %}Editar Sub-Partida{% endblock %}
+{% block title %}Editar Lote de Punto{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 py-8">
-    <div class="max-w-4xl mx-auto px-4">
-        
-        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">
-                <i class="fas fa-edit text-purple-600 mr-2"></i>
-                Editar Sub-Partida
-            </h1>
-            <p class="mt-2 text-gray-600">
-                Modificando {{ subpartida.numero_subpartida }} de {{ subpartida.partida.numero_partida }}
-            </p>
+<div class="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 py-8">
+    <div class="max-w-6xl mx-auto px-4">
+
+        <!-- Encabezado -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-green-100 rounded-full -mr-32 -mt-32 opacity-50"></div>
+            <div class="relative">
+                <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                    <i class="fas fa-edit text-green-600"></i>
+                    Editar Lote de Punto
+                </h1>
+                <p class="mt-2 text-gray-600">
+                    Modificando: <strong class="text-green-700">{{ subpartida.numero_subpartida }}</strong>
+                </p>
+                <p class="text-sm text-gray-500 mt-1">
+                    Partida: {{ subpartida.partida.numero_partida }} - {{ subpartida.partida.nombre }}
+                </p>
+
+                {% if subpartida.partida.bodega or subpartida.partida.percha %}
+                <div class="mt-3 flex items-center gap-2 text-sm text-blue-700 bg-blue-50 px-3 py-2 rounded-lg inline-block">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>
+                        {% if subpartida.partida.bodega %}{{ subpartida.partida.bodega.nombre }}{% endif %}
+                        {% if subpartida.partida.percha %} - {{ subpartida.partida.percha }}{% endif %}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
         </div>
 
         <form method="post" class="bg-white rounded-xl shadow-lg p-8 space-y-8">
             {% csrf_token %}
 
-            <!-- Información de la Partida Padre -->
-            <div class="border-l-4 border-purple-500 bg-purple-50 p-6 rounded-lg">
-                <h2 class="text-xl font-semibold mb-4 text-purple-900">
-                    <i class="fas fa-layer-group mr-2"></i>
-                    Partida Padre
-                </h2>
-                
-                <div class="bg-white rounded-lg p-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <span class="text-gray-600">Número:</span>
-                            <span class="font-bold text-gray-900 ml-2">{{ subpartida.partida.numero_partida }}</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-600">Nombre:</span>
-                            <span class="font-semibold text-gray-900 ml-2">{{ subpartida.partida.nombre }}</span>
-                        </div>
-                        {% if subpartida.partida.bodega or subpartida.partida.percha %}
-                        <div class="md:col-span-2">
-                            <span class="text-gray-600">Ubicación:</span>
-                            <span class="font-medium text-blue-700 ml-2">
-                                {% if subpartida.partida.bodega %}
-                                    Bodega #{{ subpartida.partida.bodega.id }}
-                                {% endif %}
-                                {% if subpartida.partida.bodega and subpartida.partida.percha %} → {% endif %}
-                                {% if subpartida.partida.percha %}
-                                    {{ subpartida.partida.percha }}
-                                {% endif %}
-                            </span>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Información Básica -->
+            <!-- Información Básica del Lote -->
             <div class="border-l-4 border-green-500 bg-green-50 p-6 rounded-lg">
-                <h2 class="text-xl font-semibold mb-6 text-green-900">
-                    <i class="fas fa-info-circle mr-2"></i>
-                    Información Básica
+                <h2 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                    <i class="fas fa-coffee text-green-600"></i>
+                    Información del Lote
                 </h2>
 
-                <div class="space-y-6">
-                    <!-- Número de Sub-Partida (solo lectura) -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-hashtag text-gray-600 mr-1"></i>
-                            Número de Sub-Partida
-                        </label>
-                        <input type="text" 
-                               value="{{ subpartida.numero_subpartida }}"
-                               disabled
-                               class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-gray-100 font-bold text-lg text-gray-600">
-                        <p class="text-xs text-gray-500 mt-1">
-                            <i class="fas fa-lock mr-1"></i>
-                            Este número se generó automáticamente y no se puede cambiar
-                        </p>
-                    </div>
-
-                    <!-- Nombre -->
-                    <div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- ID del Lote (nombre) -->
+                    <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             <i class="fas fa-tag text-green-600 mr-1"></i>
-                            Nombre de la Sub-Partida <span class="text-red-500">*</span>
+                            ID del Lote <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" 
+                        <input type="text"
                                name="nombre"
                                value="{{ subpartida.nombre }}"
                                required
-                               placeholder="Ej: Entrada 1, Lote A, Primera Recepción"
-                               class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-green-600 font-semibold text-lg">
-                        <p class="text-xs text-gray-500 mt-1">
-                            <i class="fas fa-lightbulb mr-1"></i>
-                            Nombre descriptivo para esta entrada específica
-                        </p>
+                               placeholder="Ej: DELFINA / NANDO 3RAS, WILSON 3RAS"
+                               class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-green-600 font-semibold">
                     </div>
 
-                    <!-- Descripción -->
+                    <!-- Fecha -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-align-left text-gray-600 mr-1"></i>
-                            Descripción
+                            <i class="fas fa-calendar text-green-600 mr-1"></i>
+                            Fecha
                         </label>
-                        <textarea name="descripcion" 
-                                  rows="3"
-                                  placeholder="Descripción detallada de la sub-partida..."
-                                  class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600">{{ subpartida.descripcion|default:'' }}</textarea>
+                        <input type="date"
+                               name="fecha_ingreso"
+                               value="{% if subpartida.fecha_ingreso %}{{ subpartida.fecha_ingreso|date:'Y-m-d' }}{% endif %}"
+                               class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-green-600">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                    <!-- Tipo de Proceso -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-cogs text-green-600 mr-1"></i>
+                            Tipo de Proceso <span class="text-red-500">*</span>
+                        </label>
+                        <select name="tipo_proceso"
+                                class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-green-600 font-semibold">
+                            <option value="LAVADO" {% if subpartida.tipo_proceso == 'LAVADO' %}selected{% endif %}>Lavado</option>
+                            <option value="NATURAL" {% if subpartida.tipo_proceso == 'NATURAL' %}selected{% endif %}>Natural</option>
+                            <option value="HONEY" {% if subpartida.tipo_proceso == 'HONEY' %}selected{% endif %}>Honey</option>
+                            <option value="LADADO" {% if subpartida.tipo_proceso == 'LADADO' %}selected{% endif %}>Ladado</option>
+                            <option value="LAVADO 2 LATAS" {% if subpartida.tipo_proceso == 'LAVADO 2 LATAS' %}selected{% endif %}>Lavado 2 Latas</option>
+                        </select>
+                    </div>
+
+                    <!-- Número de Sacos -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-box text-green-600 mr-1"></i>
+                            Sacos <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number"
+                               name="numero_sacos"
+                               value="{{ subpartida.numero_sacos|default:1 }}"
+                               min="1"
+                               required
+                               class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-green-600 font-semibold">
+                    </div>
+
+                    <!-- Quintales -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-weight text-green-600 mr-1"></i>
+                            Quintales (qq) <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number"
+                               name="quintales"
+                               id="quintales"
+                               value="{{ subpartida.quintales|default:0 }}"
+                               step="0.01"
+                               required
+                               placeholder="0.00"
+                               class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-green-600 font-semibold">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <!-- Humedad -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-tint text-blue-600 mr-1"></i>
+                            Humedad (%)
+                        </label>
+                        <input type="number"
+                               name="humedad"
+                               value="{{ subpartida.humedad|default:'' }}"
+                               step="0.1"
+                               placeholder="Ej: 10.3"
+                               class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-blue-600">
+                    </div>
+
+                    <!-- Fila/Ubicación -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-layer-group text-blue-600 mr-1"></i>
+                            Fila / Ubicación
+                        </label>
+                        <input type="text"
+                               name="fila"
+                               value="{{ subpartida.fila|default:'' }}"
+                               placeholder="Ej: Fila 1, Nivel A"
+                               class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-blue-600">
                     </div>
                 </div>
             </div>
 
-            <!-- Pesos -->
-            <div class="border-l-4 border-blue-500 bg-blue-50 p-6 rounded-lg">
-                <h2 class="text-xl font-semibold mb-6 text-blue-900">
-                    <i class="fas fa-weight text-blue-600 mr-2"></i>
-                    Pesos y Medidas
+            <!-- Análisis de Calidad -->
+            <div class="border-l-4 border-amber-500 bg-amber-50 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                    <i class="fas fa-chart-bar text-amber-600"></i>
+                    Análisis de Calidad
+                </h2>
+
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <!-- b/15 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">b/15</label>
+                        <input type="number"
+                               name="rendimiento_b15"
+                               value="{{ subpartida.rendimiento_b15|default:'' }}"
+                               step="0.01"
+                               placeholder="0.00"
+                               class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-amber-500">
+                    </div>
+
+                    <!-- Defectos -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Defectos</label>
+                        <input type="number"
+                               name="defectos"
+                               value="{{ subpartida.defectos|default:'' }}"
+                               step="0.01"
+                               placeholder="0.00"
+                               class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-amber-500">
+                    </div>
+
+                    <!-- RB -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">RB</label>
+                        <input type="number"
+                               name="rb"
+                               value="{{ subpartida.rb|default:'' }}"
+                               step="0.0001"
+                               placeholder="0.0000"
+                               class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-amber-500">
+                    </div>
+
+                    <!-- RN -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">RN</label>
+                        <input type="number"
+                               name="rn"
+                               value="{{ subpartida.rn|default:'' }}"
+                               step="0.0001"
+                               placeholder="0.0000"
+                               class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-amber-500">
+                    </div>
+
+                    <!-- Score -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Score</label>
+                        <input type="number"
+                               name="score"
+                               value="{{ subpartida.score|default:'' }}"
+                               step="0.01"
+                               min="0"
+                               max="100"
+                               placeholder="86.00"
+                               class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-amber-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calidad de Taza y Cualidades -->
+            <div class="border-l-4 border-purple-500 bg-purple-50 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                    <i class="fas fa-mug-hot text-purple-600"></i>
+                    Calidad de Taza
                 </h2>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Peso Bruto -->
+                    <!-- Taza -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-balance-scale text-blue-600 mr-1"></i>
-                            Peso Bruto (kg) <span class="text-red-500">*</span>
+                            <i class="fas fa-certificate text-purple-600 mr-1"></i>
+                            Calidad de Taza
                         </label>
-                        <input type="number" 
-                               name="peso_bruto_kg"
-                               value="{{ subpartida.peso_bruto_kg }}"
-                               step="0.01"
-                               required
-                               class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-blue-600 text-lg font-semibold">
-                        <p class="text-xs text-gray-500 mt-1">
-                            Peso total incluyendo el recipiente
-                        </p>
+                        <select name="taza"
+                                class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-purple-600">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="SANA LIMPIA" {% if subpartida.taza == 'SANA LIMPIA' %}selected{% endif %}>Sana Limpia</option>
+                            <option value="LIMPIA" {% if subpartida.taza == 'LIMPIA' %}selected{% endif %}>Limpia</option>
+                            <option value="REGULAR" {% if subpartida.taza == 'REGULAR' %}selected{% endif %}>Regular</option>
+                            <option value="DEFECTUOSA" {% if subpartida.taza == 'DEFECTUOSA' %}selected{% endif %}>Defectuosa</option>
+                        </select>
                     </div>
 
-                    <!-- Tara -->
+                    <!-- Proveedor -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-box text-blue-600 mr-1"></i>
-                            Tara (kg) <span class="text-red-500">*</span>
+                            <i class="fas fa-user text-purple-600 mr-1"></i>
+                            Proveedor
                         </label>
-                        <input type="number" 
-                               name="tara_kg"
-                               value="{{ subpartida.tara_kg }}"
-                               step="0.01"
-                               required
-                               class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-blue-600 text-lg font-semibold">
-                        <p class="text-xs text-gray-500 mt-1">
-                            Peso del recipiente vacío
-                        </p>
+                        <input type="text"
+                               name="proveedor"
+                               value="{{ subpartida.proveedor|default:'' }}"
+                               placeholder="Nombre del proveedor"
+                               class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-purple-600">
                     </div>
                 </div>
 
-                <!-- Calculadora -->
-                <div class="mt-6 bg-blue-100 border-2 border-blue-300 rounded-lg p-4">
-                    <p class="text-sm text-blue-900 font-semibold mb-2">
-                        <i class="fas fa-calculator mr-2"></i>
-                        Cálculo Automático
-                    </p>
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <span class="text-blue-800">Peso Neto:</span>
-                            <span class="font-bold text-blue-900 ml-2" id="peso-neto-calc">
-                                {{ subpartida.peso_neto_kg|floatformat:2 }} kg
-                            </span>
-                        </div>
-                        <div>
-                            <span class="text-blue-800">Quintales:</span>
-                            <span class="font-bold text-blue-900 ml-2" id="quintales-calc">
-                                {{ subpartida.peso_en_quintales|floatformat:2 }} qq
-                            </span>
-                        </div>
-                    </div>
-                    <p class="text-xs text-blue-700 mt-2">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        Peso Neto = Peso Bruto - Tara | 1 Quintal = 46 kg
-                    </p>
-                </div>
-            </div>
-
-            <!-- Ubicación Física en Bodega -->
-            <div class="border-l-4 border-amber-500 bg-amber-50 p-6 rounded-lg">
-                <h2 class="text-xl font-semibold mb-6 text-amber-900">
-                    <i class="fas fa-map-pin mr-2"></i>
-                    Ubicación en Bodega
-                </h2>
-
-                <div>
+                <!-- Cualidades -->
+                <div class="mt-6">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                        <i class="fas fa-layer-group text-amber-600 mr-1"></i>
-                        Fila
+                        <i class="fas fa-star text-purple-600 mr-1"></i>
+                        Cualidades (sabores, aromas)
                     </label>
-                    <input type="text" 
-                           name="fila"
-                           value="{{ subpartida.fila|default:'' }}"
-                           placeholder="Ej: Fila 1, F-A, Nivel Superior"
-                           class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-amber-600">
-                    <p class="text-xs text-gray-500 mt-1">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        Ubicación específica dentro de la percha
-                    </p>
+                    <textarea name="cualidades"
+                              rows="2"
+                              placeholder="Ej: CARAMELO, CHOCOLATE, CITRICO, NARANJA, NUEZ, FRUTOS ROJOS, MIEL, FLORAL"
+                              class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-purple-600">{{ subpartida.cualidades|default:'' }}</textarea>
                 </div>
-
-                {% if subpartida.partida.bodega or subpartida.partida.percha %}
-                <div class="mt-4 bg-white border-2 border-amber-300 rounded-lg p-4">
-                    <p class="text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-map-marked-alt text-amber-600 mr-1"></i>
-                        Ubicación Completa:
-                    </p>
-                    <p class="text-lg font-bold text-amber-700">
-                        {% if subpartida.partida.bodega %}Bodega #{{ subpartida.partida.bodega.id }}{% endif %}
-                        {% if subpartida.partida.bodega and subpartida.partida.percha %} → {% endif %}
-                        {% if subpartida.partida.percha %}{{ subpartida.partida.percha }}{% endif %}
-                        {% if subpartida.fila %} → Fila {{ subpartida.fila }}{% endif %}
-                    </p>
-                </div>
-                {% endif %}
             </div>
+
+            <!-- Pesos (oculto, se calcula automáticamente desde quintales) -->
+            <input type="hidden" name="peso_bruto" id="peso_bruto" value="{{ subpartida.peso_bruto_kg }}">
+            <input type="hidden" name="tara" value="{{ subpartida.tara_kg }}">
+            <input type="hidden" name="unidad_medida" value="qq">
 
             <!-- Observaciones -->
-            <div>
+            <div class="bg-gray-50 p-6 rounded-lg">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-comment-alt text-gray-600 mr-1"></i>
+                    <i class="fas fa-sticky-note text-gray-600 mr-1"></i>
                     Observaciones
                 </label>
-                <textarea name="observaciones" 
+                <textarea name="observaciones"
                           rows="2"
                           placeholder="Notas adicionales..."
-                          class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-600">{{ subpartida.observaciones|default:'' }}</textarea>
-            </div>
-
-            <!-- Info de Estado Actual -->
-            <div class="bg-purple-50 border-l-4 border-purple-500 p-4 rounded-lg">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    <div>
-                        <p class="text-gray-600 mb-1">
-                            <i class="fas fa-hashtag mr-1"></i>
-                            Número
-                        </p>
-                        <p class="font-bold text-gray-900">{{ subpartida.numero_subpartida }}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600 mb-1">
-                            <i class="fas fa-weight mr-1"></i>
-                            Peso Neto
-                        </p>
-                        <p class="font-bold text-green-700">{{ subpartida.peso_neto_kg|floatformat:2 }} kg</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600 mb-1">
-                            <i class="fas fa-balance-scale-right mr-1"></i>
-                            Quintales
-                        </p>
-                        <p class="font-bold text-blue-700">{{ subpartida.peso_en_quintales|floatformat:2 }} qq</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600 mb-1">
-                            <i class="fas fa-calendar mr-1"></i>
-                            Creada
-                        </p>
-                        <p class="font-bold text-gray-900">{{ subpartida.fecha_creacion|date:"d/m/Y" }}</p>
-                    </div>
-                </div>
+                          class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-gray-500">{{ subpartida.observaciones|default:'' }}</textarea>
             </div>
 
             <!-- Botones -->
-            <div class="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t">
-                <a href="{% url 'detalle_partida' subpartida.partida.pk %}" 
-                   class="px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium text-gray-700 text-center">
-                    <i class="fas fa-times mr-2"></i>
-                    Cancelar
+            <div class="flex gap-3 pt-6 border-t">
+                <a href="{% url 'detalle_partida' subpartida.partida.pk %}"
+                   class="flex-1 px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 text-center font-medium">
+                    <i class="fas fa-times mr-2"></i>Cancelar
                 </a>
-                <button type="submit" 
-                        class="px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition font-medium shadow-lg">
-                    <i class="fas fa-save mr-2"></i>
-                    Guardar Cambios
+                <button type="submit"
+                        class="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">
+                    <i class="fas fa-save mr-2"></i>Guardar Cambios
                 </button>
             </div>
         </form>
@@ -283,25 +300,16 @@
 </div>
 
 <script>
-// Calculadora en tiempo real
 document.addEventListener('DOMContentLoaded', function() {
-    const pesoBrutoInput = document.querySelector('input[name="peso_bruto_kg"]');
-    const taraInput = document.querySelector('input[name="tara_kg"]');
-    const pesoNetoSpan = document.getElementById('peso-neto-calc');
-    const quintalesSpan = document.getElementById('quintales-calc');
+    // Cuando cambian los quintales, actualizar el peso bruto (1 qq = 46 kg)
+    const quintalesInput = document.getElementById('quintales');
+    const pesoBrutoInput = document.getElementById('peso_bruto');
 
-    function calcular() {
-        const pesoBruto = parseFloat(pesoBrutoInput.value) || 0;
-        const tara = parseFloat(taraInput.value) || 0;
-        const pesoNeto = pesoBruto - tara;
-        const quintales = pesoNeto / 46;
-
-        pesoNetoSpan.textContent = pesoNeto.toFixed(2) + ' kg';
-        quintalesSpan.textContent = quintales.toFixed(2) + ' qq';
-    }
-
-    pesoBrutoInput.addEventListener('input', calcular);
-    taraInput.addEventListener('input', calcular);
+    quintalesInput.addEventListener('input', function() {
+        const qq = parseFloat(this.value) || 0;
+        const kg = qq * 46; // 1 quintal = 46 kg
+        pesoBrutoInput.value = kg.toFixed(2);
+    });
 });
 </script>
 {% endblock %}
