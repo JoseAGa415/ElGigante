@@ -1,39 +1,37 @@
 {% extends 'base.html' %}
 
-{% block title %}Agregar Sub-Partida{% endblock %}
+{% block title %}Agregar Lote de Punto{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50 py-8">
-    <div class="max-w-5xl mx-auto px-4">
-        
+<div class="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 py-8">
+    <div class="max-w-6xl mx-auto px-4">
+
+        <!-- Encabezado -->
         <div class="bg-white rounded-xl shadow-lg p-6 mb-8 relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-64 h-64 bg-purple-100 rounded-full -mr-32 -mt-32 opacity-50"></div>
+            <div class="absolute top-0 right-0 w-64 h-64 bg-green-100 rounded-full -mr-32 -mt-32 opacity-50"></div>
             <div class="relative">
                 <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                    <i class="fas fa-plus-circle text-purple-600"></i>
-                    Agregar Sub-Partida
+                    <i class="fas fa-plus-circle text-green-600"></i>
+                    Agregar Lote de Punto
                 </h1>
                 <p class="mt-2 text-gray-600">
-                    Agregar a la partida 
-                    <strong class="text-purple-700">{{ partida.numero_partida }} - {{ partida.nombre }}</strong>
+                    Partida:
+                    <strong class="text-green-700">{{ partida.numero_partida }} - {{ partida.nombre }}</strong>
                 </p>
-                
-                <!-- Mostrar ubicación de la partida -->
+
                 {% if partida.bodega or partida.percha %}
                 <div class="mt-3 flex items-center gap-2 text-sm text-blue-700 bg-blue-50 px-3 py-2 rounded-lg inline-block">
                     <i class="fas fa-map-marker-alt"></i>
                     <span>
                         {% if partida.bodega %}{{ partida.bodega.nombre }}{% endif %}
-                        {% if partida.percha %} → {{ partida.percha }}{% endif %}
+                        {% if partida.percha %} - {{ partida.percha }}{% endif %}
                     </span>
                 </div>
                 {% endif %}
             </div>
-            
+
             <div class="absolute top-4 right-4 bg-green-100 px-4 py-2 rounded-lg">
-                <p class="text-sm text-green-800 font-semibold">
-                    PESO ACTUAL
-                </p>
+                <p class="text-sm text-green-800 font-semibold">PESO ACTUAL</p>
                 <p class="text-2xl font-bold text-green-700">{{ partida.peso_total_kg|floatformat:2 }} kg</p>
             </div>
         </div>
@@ -41,211 +39,252 @@
         <form method="post" class="bg-white rounded-xl shadow-lg p-8 space-y-8">
             {% csrf_token %}
 
-            <!-- Calculadora -->
-            <div class="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl p-6">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-calculator text-white text-xl"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-bold text-gray-900">💡 Calculadora Automática</h3>
-                        <p class="text-sm text-gray-600">Escribe operaciones y el peso neto se calculará automáticamente (Bruto - Tara).</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Información Básica -->
-            <div class="border-l-4 border-purple-500 bg-purple-50 p-6 rounded-lg">
-                <h2 class="text-xl font-semibold mb-6">Información Básica</h2>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Nombre de la Sub-Partida <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" 
-                           name="nombre"
-                           required
-                           placeholder="Ej: Entrega Mañana, Lote A, Proveedor Juan"
-                           class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-purple-600 font-semibold text-lg">
-                </div>
-            </div>
-
-            <!-- UBICACIÓN (Fila) ⭐ -->
-            <div class="border-l-4 border-blue-500 bg-blue-50 p-6 rounded-lg">
-                <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
-                    <i class="fas fa-layer-group text-blue-600"></i>
-                    Ubicación en la Percha
-                </h2>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        <i class="fas fa-bars text-blue-600 mr-1"></i>
-                        Fila / Nivel
-                    </label>
-                    <input type="text" 
-                           name="fila"
-                           placeholder="Ej: Fila 1, Nivel A, Posición 3"
-                           class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-blue-600 font-semibold">
-                    <p class="text-xs text-gray-500 mt-1">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        Indica en qué fila o nivel de la percha se encuentra esta sub-partida
-                    </p>
-                </div>
-
-                <!-- Vista previa de ubicación completa -->
-                <div class="mt-4 bg-blue-100 border border-blue-300 rounded-lg p-4">
-                    <p class="text-sm text-blue-900 font-semibold mb-2">
-                        <i class="fas fa-map-marked-alt mr-2"></i>
-                        Ubicación completa:
-                    </p>
-                    <div class="flex items-center gap-2 text-blue-800">
-                        {% if partida.bodega %}
-                        <span class="bg-blue-200 px-3 py-1 rounded-full text-sm font-medium">
-                            {{ partida.bodega.nombre }}
-                        </span>
-                        <i class="fas fa-arrow-right text-blue-600"></i>
-                        {% endif %}
-                        
-                        {% if partida.percha %}
-                        <span class="bg-blue-200 px-3 py-1 rounded-full text-sm font-medium">
-                            {{ partida.percha }}
-                        </span>
-                        <i class="fas fa-arrow-right text-blue-600"></i>
-                        {% endif %}
-                        
-                        <span class="bg-blue-300 px-3 py-1 rounded-full text-sm font-bold">
-                            Fila (a definir)
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Pesos -->
+            <!-- Información Básica del Lote -->
             <div class="border-l-4 border-green-500 bg-green-50 p-6 rounded-lg">
-                <h2 class="text-xl font-semibold mb-6">Pesos</h2>
+                <h2 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                    <i class="fas fa-coffee text-green-600"></i>
+                    Información del Lote
+                </h2>
 
-                <!-- Peso Bruto -->
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-3">
-                        Peso BRUTO <span class="text-red-500">*</span>
-                    </label>
-                    <div class="grid grid-cols-3 gap-4">
-                        <div>
-                            <input type="text" 
-                                   id="op_peso_bruto"
-                                   placeholder="Operación: 10*2+5"
-                                   class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg font-mono text-sm">
-                            <p class="text-xs text-gray-500 mt-1">Operación</p>
-                        </div>
-                        <div>
-                            <input type="number" 
-                                   step="0.01"
-                                   name="peso_bruto"
-                                   id="peso_bruto"
-                                   required
-                                   class="w-full px-3 py-2 border-2 border-blue-300 rounded-lg font-bold text-lg bg-blue-50">
-                            <p class="text-xs text-gray-500 mt-1">Resultado</p>
-                        </div>
-                        <div>
-                            <select name="unidad_medida" 
-                                    id="unidad_medida"
-                                    class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-center font-semibold">
-                                <option value="kg">kg</option>
-                                <option value="qq">qq</option>
-                                <option value="lb">lb</option>
-                            </select>
-                            <p class="text-xs text-gray-500 mt-1">Unidad</p>
-                        </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- ID del Lote (nombre) -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-tag text-green-600 mr-1"></i>
+                            ID del Lote <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text"
+                               name="nombre"
+                               required
+                               placeholder="Ej: DELFINA / NANDO 3RAS, WILSON 3RAS"
+                               class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-green-600 font-semibold">
+                    </div>
+
+                    <!-- Fecha -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-calendar text-green-600 mr-1"></i>
+                            Fecha
+                        </label>
+                        <input type="date"
+                               name="fecha_ingreso"
+                               class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-green-600">
                     </div>
                 </div>
 
-                <!-- Tara -->
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-3">Tara</label>
-                    <div class="grid grid-cols-3 gap-4">
-                        <div>
-                            <input type="text" 
-                                   id="op_tara"
-                                   placeholder="Operación: 2+0.5"
-                                   class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg font-mono text-sm">
-                        </div>
-                        <div>
-                            <input type="number" 
-                                   step="0.01"
-                                   name="tara"
-                                   id="tara"
-                                   value="0"
-                                   class="w-full px-3 py-2 border-2 border-amber-300 rounded-lg font-bold text-lg bg-amber-50">
-                        </div>
-                        <div>
-                            <span class="block w-full px-3 py-2 text-center bg-gray-100 rounded-lg border-2 border-gray-300 text-sm">
-                                (misma unidad)
-                            </span>
-                        </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                    <!-- Tipo de Proceso -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-cogs text-green-600 mr-1"></i>
+                            Tipo de Proceso <span class="text-red-500">*</span>
+                        </label>
+                        <select name="tipo_proceso"
+                                class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-green-600 font-semibold">
+                            <option value="LAVADO">Lavado</option>
+                            <option value="NATURAL">Natural</option>
+                            <option value="HONEY">Honey</option>
+                            <option value="LADADO">Ladado</option>
+                            <option value="LAVADO 2 LATAS">Lavado 2 Latas</option>
+                        </select>
+                    </div>
+
+                    <!-- Número de Sacos -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-box text-green-600 mr-1"></i>
+                            Sacos <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number"
+                               name="numero_sacos"
+                               value="1"
+                               min="1"
+                               required
+                               class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-green-600 font-semibold">
+                    </div>
+
+                    <!-- Quintales -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-weight text-green-600 mr-1"></i>
+                            Quintales (qq) <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number"
+                               name="quintales"
+                               id="quintales"
+                               step="0.01"
+                               required
+                               placeholder="0.00"
+                               class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-green-600 font-semibold">
                     </div>
                 </div>
 
-                <!-- Peso Neto -->
-                <div class="bg-gradient-to-r from-green-100 to-emerald-100 p-5 rounded-lg border-2 border-green-400">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-semibold text-gray-700 mb-1">Peso NETO (Bruto - Tara)</p>
-                            <p class="text-xs text-gray-500">Se calculará automáticamente</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-4xl font-bold text-green-700" id="peso_neto">0.00</p>
-                            <p class="text-sm text-green-600 font-semibold" id="unidad_display">kg</p>
-                        </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <!-- Humedad -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-tint text-blue-600 mr-1"></i>
+                            Humedad (%)
+                        </label>
+                        <input type="number"
+                               name="humedad"
+                               step="0.1"
+                               placeholder="Ej: 10.3"
+                               class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-blue-600">
                     </div>
-                </div>
 
-                <!-- Porcentaje de Tara -->
-                <div id="tara_info" class="mt-4 p-4 rounded-lg border-2 hidden">
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm font-semibold">% Tara:</span>
-                        <span id="porcentaje_tara" class="text-lg font-bold"></span>
+                    <!-- Fila/Ubicación -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-layer-group text-blue-600 mr-1"></i>
+                            Fila / Ubicación
+                        </label>
+                        <input type="text"
+                               name="fila"
+                               placeholder="Ej: Fila 1, Nivel A"
+                               class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-blue-600">
                     </div>
                 </div>
             </div>
 
-            <!-- Información Adicional -->
-            <div class="bg-gray-50 p-6 rounded-lg">
-                <h2 class="text-xl font-semibold mb-6">Información Adicional</h2>
+            <!-- Análisis de Calidad -->
+            <div class="border-l-4 border-amber-500 bg-amber-50 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                    <i class="fas fa-chart-bar text-amber-600"></i>
+                    Análisis de Calidad
+                </h2>
+
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <!-- b/15 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">b/15</label>
+                        <input type="number"
+                               name="rendimiento_b15"
+                               step="0.01"
+                               placeholder="0.00"
+                               class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-amber-500">
+                    </div>
+
+                    <!-- Defectos -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Defectos</label>
+                        <input type="number"
+                               name="defectos"
+                               step="0.01"
+                               placeholder="0.00"
+                               class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-amber-500">
+                    </div>
+
+                    <!-- RB -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">RB</label>
+                        <input type="number"
+                               name="rb"
+                               step="0.0001"
+                               placeholder="0.0000"
+                               class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-amber-500">
+                    </div>
+
+                    <!-- RN -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">RN</label>
+                        <input type="number"
+                               name="rn"
+                               step="0.0001"
+                               placeholder="0.0000"
+                               class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-amber-500">
+                    </div>
+
+                    <!-- Score -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Score</label>
+                        <input type="number"
+                               name="score"
+                               step="0.01"
+                               min="0"
+                               max="100"
+                               placeholder="86.00"
+                               class="w-full px-3 py-2 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-amber-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calidad de Taza y Cualidades -->
+            <div class="border-l-4 border-purple-500 bg-purple-50 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                    <i class="fas fa-mug-hot text-purple-600"></i>
+                    Calidad de Taza
+                </h2>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Taza -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Proveedor</label>
-                        <input type="text" name="proveedor" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-certificate text-purple-600 mr-1"></i>
+                            Calidad de Taza
+                        </label>
+                        <select name="taza"
+                                class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-purple-600">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="SANA LIMPIA">Sana Limpia</option>
+                            <option value="LIMPIA">Limpia</option>
+                            <option value="REGULAR">Regular</option>
+                            <option value="DEFECTUOSA">Defectuosa</option>
+                        </select>
                     </div>
+
+                    <!-- Proveedor -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Fecha de Ingreso</label>
-                        <input type="datetime-local" name="fecha_ingreso" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Humedad (%)</label>
-                        <input type="number" step="0.01" name="humedad" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Número de Sacos</label>
-                        <input type="number" name="numero_sacos" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-user text-purple-600 mr-1"></i>
+                            Proveedor
+                        </label>
+                        <input type="text"
+                               name="proveedor"
+                               placeholder="Nombre del proveedor"
+                               class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-purple-600">
                     </div>
                 </div>
+
+                <!-- Cualidades -->
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-star text-purple-600 mr-1"></i>
+                        Cualidades (sabores, aromas)
+                    </label>
+                    <textarea name="cualidades"
+                              rows="2"
+                              placeholder="Ej: CARAMELO, CHOCOLATE, CITRICO, NARANJA, NUEZ, FRUTOS ROJOS, MIEL, FLORAL"
+                              class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-purple-600"></textarea>
+                </div>
             </div>
+
+            <!-- Pesos (oculto, se calcula automáticamente desde quintales) -->
+            <input type="hidden" name="peso_bruto" id="peso_bruto" value="0">
+            <input type="hidden" name="tara" value="0">
+            <input type="hidden" name="unidad_medida" value="qq">
 
             <!-- Observaciones -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Observaciones</label>
-                <textarea name="observaciones" rows="3" class="w-full px-4 py-2 rounded-lg border border-gray-300"></textarea>
+            <div class="bg-gray-50 p-6 rounded-lg">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-sticky-note text-gray-600 mr-1"></i>
+                    Observaciones
+                </label>
+                <textarea name="observaciones"
+                          rows="2"
+                          placeholder="Notas adicionales..."
+                          class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:ring-2 focus:ring-gray-500"></textarea>
             </div>
 
             <!-- Botones -->
             <div class="flex gap-3 pt-6 border-t">
-                <a href="{% url 'detalle_partida' partida.pk %}" 
+                <a href="{% url 'detalle_partida' partida.pk %}"
                    class="flex-1 px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 text-center font-medium">
-                    Cancelar
+                    <i class="fas fa-times mr-2"></i>Cancelar
                 </a>
-                <button type="submit" 
-                        class="flex-1 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium">
-                    Agregar Sub-Partida
+                <button type="submit"
+                        class="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">
+                    <i class="fas fa-plus mr-2"></i>Agregar Lote
                 </button>
             </div>
         </form>
@@ -254,71 +293,15 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    function calc(expr) {
-        if (!expr) return 0;
-        try {
-            expr = expr.replace(/x/gi, '*').replace(/\s/g, '');
-            return parseFloat(Function('return ' + expr)().toFixed(2));
-        } catch {
-            return 0;
-        }
-    }
-    
-    function setup(opId, resId) {
-        const op = document.getElementById(opId);
-        const res = document.getElementById(resId);
-        if (!op || !res) return;
-        op.addEventListener('input', function() {
-            res.value = calc(this.value);
-            res.dispatchEvent(new Event('input'));
-        });
-    }
-    
-    setup('op_peso_bruto', 'peso_bruto');
-    setup('op_tara', 'tara');
-    
-    function calcularPesoNeto() {
-        const bruto = parseFloat(document.getElementById('peso_bruto').value) || 0;
-        const tara = parseFloat(document.getElementById('tara').value) || 0;
-        const unidad = document.getElementById('unidad_medida').value;
-        const neto = bruto - tara;
-        
-        document.getElementById('peso_neto').textContent = neto.toFixed(2);
-        document.getElementById('unidad_display').textContent = unidad;
-        
-        // Porcentaje de tara
-        if (bruto > 0) {
-            const porcentaje = (tara / bruto) * 100;
-            const taraInfo = document.getElementById('tara_info');
-            const porcentajeTara = document.getElementById('porcentaje_tara');
-            
-            taraInfo.classList.remove('hidden');
-            porcentajeTara.textContent = porcentaje.toFixed(2) + '%';
-            
-            // Colores según porcentaje
-            taraInfo.classList.remove('border-green-400', 'bg-green-50', 'border-yellow-400', 'bg-yellow-50', 'border-red-400', 'bg-red-50');
-            porcentajeTara.classList.remove('text-green-700', 'text-yellow-700', 'text-red-700');
-            
-            if (porcentaje < 5) {
-                taraInfo.classList.add('border-green-400', 'bg-green-50');
-                porcentajeTara.classList.add('text-green-700');
-            } else if (porcentaje <= 10) {
-                taraInfo.classList.add('border-yellow-400', 'bg-yellow-50');
-                porcentajeTara.classList.add('text-yellow-700');
-            } else {
-                taraInfo.classList.add('border-red-400', 'bg-red-50');
-                porcentajeTara.classList.add('text-red-700');
-            }
-        } else {
-            document.getElementById('tara_info').classList.add('hidden');
-        }
-    }
-    
-    document.getElementById('peso_bruto').addEventListener('input', calcularPesoNeto);
-    document.getElementById('tara').addEventListener('input', calcularPesoNeto);
-    document.getElementById('unidad_medida').addEventListener('change', calcularPesoNeto);
-    
-    calcularPesoNeto();
+    // Cuando cambian los quintales, actualizar el peso bruto (1 qq = 46 kg)
+    const quintalesInput = document.getElementById('quintales');
+    const pesoBrutoInput = document.getElementById('peso_bruto');
+
+    quintalesInput.addEventListener('input', function() {
+        const qq = parseFloat(this.value) || 0;
+        const kg = qq * 46; // 1 quintal = 46 kg
+        pesoBrutoInput.value = kg.toFixed(2);
+    });
 });
 </script>
 {% endblock %}

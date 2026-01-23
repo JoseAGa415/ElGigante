@@ -1889,23 +1889,58 @@ class Partida(models.Model):
 
 
 class SubPartida(models.Model):
-    """Sub-Partida - Entrada individual dentro de una partida"""
-    
+    """Sub-Partida - Entrada individual dentro de una partida (Lote de Punto)"""
+
+    # Opciones para tipo de proceso
+    TIPO_PROCESO_CHOICES = [
+        ('LAVADO', 'Lavado'),
+        ('NATURAL', 'Natural'),
+        ('HONEY', 'Honey'),
+        ('LADADO', 'Ladado'),
+        ('LAVADO 2 LATAS', 'Lavado 2 Latas'),
+    ]
+
+    # Opciones para calidad de taza
+    TAZA_CHOICES = [
+        ('SANA LIMPIA', 'Sana Limpia'),
+        ('LIMPIA', 'Limpia'),
+        ('REGULAR', 'Regular'),
+        ('DEFECTUOSA', 'Defectuosa'),
+    ]
+
     partida = models.ForeignKey(Partida, on_delete=models.CASCADE, related_name='subpartidas')
     numero_subpartida = models.CharField(max_length=50, unique=True, editable=False)
-    nombre = models.CharField(max_length=200)
-    
+    nombre = models.CharField(max_length=200, help_text="ID del lote (Ej: DELFINA / NANDO 3RAS)")
+
     # UBICACIÓN FÍSICA ⭐
     fila = models.CharField(max_length=50, blank=True, null=True, help_text="Fila en la percha")
-    
+
+    # Información del café
+    tipo_proceso = models.CharField(max_length=20, choices=TIPO_PROCESO_CHOICES, default='LAVADO', help_text="Tipo de proceso del café")
+    fecha_ingreso = models.DateField(blank=True, null=True, help_text="Fecha del lote")
+
+    # Pesos y cantidades
+    numero_sacos = models.IntegerField(default=1, help_text="Número de sacos")
+    quintales = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Cantidad en quintales (qq)")
     peso_bruto_kg = models.DecimalField(max_digits=10, decimal_places=2)
     tara_kg = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     peso_neto_kg = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
     unidad_medida = models.CharField(max_length=10, default='kg')
-    fecha_ingreso = models.DateTimeField(blank=True, null=True)
+    humedad = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, help_text="Porcentaje de humedad")
+
+    # Análisis de calidad (del Excel: b/15, DEFECTOS, RB, RN, SCORD)
+    rendimiento_b15 = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True, help_text="Rendimiento b/15")
+    defectos = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True, help_text="Porcentaje de defectos")
+    rb = models.DecimalField(max_digits=6, decimal_places=4, blank=True, null=True, help_text="RB")
+    rn = models.DecimalField(max_digits=6, decimal_places=4, blank=True, null=True, help_text="RN")
+    score = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, help_text="Puntaje de catación (SCORD)")
+
+    # Calidad de taza
+    taza = models.CharField(max_length=20, choices=TAZA_CHOICES, blank=True, null=True, help_text="Calidad de taza")
+    cualidades = models.TextField(blank=True, null=True, help_text="Cualidades del café (sabores, aromas)")
+
+    # Otros campos
     proveedor = models.CharField(max_length=200, blank=True, null=True)
-    numero_sacos = models.IntegerField(blank=True, null=True)
-    humedad = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     observaciones = models.TextField(blank=True, null=True)
     activo = models.BooleanField(default=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)

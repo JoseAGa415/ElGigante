@@ -3832,73 +3832,115 @@ def eliminar_partida(request, pk):
 
 @login_required
 def agregar_subpartida(request, partida_id):
+    """Agregar un Lote de Punto (SubPartida) a una Partida"""
     partida = get_object_or_404(Partida, pk=partida_id, activo=True)
-    
+
     if request.method == 'POST':
         try:
             with transaction.atomic():
                 subpartida = SubPartida()
                 subpartida.partida = partida
-                
-                # Nombre (obligatorio)
+
+                # ID del Lote / Nombre (obligatorio)
                 nombre = request.POST.get('nombre', '').strip()
                 if not nombre:
-                    raise ValueError("El nombre es obligatorio")
+                    raise ValueError("El ID del lote es obligatorio")
                 subpartida.nombre = nombre
-                
-                # UBICACIÓN (Fila) ⭐
-                fila = request.POST.get('fila', '').strip()
-                if fila:
-                    subpartida.fila = fila
-                
-                # Pesos (obligatorios)
-                peso_bruto = request.POST.get('peso_bruto')
-                if not peso_bruto:
-                    raise ValueError("El peso bruto es obligatorio")
-                
-                unidad = request.POST.get('unidad_medida', 'kg')
-                tara = request.POST.get('tara', '0')
-                
-                subpartida.peso_bruto_kg = SubPartida.convertir_a_kg(peso_bruto, unidad)
-                subpartida.tara_kg = SubPartida.convertir_a_kg(tara, unidad)
-                subpartida.unidad_medida = unidad
-                
-                # Campos opcionales
+
+                # Tipo de proceso
+                tipo_proceso = request.POST.get('tipo_proceso', 'LAVADO')
+                subpartida.tipo_proceso = tipo_proceso
+
+                # Fecha de ingreso
                 fecha_ingreso = request.POST.get('fecha_ingreso')
                 if fecha_ingreso:
                     subpartida.fecha_ingreso = fecha_ingreso
-                
-                proveedor = request.POST.get('proveedor', '').strip()
-                if proveedor:
-                    subpartida.proveedor = proveedor
-                
-                numero_sacos = request.POST.get('numero_sacos', '').strip()
-                if numero_sacos:
-                    subpartida.numero_sacos = int(numero_sacos)
-                
+
+                # Número de sacos (obligatorio)
+                numero_sacos = request.POST.get('numero_sacos', '1')
+                subpartida.numero_sacos = int(numero_sacos) if numero_sacos else 1
+
+                # Quintales (obligatorio)
+                quintales = request.POST.get('quintales', '0')
+                if not quintales or Decimal(quintales) <= 0:
+                    raise ValueError("Los quintales son obligatorios y deben ser mayores a 0")
+                subpartida.quintales = Decimal(quintales)
+
+                # Calcular peso en kg desde quintales (1 qq = 46 kg)
+                peso_bruto = request.POST.get('peso_bruto', '0')
+                if peso_bruto and Decimal(peso_bruto) > 0:
+                    subpartida.peso_bruto_kg = Decimal(peso_bruto)
+                else:
+                    subpartida.peso_bruto_kg = Decimal(quintales) * 46
+
+                tara = request.POST.get('tara', '0')
+                subpartida.tara_kg = Decimal(tara) if tara else Decimal('0')
+                subpartida.unidad_medida = 'qq'
+
+                # Humedad
                 humedad = request.POST.get('humedad', '').strip()
                 if humedad:
                     subpartida.humedad = Decimal(humedad)
-                
+
+                # UBICACIÓN (Fila)
+                fila = request.POST.get('fila', '').strip()
+                if fila:
+                    subpartida.fila = fila
+
+                # === Campos de Análisis de Calidad ===
+                rendimiento_b15 = request.POST.get('rendimiento_b15', '').strip()
+                if rendimiento_b15:
+                    subpartida.rendimiento_b15 = Decimal(rendimiento_b15)
+
+                defectos = request.POST.get('defectos', '').strip()
+                if defectos:
+                    subpartida.defectos = Decimal(defectos)
+
+                rb = request.POST.get('rb', '').strip()
+                if rb:
+                    subpartida.rb = Decimal(rb)
+
+                rn = request.POST.get('rn', '').strip()
+                if rn:
+                    subpartida.rn = Decimal(rn)
+
+                score = request.POST.get('score', '').strip()
+                if score:
+                    subpartida.score = Decimal(score)
+
+                # === Calidad de Taza ===
+                taza = request.POST.get('taza', '').strip()
+                if taza:
+                    subpartida.taza = taza
+
+                cualidades = request.POST.get('cualidades', '').strip()
+                if cualidades:
+                    subpartida.cualidades = cualidades
+
+                # Otros campos
+                proveedor = request.POST.get('proveedor', '').strip()
+                if proveedor:
+                    subpartida.proveedor = proveedor
+
                 subpartida.observaciones = request.POST.get('observaciones', '').strip()
                 subpartida.creado_por = request.user
-                
+
                 subpartida.save()
-                
+
                 ubicacion_msg = f" | Fila: {fila}" if fila else ""
-                
+
                 messages.success(
                     request,
-                    f'✅ Sub-partida agregada: {subpartida.numero_subpartida}{ubicacion_msg}'
+                    f'✅ Lote agregado: {subpartida.numero_subpartida} - {nombre}{ubicacion_msg}'
                 )
-                
+
                 return redirect('detalle_partida', pk=partida.pk)
-                
+
         except ValueError as ve:
             messages.error(request, f'❌ Error: {str(ve)}')
         except Exception as e:
             messages.error(request, f'❌ Error: {str(e)}')
-    
+
     context = {'partida': partida}
     return render(request, 'beneficio/partidas/agregar_subpartida.html', context)
 
