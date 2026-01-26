@@ -1908,6 +1908,14 @@ class SubPartida(models.Model):
         ('DEFECTUOSA', 'Defectuosa'),
     ]
 
+    # Opciones para estado de inventario
+    ESTADO_CHOICES = [
+        ('DISPONIBLE', 'Disponible'),
+        ('PARCIAL', 'Parcialmente Procesado'),
+        ('PROCESADO', 'Completamente Procesado'),
+        ('AGOTADO', 'Agotado'),
+    ]
+
     partida = models.ForeignKey(Partida, on_delete=models.CASCADE, related_name='subpartidas')
     numero_subpartida = models.CharField(max_length=50, unique=True, editable=False)
     nombre = models.CharField(max_length=200, help_text="ID del lote (Ej: DELFINA / NANDO 3RAS)")
@@ -1943,6 +1951,7 @@ class SubPartida(models.Model):
     proveedor = models.CharField(max_length=200, blank=True, null=True)
     observaciones = models.TextField(blank=True, null=True)
     activo = models.BooleanField(default=True)
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='DISPONIBLE', help_text="Estado de inventario")
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     creado_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='subpartidas_creadas')
     
@@ -2023,6 +2032,40 @@ class SubPartida(models.Model):
             return f"{base} → Fila {self.fila}"
         return base
 
+    # ==========================================
+    # PROPIEDADES DE TRAZABILIDAD DE INVENTARIO
+    # ==========================================
+
+    @property
+    def quintales_procesados(self):
+        """Suma de todos los movimientos de salida"""
+        from django.db.models import Sum
+        total = self.movimientos.aggregate(total=Sum('quintales_movidos'))['total']
+        return total or Decimal('0')
+
+    @property
+    def quintales_disponibles(self):
+        """Quintales restantes disponibles para procesar"""
+        return self.quintales - self.quintales_procesados
+
+    @property
+    def porcentaje_procesado(self):
+        """Porcentaje del lote que ha sido procesado"""
+        if self.quintales > 0:
+            return float((self.quintales_procesados / self.quintales) * 100)
+        return 0
+
+    def actualizar_estado(self):
+        """Actualiza el estado según la disponibilidad"""
+        disponibles = self.quintales_disponibles
+        if disponibles <= 0:
+            self.estado = 'AGOTADO'
+        elif disponibles < self.quintales:
+            self.estado = 'PARCIAL'
+        else:
+            self.estado = 'DISPONIBLE'
+        self.save(update_fields=['estado'])
+
 # ==========================================
 # SEÑALES PARA MANTENER SINCRONIZACIÓN
 # ==========================================
@@ -2040,6 +2083,108 @@ def actualizar_partida_on_delete(sender, instance, **kwargs):
     """Actualizar totales cuando se elimina una sub-partida"""
     if instance.partida:
         instance.partida.actualizar_totales()
+
+
+# =====================================================================
+# MODELO: MOVIMIENTO DE SUBPARTIDA (Trazabilidad de Inventario)
+# =====================================================================
+
+class MovimientoSubPartida(models.Model):
+    """Registra cada salida de peso desde una SubPartida hacia otro proceso"""
+
+    TIPO_DESTINO_CHOICES = [
+        ('PROCESADO', 'Procesado/Trilla'),
+        ('REPROCESO', 'Reproceso'),
+        ('MEZCLA', 'Mezcla'),
+        ('VENTA', 'Venta Directa'),
+        ('AJUSTE', 'Ajuste de Inventario'),
+    ]
+
+    subpartida = models.ForeignKey(
+        SubPartida,
+        on_delete=models.CASCADE,
+        related_name='movimientos',
+        help_text="SubPartida de origen"
+    )
+    tipo_destino = models.CharField(
+        max_length=20,
+        choices=TIPO_DESTINO_CHOICES,
+        help_text="Tipo de proceso destino"
+    )
+
+    # Referencias opcionales al destino (se llenan según tipo_destino)
+    procesado = models.ForeignKey(
+        'Procesado',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='movimientos_subpartida',
+        help_text="Procesado/Trilla destino"
+    )
+    reproceso = models.ForeignKey(
+        'Reproceso',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='movimientos_subpartida',
+        help_text="Reproceso destino"
+    )
+    mezcla = models.ForeignKey(
+        'Mezcla',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='movimientos_subpartida',
+        help_text="Mezcla destino"
+    )
+
+    # Cantidad movida
+    quintales_movidos = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="Cantidad en quintales (qq) movidos"
+    )
+
+    # Metadata
+    fecha = models.DateTimeField(auto_now_add=True)
+    observaciones = models.TextField(blank=True, null=True)
+    creado_por = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='movimientos_creados'
+    )
+
+    class Meta:
+        db_table = 'movimientos_subpartida'
+        verbose_name = 'Movimiento de SubPartida'
+        verbose_name_plural = 'Movimientos de SubPartidas'
+        ordering = ['-fecha']
+
+    def __str__(self):
+        destino = self.get_destino_display()
+        return f"{self.subpartida.numero_subpartida} → {self.quintales_movidos} qq → {destino}"
+
+    def get_destino_display(self):
+        """Retorna el destino formateado con referencia"""
+        if self.tipo_destino == 'PROCESADO' and self.procesado:
+            return f"Trilla {self.procesado.numero_trilla}"
+        elif self.tipo_destino == 'REPROCESO' and self.reproceso:
+            return f"Reproceso {self.reproceso.numero}"
+        elif self.tipo_destino == 'MEZCLA' and self.mezcla:
+            return f"Mezcla {self.mezcla.numero}"
+        return self.get_tipo_destino_display()
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Actualizar estado de la subpartida
+        self.subpartida.actualizar_estado()
+
+    def delete(self, *args, **kwargs):
+        subpartida = self.subpartida
+        super().delete(*args, **kwargs)
+        # Actualizar estado de la subpartida
+        subpartida.actualizar_estado()
 
 
 # =====================================================================

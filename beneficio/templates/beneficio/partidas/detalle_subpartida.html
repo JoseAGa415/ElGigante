@@ -43,6 +43,143 @@
             </div>
         </div>
 
+        <!-- Estado de Inventario y Trazabilidad -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 border-l-4 border-indigo-500">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-gray-900 flex items-center">
+                    <i class="fas fa-warehouse text-indigo-600 mr-2"></i>
+                    Estado de Inventario
+                </h2>
+                {% if subpartida.quintales_disponibles > 0 %}
+                <a href="{% url 'procesar_subpartida' subpartida.pk %}"
+                   class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium">
+                    <i class="fas fa-arrow-right mr-2"></i>Procesar
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Barra de Progreso -->
+            <div class="mb-6">
+                <div class="flex justify-between text-sm mb-2">
+                    <span class="text-gray-600">Progreso de procesamiento</span>
+                    <span class="font-bold
+                        {% if subpartida.porcentaje_procesado >= 100 %}text-green-600
+                        {% elif subpartida.porcentaje_procesado > 0 %}text-amber-600
+                        {% else %}text-gray-600{% endif %}">
+                        {{ subpartida.porcentaje_procesado|floatformat:1 }}%
+                    </span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                    <div class="h-4 rounded-full transition-all duration-500
+                        {% if subpartida.porcentaje_procesado >= 100 %}bg-green-500
+                        {% elif subpartida.porcentaje_procesado > 0 %}bg-amber-500
+                        {% else %}bg-gray-300{% endif %}"
+                         style="width: {{ subpartida.porcentaje_procesado|floatformat:0 }}%">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumen de Cantidades -->
+            <div class="grid grid-cols-3 gap-4 mb-6">
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <p class="text-sm text-gray-500 mb-1">Total</p>
+                    <p class="text-2xl font-bold text-gray-700">{{ subpartida.quintales|floatformat:2 }} qq</p>
+                </div>
+                <div class="text-center p-4 bg-amber-50 rounded-lg">
+                    <p class="text-sm text-gray-500 mb-1">Procesados</p>
+                    <p class="text-2xl font-bold text-amber-700">{{ subpartida.quintales_procesados|floatformat:2 }} qq</p>
+                </div>
+                <div class="text-center p-4 {% if subpartida.quintales_disponibles > 0 %}bg-green-50{% else %}bg-red-50{% endif %} rounded-lg">
+                    <p class="text-sm text-gray-500 mb-1">Disponibles</p>
+                    <p class="text-2xl font-bold {% if subpartida.quintales_disponibles > 0 %}text-green-700{% else %}text-red-700{% endif %}">
+                        {{ subpartida.quintales_disponibles|floatformat:2 }} qq
+                    </p>
+                </div>
+            </div>
+
+            <!-- Estado Badge -->
+            <div class="flex items-center gap-2">
+                <span class="text-sm text-gray-500">Estado:</span>
+                <span class="px-3 py-1 rounded-full text-sm font-bold
+                    {% if subpartida.estado == 'DISPONIBLE' %}bg-green-100 text-green-800
+                    {% elif subpartida.estado == 'PARCIAL' %}bg-amber-100 text-amber-800
+                    {% elif subpartida.estado == 'PROCESADO' %}bg-blue-100 text-blue-800
+                    {% else %}bg-red-100 text-red-800{% endif %}">
+                    {{ subpartida.get_estado_display }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Historial de Movimientos -->
+        {% if movimientos %}
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 border-l-4 border-cyan-500">
+            <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-history text-cyan-600 mr-2"></i>
+                Historial de Movimientos ({{ movimientos|length }})
+            </h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Cantidad</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Destino</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Referencia</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for mov in movimientos %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3 text-sm text-gray-600">
+                                {{ mov.fecha|date:"d/m/Y H:i" }}
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <span class="font-bold text-indigo-700">{{ mov.quintales_movidos|floatformat:2 }} qq</span>
+                            </td>
+                            <td class="px-4 py-3">
+                                <span class="px-2 py-1 rounded text-xs font-medium
+                                    {% if mov.tipo_destino == 'PROCESADO' %}bg-blue-100 text-blue-800
+                                    {% elif mov.tipo_destino == 'REPROCESO' %}bg-purple-100 text-purple-800
+                                    {% elif mov.tipo_destino == 'MEZCLA' %}bg-green-100 text-green-800
+                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    {{ mov.get_tipo_destino_display }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-sm">
+                                {% if mov.procesado %}
+                                <a href="{% url 'detalle_procesado' mov.procesado.pk %}" class="text-blue-600 hover:underline">
+                                    {{ mov.procesado.numero_trilla }}
+                                </a>
+                                {% elif mov.reproceso %}
+                                <a href="{% url 'detalle_reproceso' mov.reproceso.pk %}" class="text-purple-600 hover:underline">
+                                    Reproceso #{{ mov.reproceso.numero }}
+                                </a>
+                                {% elif mov.mezcla %}
+                                <a href="{% url 'detalle_mezcla' mov.mezcla.pk %}" class="text-green-600 hover:underline">
+                                    Mezcla #{{ mov.mezcla.numero }}
+                                </a>
+                                {% else %}
+                                <span class="text-gray-400">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <form method="post" action="{% url 'eliminar_movimiento' mov.pk %}" class="inline"
+                                      onsubmit="return confirm('¿Eliminar este movimiento? Los quintales volverán a estar disponibles.')">
+                                    {% csrf_token %}
+                                    <button type="submit" class="p-1.5 bg-red-100 text-red-700 rounded hover:bg-red-200" title="Eliminar">
+                                        <i class="fas fa-trash text-xs"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
         <!-- Información del Lote -->
         <div class="bg-white rounded-xl shadow-lg p-6 mb-8 border-l-4 border-green-500">
             <h2 class="text-xl font-bold text-gray-900 mb-6">

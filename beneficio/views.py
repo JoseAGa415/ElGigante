@@ -22,7 +22,7 @@ from .models import (
     Lote, Procesado, Reproceso, Mezcla, DetalleMezcla,
     Bodega, TipoCafe, Catacion, DefectoCatacion, Comprador, Compra,
     MantenimientoPlanta, HistorialMantenimiento, ReciboCafe, Partida, SubPartida,
-    Trabajador, PlanillaSemanal, RegistroDiario
+    Trabajador, PlanillaSemanal, RegistroDiario, MovimientoSubPartida
 )
 
 # ==========================================
@@ -4072,9 +4072,120 @@ def detalle_subpartida(request, pk):
     Ver detalle completo de una sub-partida
     """
     subpartida = get_object_or_404(SubPartida, pk=pk, activo=True)
+    movimientos = subpartida.movimientos.all().order_by('-fecha')
 
-    context = {'subpartida': subpartida}
+    context = {
+        'subpartida': subpartida,
+        'movimientos': movimientos,
+    }
     return render(request, 'beneficio/partidas/detalle_subpartida.html', context)
+
+
+# ==========================================
+# MOVIMIENTOS DE SUBPARTIDA (Trazabilidad)
+# ==========================================
+
+@login_required
+def procesar_subpartida(request, pk):
+    """
+    Crear un movimiento de salida desde una SubPartida hacia un proceso
+    """
+    subpartida = get_object_or_404(SubPartida, pk=pk, activo=True)
+
+    # Verificar que hay quintales disponibles
+    if subpartida.quintales_disponibles <= 0:
+        messages.error(request, '❌ Esta subpartida no tiene quintales disponibles para procesar')
+        return redirect('detalle_subpartida', pk=pk)
+
+    # Obtener procesados, reprocesos y mezclas disponibles para seleccionar
+    procesados = Procesado.objects.filter(finalizado=False).order_by('-fecha')
+    reprocesos = Reproceso.objects.all().order_by('-fecha')[:50]
+    mezclas = Mezcla.objects.all().order_by('-fecha')[:50]
+
+    if request.method == 'POST':
+        try:
+            tipo_destino = request.POST.get('tipo_destino')
+            quintales_str = request.POST.get('quintales_movidos', '0')
+            observaciones = request.POST.get('observaciones', '')
+
+            # Validar quintales
+            try:
+                quintales_movidos = Decimal(quintales_str)
+            except:
+                messages.error(request, '❌ Cantidad de quintales inválida')
+                return redirect('procesar_subpartida', pk=pk)
+
+            if quintales_movidos <= 0:
+                messages.error(request, '❌ La cantidad debe ser mayor a 0')
+                return redirect('procesar_subpartida', pk=pk)
+
+            if quintales_movidos > subpartida.quintales_disponibles:
+                messages.error(
+                    request,
+                    f'❌ Solo hay {subpartida.quintales_disponibles:.2f} qq disponibles'
+                )
+                return redirect('procesar_subpartida', pk=pk)
+
+            # Crear el movimiento
+            movimiento = MovimientoSubPartida(
+                subpartida=subpartida,
+                tipo_destino=tipo_destino,
+                quintales_movidos=quintales_movidos,
+                observaciones=observaciones,
+                creado_por=request.user
+            )
+
+            # Asignar referencia según tipo de destino
+            if tipo_destino == 'PROCESADO':
+                procesado_id = request.POST.get('procesado_id')
+                if procesado_id:
+                    movimiento.procesado_id = procesado_id
+            elif tipo_destino == 'REPROCESO':
+                reproceso_id = request.POST.get('reproceso_id')
+                if reproceso_id:
+                    movimiento.reproceso_id = reproceso_id
+            elif tipo_destino == 'MEZCLA':
+                mezcla_id = request.POST.get('mezcla_id')
+                if mezcla_id:
+                    movimiento.mezcla_id = mezcla_id
+
+            movimiento.save()
+
+            messages.success(
+                request,
+                f'✅ Movimiento registrado: {quintales_movidos:.2f} qq hacia {movimiento.get_tipo_destino_display()}'
+            )
+            return redirect('detalle_subpartida', pk=pk)
+
+        except Exception as e:
+            messages.error(request, f'❌ Error al registrar movimiento: {str(e)}')
+
+    context = {
+        'subpartida': subpartida,
+        'procesados': procesados,
+        'reprocesos': reprocesos,
+        'mezclas': mezclas,
+        'tipos_destino': MovimientoSubPartida.TIPO_DESTINO_CHOICES,
+    }
+    return render(request, 'beneficio/partidas/procesar_subpartida.html', context)
+
+
+@login_required
+def eliminar_movimiento(request, pk):
+    """
+    Eliminar un movimiento de SubPartida
+    """
+    movimiento = get_object_or_404(MovimientoSubPartida, pk=pk)
+    subpartida_pk = movimiento.subpartida.pk
+
+    if request.method == 'POST':
+        try:
+            movimiento.delete()
+            messages.success(request, '✅ Movimiento eliminado correctamente')
+        except Exception as e:
+            messages.error(request, f'❌ Error al eliminar: {str(e)}')
+
+    return redirect('detalle_subpartida', pk=subpartida_pk)
 
 
 # ==========================================

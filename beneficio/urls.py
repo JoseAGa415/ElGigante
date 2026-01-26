@@ -103,11 +103,15 @@ urlpatterns = [
     path('partidas/<int:pk>/editar/', views.editar_partida, name='editar_partida'),
     path('partidas/<int:pk>/eliminar/', views.eliminar_partida, name='eliminar_partida'),
 
-# SUB-PARTIDAS
-path('partidas/<int:partida_id>/agregar/', views.agregar_subpartida, name='agregar_subpartida'),
-path('subpartidas/<int:pk>/', views.detalle_subpartida, name='detalle_subpartida'),
-path('subpartidas/<int:pk>/editar/', views.editar_subpartida, name='editar_subpartida'),
-path('subpartidas/<int:pk>/eliminar/', views.eliminar_subpartida, name='eliminar_subpartida'),
+    # SUB-PARTIDAS
+    path('partidas/<int:partida_id>/agregar/', views.agregar_subpartida, name='agregar_subpartida'),
+    path('subpartidas/<int:pk>/', views.detalle_subpartida, name='detalle_subpartida'),
+    path('subpartidas/<int:pk>/editar/', views.editar_subpartida, name='editar_subpartida'),
+    path('subpartidas/<int:pk>/eliminar/', views.eliminar_subpartida, name='eliminar_subpartida'),
+
+    # MOVIMIENTOS DE SUBPARTIDA (Trazabilidad de Inventario)
+    path('subpartidas/<int:pk>/procesar/', views.procesar_subpartida, name='procesar_subpartida'),
+    path('movimientos/<int:pk>/eliminar/', views.eliminar_movimiento, name='eliminar_movimiento'),
 
     # ========== BENEFICIADO FINCA (Solo Administradores) ==========
     # Trabajadores
