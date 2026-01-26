@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Agregar Compra a {{ comprador.nombre }}{% endblock %}
+{% block title %}Agregar Compra a {{ proveedor.nombre }}{% endblock %}
 
 {% block content %}
 <div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
@@ -17,7 +17,7 @@
                 </h1>
                 <p class="mt-2 text-lg text-gray-600">
                     Registrando una nueva venta para: 
-                    <strong class="text-amber-700">{{ comprador.nombre }}</strong>
+                    <strong class="text-amber-700">{{ proveedor.nombre }}</strong>
                 </p>
             </div>
 
@@ -236,7 +236,7 @@
             
             <!-- Botones de Acción -->
             <div class="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t">
-                <a href="{% url 'detalle_comprador' comprador.pk %}" 
+                <a href="{% url 'detalle_proveedor' proveedor.pk %}" 
                    class="px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium text-gray-700 text-center">
                     <i class="fas fa-times mr-2"></i>
                     Cancelar

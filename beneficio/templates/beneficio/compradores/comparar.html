@@ -15,10 +15,10 @@
                         <h1 class="text-3xl font-bold text-gray-900">Comparar Compradores</h1>
                     </div>
                     <p class="text-gray-600">
-                        Selecciona los compradores que deseas comparar
+                        Selecciona los proveedores que deseas comparar
                     </p>
                 </div>
-                <a href="{% url 'lista_compradores' %}"
+                <a href="{% url 'lista_proveedores' %}"
                    class="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition font-medium">
                     <i class="fas fa-arrow-left mr-2"></i>
                     Volver
@@ -36,8 +36,8 @@
                     <div>
                         <p class="font-medium text-blue-900">Instrucciones:</p>
                         <ul class="text-sm text-blue-800 mt-2 space-y-1">
-                            <li>• Selecciona los compradores marcando las casillas</li>
-                            <li>• Puedes seleccionar entre 2 y 10 compradores</li>
+                            <li>• Selecciona los proveedores marcando las casillas</li>
+                            <li>• Puedes seleccionar entre 2 y 10 proveedores</li>
                             <li>• Haz clic en "Comparar Seleccionados" para ver la comparación</li>
                         </ul>
                     </div>
@@ -59,7 +59,7 @@
                             Deseleccionar Todos
                         </button>
                         <span id="contador" class="text-sm text-gray-600 font-medium">
-                            0 compradores seleccionados
+                            0 proveedores seleccionados
                         </span>
                     </div>
                     <button type="submit"
@@ -73,17 +73,17 @@
 
             <!-- Lista de Compradores -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {% for comprador in compradores %}
+                {% for proveedor in proveedores %}
                 <label class="cursor-pointer">
-                    <input type="checkbox" name="compradores" value="{{ comprador.id }}"
-                           class="hidden checkbox-comprador"
+                    <input type="checkbox" name="proveedores" value="{{ proveedor.id }}"
+                           class="hidden checkbox-proveedor"
                            onchange="actualizarContador()">
                     <div class="bg-white rounded-lg shadow hover:shadow-lg transition-all p-4 border-2 border-transparent checkbox-card">
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex-1">
-                                <h3 class="font-bold text-gray-900 text-lg">{{ comprador.nombre }}</h3>
-                                {% if comprador.empresa %}
-                                <p class="text-sm text-gray-600">{{ comprador.empresa }}</p>
+                                <h3 class="font-bold text-gray-900 text-lg">{{ proveedor.nombre }}</h3>
+                                {% if proveedor.empresa %}
+                                <p class="text-sm text-gray-600">{{ proveedor.empresa }}</p>
                                 {% endif %}
                             </div>
                             <div class="flex-shrink-0 ml-3">
@@ -96,11 +96,11 @@
                         <div class="space-y-2 text-sm">
                             <div class="flex items-center justify-between">
                                 <span class="text-gray-600">Total Compras:</span>
-                                <span class="font-semibold text-gray-900">{{ comprador.total_compras|default:0 }}</span>
+                                <span class="font-semibold text-gray-900">{{ proveedor.total_compras|default:0 }}</span>
                             </div>
                             <div class="flex items-center justify-between">
                                 <span class="text-gray-600">Monto Total:</span>
-                                <span class="font-semibold text-amber-600">Q{{ comprador.monto_total|default:0|floatformat:2 }}</span>
+                                <span class="font-semibold text-amber-600">Q{{ proveedor.monto_total|default:0|floatformat:2 }}</span>
                             </div>
                         </div>
                     </div>
@@ -108,7 +108,7 @@
                 {% empty %}
                 <div class="col-span-full text-center py-12">
                     <i class="fas fa-users text-gray-300 text-6xl mb-4"></i>
-                    <p class="text-gray-500 text-lg">No hay compradores activos disponibles</p>
+                    <p class="text-gray-500 text-lg">No hay proveedores activos disponibles</p>
                 </div>
                 {% endfor %}
             </div>
@@ -119,18 +119,18 @@
 
 <script>
 function actualizarContador() {
-    const checkboxes = document.querySelectorAll('.checkbox-comprador:checked');
+    const checkboxes = document.querySelectorAll('.checkbox-proveedor:checked');
     const contador = document.getElementById('contador');
     const btnComparar = document.getElementById('btnComparar');
     const count = checkboxes.length;
 
-    contador.textContent = `${count} comprador${count !== 1 ? 'es' : ''} seleccionado${count !== 1 ? 's' : ''}`;
+    contador.textContent = `${count} proveedor${count !== 1 ? 'es' : ''} seleccionado${count !== 1 ? 's' : ''}`;
 
     // Habilitar botón si hay al menos 1 seleccionado
     btnComparar.disabled = count < 1;
 
     // Actualizar estilos de las tarjetas
-    document.querySelectorAll('.checkbox-comprador').forEach(checkbox => {
+    document.querySelectorAll('.checkbox-proveedor').forEach(checkbox => {
         const card = checkbox.nextElementSibling;
         const icon = card.querySelector('.checkbox-icon');
         const checkMark = card.querySelector('.check-mark');
@@ -152,14 +152,14 @@ function actualizarContador() {
 }
 
 function seleccionarTodos() {
-    document.querySelectorAll('.checkbox-comprador').forEach(checkbox => {
+    document.querySelectorAll('.checkbox-proveedor').forEach(checkbox => {
         checkbox.checked = true;
     });
     actualizarContador();
 }
 
 function deseleccionarTodos() {
-    document.querySelectorAll('.checkbox-comprador').forEach(checkbox => {
+    document.querySelectorAll('.checkbox-proveedor').forEach(checkbox => {
         checkbox.checked = false;
     });
     actualizarContador();
@@ -167,10 +167,10 @@ function deseleccionarTodos() {
 
 // Prevenir envío si no hay selección
 document.getElementById('formComparar').addEventListener('submit', function(e) {
-    const checkboxes = document.querySelectorAll('.checkbox-comprador:checked');
+    const checkboxes = document.querySelectorAll('.checkbox-proveedor:checked');
     if (checkboxes.length < 1) {
         e.preventDefault();
-        alert('Debes seleccionar al menos un comprador');
+        alert('Debes seleccionar al menos un proveedor');
     }
 });
 </script>

@@ -15,16 +15,16 @@
                         <h1 class="text-3xl font-bold text-gray-900">Comparación de Compradores</h1>
                     </div>
                     <p class="text-gray-600">
-                        Comparando {{ total_compradores }} comprador{{ total_compradores|pluralize:"es" }}
+                        Comparando {{ total_proveedores }} proveedor{{ total_proveedores|pluralize:"es" }}
                     </p>
                 </div>
                 <div class="flex gap-3">
-                    <a href="{% url 'comparar_compradores' %}"
+                    <a href="{% url 'comparar_proveedores' %}"
                        class="px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition font-medium">
                         <i class="fas fa-redo mr-2"></i>
                         Nueva Comparación
                     </a>
-                    <a href="{% url 'lista_compradores' %}"
+                    <a href="{% url 'lista_proveedores' %}"
                        class="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition font-medium">
                         <i class="fas fa-arrow-left mr-2"></i>
                         Volver
@@ -44,9 +44,9 @@
                             <i class="fas fa-user text-2xl"></i>
                         </div>
                         <div class="flex-1">
-                            <h2 class="text-xl font-bold">{{ data.comprador.nombre }}</h2>
-                            {% if data.comprador.empresa %}
-                            <p class="text-sm text-white text-opacity-90">{{ data.comprador.empresa }}</p>
+                            <h2 class="text-xl font-bold">{{ data.proveedor.nombre }}</h2>
+                            {% if data.proveedor.empresa %}
+                            <p class="text-sm text-white text-opacity-90">{{ data.proveedor.empresa }}</p>
                             {% endif %}
                         </div>
                     </div>
@@ -134,7 +134,7 @@
 
                     <!-- Botón Ver Detalles -->
                     <div class="mt-6">
-                        <a href="{% url 'detalle_comprador' data.comprador.pk %}"
+                        <a href="{% url 'detalle_proveedor' data.proveedor.pk %}"
                            class="block w-full text-center px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:from-amber-600 hover:to-orange-600 transition font-medium">
                             <i class="fas fa-eye mr-2"></i>
                             Ver Detalles Completos
@@ -160,7 +160,7 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="text-center p-4 bg-gray-50 rounded-lg">
                     <div class="text-2xl font-bold text-gray-900">
-                        {{ total_compradores }}
+                        {{ total_proveedores }}
                     </div>
                     <div class="text-sm text-gray-600 mt-1">Compradores Comparados</div>
                 </div>

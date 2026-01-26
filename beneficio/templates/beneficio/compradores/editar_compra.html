@@ -17,7 +17,7 @@
                 </h1>
                 <p class="mt-2 text-lg text-gray-600">
                     Modificando la compra de: 
-                    <strong class="text-amber-700">{{ compra.comprador.nombre }}</strong>
+                    <strong class="text-amber-700">{{ compra.proveedor.nombre }}</strong>
                 </p>
             </div>
 
@@ -199,7 +199,7 @@
             </div>
             
             <div class="flex justify-end space-x-4 pt-6 border-t">
-                <a href="{% url 'detalle_comprador' compra.comprador.pk %}" 
+                <a href="{% url 'detalle_proveedor' compra.proveedor.pk %}" 
                    class="px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium text-gray-700">
                     Cancelar
                 </a>

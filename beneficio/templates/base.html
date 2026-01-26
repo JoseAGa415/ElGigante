@@ -247,7 +247,7 @@
 
                 {% if user.is_superuser %}
                 <a href="{% url 'lista_compradores' %}" class="block px-6 py-3 sidebar-hover {% if request.resolver_match.url_name == 'lista_compradores' %}active{% endif %}">
-                    <i class="fas fa-handshake mr-3"></i>Compradores
+                    <i class="fas fa-handshake mr-3"></i>Proveedores
                 </a>
 
                 <a href="{% url 'lista_compras' %}" class="block px-6 py-3 sidebar-hover {% if request.resolver_match.url_name == 'lista_compras' %}active{% endif %}">

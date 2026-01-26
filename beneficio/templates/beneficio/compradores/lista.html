@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Gestión de Compradores{% endblock %}
+{% block title %}Gestión de Proveedores{% endblock %}
 
 {% block content %}
 <div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
@@ -12,21 +12,21 @@
                 <div>
                     <h1 class="text-4xl font-bold text-gray-900 flex items-center gap-3">
                         <span class="bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-                            <i class="fas fa-handshake"></i> Gestión de Compradores
+                            <i class="fas fa-handshake"></i> Gestión de Proveedores
                         </span>
                     </h1>
-                    <p class="mt-2 text-gray-600">Administra tus clientes y compradores de café</p>
+                    <p class="mt-2 text-gray-600">Administra tus proveedores de café</p>
                 </div>
                 <div class="flex gap-3">
                     <a href="{% url 'comparar_compradores' %}"
                        class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg shadow-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-semibold">
                         <i class="fas fa-balance-scale mr-2"></i>
-                        Comparar Compradores
+                        Comparar Proveedores
                     </a>
                     <a href="{% url 'crear_comprador' %}"
                        class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg shadow-lg hover:from-amber-700 hover:to-orange-700 transition-all duration-300 font-semibold">
                         <i class="fas fa-plus mr-2"></i>
-                        Nuevo Comprador
+                        Nuevo Proveedor
                     </a>
                 </div>
             </div>
@@ -76,7 +76,7 @@
                     <thead class="bg-gradient-to-r from-amber-600 to-orange-600">
                         <tr>
                             <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
-                                Comprador
+                                Proveedor
                             </th>
                             <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
                                 Contacto
@@ -96,26 +96,26 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        {% for comprador in compradores %}
+                        {% for proveedor in compradores %}
                         <tr class="hover:bg-amber-50 transition-colors">
                             <td class="px-6 py-4">
                                 <div class="text-sm font-medium text-gray-900">
-                                    {{ comprador.nombre }}
+                                    {{ proveedor.nombre }}
                                 </div>
                                 <div class="text-xs text-gray-500">
-                                    {{ comprador.empresa|default:"" }}
+                                    {{ proveedor.empresa|default:"" }}
                                 </div>
                             </td>
                             <td class="px-6 py-4">
                                 <div class="text-sm text-gray-900">
-                                    {{ comprador.telefono|default:"Sin teléfono" }}
+                                    {{ proveedor.telefono|default:"Sin teléfono" }}
                                 </div>
                                 <div class="text-xs text-gray-500">
-                                    {{ comprador.email|default:"Sin email" }}
+                                    {{ proveedor.email|default:"Sin email" }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                {% if comprador.activo %}
+                                {% if proveedor.activo %}
                                 <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                     ✓ Activo
                                 </span>
@@ -127,16 +127,16 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-semibold text-gray-900">
-                                    {{ comprador.num_compras }}
+                                    {{ proveedor.num_compras }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-bold text-green-600">
-                                    Q{{ comprador.total_comprado|floatformat:2 }}
+                                    Q{{ proveedor.total_comprado|floatformat:2 }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <a href="{% url 'detalle_comprador' comprador.pk %}" 
+                                <a href="{% url 'detalle_comprador' proveedor.pk %}" 
                                    class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs">
                                     <i class="fas fa-eye mr-2"></i>Ver Detalles
                                 </a>
@@ -147,8 +147,8 @@
                             <td colspan="6" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center justify-center text-gray-500">
                                     <i class="fas fa-users text-4xl mb-3"></i>
-                                    <p class="text-lg font-medium">No hay compradores registrados</p>
-                                    <p class="text-sm mt-1">Crea un nuevo comprador para empezar</p>
+                                    <p class="text-lg font-medium">No hay proveedores registrados</p>
+                                    <p class="text-sm mt-1">Crea un nuevo proveedor para empezar</p>
                                 </div>
                             </td>
                         </tr>
