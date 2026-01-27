@@ -97,7 +97,7 @@
                                     Bodega
                                 </p>
                                 <p class="text-xl font-bold text-gray-900">
-                                    Bodega #{{ partida.bodega.id }}
+                                    {{ partida.bodega.get_codigo_display }}
                                 </p>
                             </div>
                             {% endif %}
@@ -126,7 +126,7 @@
                                 Ubicación Completa
                             </p>
                             <p class="text-lg font-semibold text-blue-900">
-                                {% if partida.bodega %}Bodega #{{ partida.bodega.id }}{% endif %}
+                                {% if partida.bodega %}{{ partida.bodega.get_codigo_display }}{% endif %}
                                 {% if partida.bodega and partida.percha %} → {% endif %}
                                 {% if partida.percha %}{{ partida.percha }}{% endif %}
                             </p>
