@@ -1602,7 +1602,7 @@ def lista_compradores(request):
     ).order_by('nombre')
     
     context = {
-        'compradores': compradores,
+        'proveedores': compradores,  # Template usa 'proveedores'
     }
     return render(request, 'beneficio/compradores/lista.html', context)
 
@@ -1656,8 +1656,8 @@ def detalle_comprador(request, pk):
     )
     
     context = {
-        'comprador': comprador,
-        'compras': compras.order_by('-fecha_compra'), 
+        'proveedor': comprador,  # Template usa 'proveedor'
+        'compras': compras.order_by('-fecha_compra'),
         'total_compras': estadisticas_filtradas['total_compras'] or 0,
         'cantidad_total': estadisticas_filtradas['cantidad_total'] or 0,
         'monto_total': estadisticas_filtradas['monto_total'] or 0,
@@ -1685,7 +1685,7 @@ def editar_comprador(request, pk):
             messages.error(request, f'Error al actualizar comprador: {str(e)}')
     
     context = {
-        'comprador': comprador,
+        'proveedor': comprador,  # Template usa 'proveedor'
     }
     return render(request, 'beneficio/compradores/editar.html', context)
 
@@ -1701,14 +1701,14 @@ def eliminar_comprador(request, pk):
         return redirect('lista_compradores')
     
     context = {
-        'comprador': comprador,
+        'proveedor': comprador,  # Template usa 'proveedor'
     }
     return render(request, 'beneficio/compradores/eliminar.html', context)
 
 @login_required
-def agregar_compra(request, comprador_id):
+def agregar_compra(request, pk):
     """Agregar nueva compra a un comprador"""
-    comprador = get_object_or_404(Comprador, pk=comprador_id)
+    comprador = get_object_or_404(Comprador, pk=pk)
     
     if request.method == 'POST':
         try:
@@ -1751,7 +1751,7 @@ def agregar_compra(request, comprador_id):
             messages.error(request, f'Error al agregar compra: {str(e)}')
     
     context = {
-        'comprador': comprador,
+        'proveedor': comprador,  # Template usa 'proveedor'
         'lotes': Lote.objects.filter(activo=True),
         'procesados': Procesado.objects.all(),
         'mezclas': Mezcla.objects.all(),
@@ -1857,7 +1857,7 @@ def lista_compras(request):
     
     context = {
         'compras': compras,
-        'compradores': Comprador.objects.filter(activo=True),
+        'proveedores': Comprador.objects.filter(activo=True),  # Template usa 'proveedores'
         'estadisticas': estadisticas,
     }
     return render(request, 'beneficio/compradores/lista_compras.html', context)
@@ -1908,7 +1908,7 @@ def comparar_compradores(request):
                     peso_total_kg += cantidad
 
             comparacion_data.append({
-                'comprador': comprador,
+                'proveedor': comprador,  # Template usa 'proveedor'
                 'total_compras': stats['total_compras'] or 0,
                 'total_cantidad': stats['total_cantidad'] or 0,
                 'total_monto': stats['total_monto'] or 0,
@@ -1925,7 +1925,7 @@ def comparar_compradores(request):
 
         context = {
             'comparacion_data': comparacion_data,
-            'total_compradores': len(comparacion_data),
+            'total_proveedores': len(comparacion_data),  # Template usa 'total_proveedores'
             'total_compras_suma': total_compras_suma,
             'total_peso_qq_suma': total_peso_qq_suma,
             'total_monto_suma': total_monto_suma,
@@ -1940,7 +1940,7 @@ def comparar_compradores(request):
     ).order_by('-monto_total')
 
     context = {
-        'compradores': compradores,
+        'proveedores': compradores,  # Template usa 'proveedores'
     }
 
     return render(request, 'beneficio/compradores/comparar.html', context)
