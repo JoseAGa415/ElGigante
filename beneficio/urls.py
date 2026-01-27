@@ -54,23 +54,17 @@ urlpatterns = [
     path('cataciones/<int:pk>/eliminar/', views.eliminar_catacion, name='eliminar_catacion'),
     path('cataciones/<int:pk>/imprimir/', views.imprimir_catacion, name='imprimir_catacion'),
 
-    # Compradores/Proveedores y Compras
+    # Compradores y Compras
     path('compradores/', views.lista_compradores, name='lista_compradores'),
-    path('compradores/', views.lista_compradores, name='lista_proveedores'),  # Alias
     path('compradores/crear/', views.crear_comprador, name='crear_comprador'),
-    path('compradores/crear/', views.crear_comprador, name='crear_proveedor'),  # Alias
     path('compradores/comparar/', views.comparar_compradores, name='comparar_compradores'),
-    path('compradores/comparar/', views.comparar_compradores, name='comparar_proveedores'),  # Alias
     path('compradores/<int:pk>/', views.detalle_comprador, name='detalle_comprador'),
-    path('compradores/<int:pk>/', views.detalle_comprador, name='detalle_proveedor'),  # Alias
     path('compradores/<int:pk>/editar/', views.editar_comprador, name='editar_comprador'),
-    path('compradores/<int:pk>/editar/', views.editar_comprador, name='editar_proveedor'),  # Alias
     path('compradores/<int:pk>/eliminar/', views.eliminar_comprador, name='eliminar_comprador'),
-    path('compradores/<int:pk>/eliminar/', views.eliminar_comprador, name='eliminar_proveedor'),  # Alias
 
     # Compras
     path('compras/', views.lista_compras, name='lista_compras'),
-    path('compradores/<int:pk>/compras/agregar/', views.agregar_compra, name='agregar_compra'),
+    path('compradores/<int:comprador_id>/compras/agregar/', views.agregar_compra, name='agregar_compra'),
     path('compras/<int:pk>/editar/', views.editar_compra, name='editar_compra'),
     path('compras/<int:pk>/eliminar/', views.eliminar_compra, name='eliminar_compra'),
 
