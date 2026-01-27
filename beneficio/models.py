@@ -1282,6 +1282,12 @@ class Compra(models.Model):
     def __str__(self):
         return f"Compra #{self.id} - {self.comprador.nombre} - Q{self.monto_total}"
 
+    @property
+    def proveedor(self):
+        """Alias para comprador (los templates usan 'proveedor')"""
+        return self.comprador
+
+
 class MantenimientoPlanta(models.Model):
     """Modelo para control de mantenimiento de la planta de beneficio"""
     ESTADO_CHOICES = [
