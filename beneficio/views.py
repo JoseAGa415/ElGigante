@@ -1789,9 +1789,9 @@ def editar_compra(request, pk):
             compra.mezcla_id = request.POST.get('mezcla_id') or None
             
             compra.save()
-            
+
             messages.success(request, 'Compra actualizada exitosamente')
-            return redirect('lista_compras')
+            return redirect('detalle_comprador', pk=compra.comprador.pk)
         
         except Exception as e:
             messages.error(request, f'Error al actualizar: {str(e)}')
