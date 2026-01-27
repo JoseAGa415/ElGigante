@@ -26,18 +26,18 @@
                         <i class="fas fa-user"></i>
                     </span>
                     <div class="ml-4">
-                        <h2 class="text-2xl font-bold text-gray-900">{{ proveedor.nombre }}</h2>
-                        <p class="text-sm text-gray-600">{{ proveedor.empresa|default:"" }}</p>
+                        <h2 class="text-2xl font-bold text-gray-900">{{ comprador.nombre }}</h2>
+                        <p class="text-sm text-gray-600">{{ comprador.empresa|default:"" }}</p>
                     </div>
                 </div>
                 <div class="space-y-2 text-sm">
                     <div class="flex justify-between">
                         <span class="text-gray-500">Teléfono:</span>
-                        <span class="font-medium text-gray-800">{{ proveedor.telefono|default:"N/A" }}</span>
+                        <span class="font-medium text-gray-800">{{ comprador.telefono|default:"N/A" }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-500">Email:</span>
-                        <span class="font-medium text-gray-800">{{ proveedor.email|default:"N/A" }}</span>
+                        <span class="font-medium text-gray-800">{{ comprador.email|default:"N/A" }}</span>
                     </div>
                 </div>
             </div>
@@ -57,7 +57,7 @@
             </div>
 
             <div class="flex justify-end space-x-4 pt-4 border-t">
-                <a href="{% url 'detalle_comprador' proveedor.pk %}" 
+                <a href="{% url 'detalle_comprador' comprador.pk %}" 
                    class="px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium text-gray-700">
                     Cancelar
                 </a>

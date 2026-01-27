@@ -73,17 +73,17 @@
 
             <!-- Lista de Compradores -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {% for proveedor in proveedores %}
+                {% for comprador in compradores %}
                 <label class="cursor-pointer">
-                    <input type="checkbox" name="proveedores" value="{{ proveedor.id }}"
+                    <input type="checkbox" name="compradores" value="{{ comprador.id }}"
                            class="hidden checkbox-proveedor"
                            onchange="actualizarContador()">
                     <div class="bg-white rounded-lg shadow hover:shadow-lg transition-all p-4 border-2 border-transparent checkbox-card">
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex-1">
-                                <h3 class="font-bold text-gray-900 text-lg">{{ proveedor.nombre }}</h3>
-                                {% if proveedor.empresa %}
-                                <p class="text-sm text-gray-600">{{ proveedor.empresa }}</p>
+                                <h3 class="font-bold text-gray-900 text-lg">{{ comprador.nombre }}</h3>
+                                {% if comprador.empresa %}
+                                <p class="text-sm text-gray-600">{{ comprador.empresa }}</p>
                                 {% endif %}
                             </div>
                             <div class="flex-shrink-0 ml-3">
@@ -96,11 +96,11 @@
                         <div class="space-y-2 text-sm">
                             <div class="flex items-center justify-between">
                                 <span class="text-gray-600">Total Compras:</span>
-                                <span class="font-semibold text-gray-900">{{ proveedor.total_compras|default:0 }}</span>
+                                <span class="font-semibold text-gray-900">{{ comprador.total_compras|default:0 }}</span>
                             </div>
                             <div class="flex items-center justify-between">
                                 <span class="text-gray-600">Monto Total:</span>
-                                <span class="font-semibold text-amber-600">Q{{ proveedor.monto_total|default:0|floatformat:2 }}</span>
+                                <span class="font-semibold text-amber-600">Q{{ comprador.monto_total|default:0|floatformat:2 }}</span>
                             </div>
                         </div>
                     </div>

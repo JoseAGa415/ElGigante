@@ -1656,7 +1656,7 @@ def detalle_comprador(request, pk):
     )
     
     context = {
-        'proveedor': comprador,
+        'comprador': comprador,
         'compras': compras.order_by('-fecha_compra'),
         'total_compras': estadisticas_filtradas['total_compras'] or 0,
         'cantidad_total': estadisticas_filtradas['cantidad_total'] or 0,
@@ -1685,7 +1685,7 @@ def editar_comprador(request, pk):
             messages.error(request, f'Error al actualizar comprador: {str(e)}')
     
     context = {
-        'proveedor': comprador,
+        'comprador': comprador,
     }
     return render(request, 'beneficio/compradores/editar.html', context)
 
@@ -1701,7 +1701,7 @@ def eliminar_comprador(request, pk):
         return redirect('lista_compradores')
     
     context = {
-        'proveedor': comprador,
+        'comprador': comprador,
     }
     return render(request, 'beneficio/compradores/eliminar.html', context)
 
@@ -1751,7 +1751,7 @@ def agregar_compra(request, comprador_id):
             messages.error(request, f'Error al agregar compra: {str(e)}')
     
     context = {
-        'proveedor': comprador,
+        'comprador': comprador,
         'lotes': Lote.objects.filter(activo=True),
         'procesados': Procesado.objects.all(),
         'mezclas': Mezcla.objects.all(),
@@ -1908,7 +1908,7 @@ def comparar_compradores(request):
                     peso_total_kg += cantidad
 
             comparacion_data.append({
-                'proveedor': comprador,
+                'comprador': comprador,
                 'total_compras': stats['total_compras'] or 0,
                 'total_cantidad': stats['total_cantidad'] or 0,
                 'total_monto': stats['total_monto'] or 0,
@@ -1925,7 +1925,7 @@ def comparar_compradores(request):
 
         context = {
             'comparacion_data': comparacion_data,
-            'total_proveedores': len(comparacion_data),
+            'total_compradores': len(comparacion_data),
             'total_compras_suma': total_compras_suma,
             'total_peso_qq_suma': total_peso_qq_suma,
             'total_monto_suma': total_monto_suma,
@@ -1940,7 +1940,7 @@ def comparar_compradores(request):
     ).order_by('-monto_total')
 
     context = {
-        'proveedores': compradores,
+        'compradores': compradores,
     }
 
     return render(request, 'beneficio/compradores/comparar.html', context)
