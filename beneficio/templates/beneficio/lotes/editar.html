@@ -43,7 +43,7 @@
                     <option value="">Seleccione bodega...</option>
                     {% for bodega in bodegas %}
                     <option value="{{ bodega.id }}" {% if bodega.id == lote.bodega.id %}selected{% endif %}>
-                        {{ bodega.codigo }} - {{ bodega.nombre }}
+                        {{ bodega.get_codigo_display }}
                     </option>
                     {% endfor %}
                 </select>

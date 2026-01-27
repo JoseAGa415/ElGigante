@@ -570,7 +570,7 @@
                         <span class="bg-amber-100 text-amber-700 rounded-lg px-2 py-1 mr-2 text-sm">
                             {{ bodega.codigo }}
                         </span>
-                        Bodega
+                        {{ bodega.get_codigo_display }}
                     </h4>
                     <div class="custom-tooltip" data-tooltip="Capacidad {{ bodega.capacidad|floatformat:0 }} kg">
                         <i class="fas fa-warehouse text-2xl text-amber-500"></i>

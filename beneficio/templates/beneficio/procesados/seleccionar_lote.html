@@ -45,7 +45,7 @@
                     <option value="">Todas</option>
                     {% for bodega in bodegas %}
                     <option value="{{ bodega.codigo }}" {% if request.GET.bodega == bodega.codigo %}selected{% endif %}>
-                        Bodega {{ bodega.codigo }}
+                        {{ bodega.get_codigo_display }}
                     </option>
                     {% endfor %}
                 </select>

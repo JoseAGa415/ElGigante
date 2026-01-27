@@ -97,7 +97,7 @@
                     <select name="bodega_id" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
                         <option value="">Seleccione bodega...</option>
                         {% for bodega in bodegas %}
-                        <option value="{{ bodega.id }}">{{ bodega.codigo }} - {{ bodega.nombre }}</option>
+                        <option value="{{ bodega.id }}">{{ bodega.get_codigo_display }}</option>
                         {% endfor %}
                     </select>
                 </div>

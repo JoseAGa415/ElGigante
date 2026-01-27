@@ -438,7 +438,7 @@
                             <option value="">Sin bodega</option>
                             {% for bodega in bodegas %}
                             <option value="{{ bodega.id }}" {% if procesado.bodega_destino.id == bodega.id %}selected{% endif %}>
-                                Bodega {{ bodega.codigo }}
+                                {{ bodega.get_codigo_display }}
                             </option>
                             {% endfor %}
                         </select>

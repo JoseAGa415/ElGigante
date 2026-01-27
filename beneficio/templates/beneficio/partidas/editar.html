@@ -94,15 +94,7 @@
                             <option value="">Sin bodega</option>
                             {% for bodega in bodegas %}
                             <option value="{{ bodega.id }}" {% if partida.bodega_id == bodega.id %}selected{% endif %}>
-                                {% if bodega.nombre %}
-                                    {{ bodega.nombre }}
-                                {% elif bodega.codigo %}
-                                    {{ bodega.codigo }}
-                                {% elif bodega.descripcion %}
-                                    {{ bodega.descripcion }}
-                                {% else %}
-                                    Bodega #{{ bodega.id }}
-                                {% endif %}
+                                {{ bodega.get_codigo_display }}
                             </option>
                             {% empty %}
                             <option disabled>No hay bodegas disponibles</option>

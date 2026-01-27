@@ -305,9 +305,9 @@
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-600">
                             <option value="">-- Misma del lote --</option>
                             {% for bodega in bodegas %}
-                            <option value="{{ bodega.id }}" 
+                            <option value="{{ bodega.id }}"
                                     {% if lote and bodega.id == lote.bodega.id %}selected{% endif %}>
-                                Bodega {{ bodega.codigo }}
+                                {{ bodega.get_codigo_display }}
                             </option>
                             {% endfor %}
                         </select>

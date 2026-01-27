@@ -73,7 +73,7 @@
                             <option value="">Seleccione bodega...</option>
                             {% for bodega in bodegas %}
                             <option value="{{ bodega.id }}" {% if mezcla.bodega_destino and mezcla.bodega_destino.id == bodega.id %}selected{% endif %}>
-                                Bodega {{ bodega.codigo }}
+                                {{ bodega.get_codigo_display }}
                             </option>
                             {% endfor %}
                         </select>
