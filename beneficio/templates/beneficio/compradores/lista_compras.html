@@ -78,11 +78,11 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             Comprador
                         </label>
-                        <select name="proveedor" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
+                        <select name="comprador" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-600">
                             <option value="">Todos los proveedores</option>
-                            {% for proveedor in proveedores %}
-                            <option value="{{ proveedor.id }}" {% if request.GET.proveedor == proveedor.id|stringformat:"s" %}selected{% endif %}>
-                                {{ proveedor.nombre }}
+                            {% for c in compradores %}
+                            <option value="{{ c.id }}" {% if request.GET.comprador == c.id|stringformat:"s" %}selected{% endif %}>
+                                {{ c.nombre }}
                             </option>
                             {% endfor %}
                         </select>
@@ -176,13 +176,13 @@
                             </td>
                             <td class="px-6 py-4">
                                 <div class="text-sm font-medium text-gray-900">
-                                    <a href="{% url 'detalle_proveedor' compra.proveedor.pk %}" class="text-amber-600 hover:text-amber-800">
-                                        {{ compra.proveedor.nombre }}
+                                    <a href="{% url 'detalle_comprador' compra.comprador.pk %}" class="text-amber-600 hover:text-amber-800">
+                                        {{ compra.comprador.nombre }}
                                     </a>
                                 </div>
-                                {% if compra.proveedor.empresa %}
+                                {% if compra.comprador.empresa %}
                                 <div class="text-xs text-gray-500">
-                                    {{ compra.proveedor.empresa }}
+                                    {{ compra.comprador.empresa }}
                                 </div>
                                 {% endif %}
                             </td>
@@ -281,7 +281,7 @@
 
         <!-- Botón de regreso -->
         <div class="mt-8">
-            <a href="{% url 'lista_proveedores' %}" 
+            <a href="{% url 'lista_compradores' %}" 
                class="inline-flex items-center gap-2 px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
