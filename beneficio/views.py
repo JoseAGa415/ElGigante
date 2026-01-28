@@ -3396,24 +3396,28 @@ def crear_partida(request):
 @login_required
 def detalle_partida(request, pk):
     """Ver detalle completo de una partida"""
-    partida = get_object_or_404(
-        Partida.objects.select_related(
-            'bodega',
-            'creado_por'
-        ),
-        pk=pk
-    )
+    try:
+        partida = get_object_or_404(
+            Partida.objects.select_related(
+                'bodega',
+                'creado_por'
+            ),
+            pk=pk
+        )
 
-    # Obtener subpartidas de esta partida
-    subpartidas = partida.subpartidas.filter(activo=True).order_by('-fecha_creacion')
+        # Obtener subpartidas de esta partida
+        subpartidas = partida.subpartidas.filter(activo=True).order_by('-fecha_creacion')
 
-    context = {
-        'partida': partida,
-        'subpartidas': subpartidas,
-        'total_subpartidas': subpartidas.count(),
-    }
+        context = {
+            'partida': partida,
+            'subpartidas': subpartidas,
+            'total_subpartidas': subpartidas.count(),
+        }
 
-    return render(request, 'beneficio/partidas/detalle_partida.html', context)
+        return render(request, 'beneficio/partidas/detalle_partida.html', context)
+    except Exception as e:
+        messages.error(request, f'Error al cargar partida: {str(e)}')
+        return redirect('lista_partidas')
 
 
 # ==========================================
