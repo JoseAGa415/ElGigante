@@ -533,6 +533,9 @@
                         <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Estado
                         </th>
+                        <th class="px-4 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Detalles
+                        </th>
                         <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Acciones
                         </th>
@@ -615,15 +618,23 @@
                             </span>
                             {% endif %}
                         </td>
+                        <td class="px-4 py-4 whitespace-nowrap text-center">
+                            <button type="button"
+                                    onclick="verDetallesPago({{ compra.pk }}, '{{ compra.numero_factura|default:"-" }}', '{{ compra.metodo_pago|default:"No especificado" }}', '{{ compra.estado_pago }}', '{% if compra.comprobante %}{{ compra.comprobante.url }}{% endif %}')"
+                                    class="px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors text-xs font-medium flex items-center gap-1 mx-auto">
+                                <i class="fas fa-eye"></i>
+                                Ver más
+                            </button>
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex gap-3">
-                                <a href="{% url 'editar_compra' compra.pk %}" 
-                                   class="text-blue-600 hover:text-blue-900 transition-colors" 
+                                <a href="{% url 'editar_compra' compra.pk %}"
+                                   class="text-blue-600 hover:text-blue-900 transition-colors"
                                    title="Editar">
                                     <i class="fas fa-edit text-lg"></i>
                                 </a>
-                                <a href="{% url 'eliminar_compra' compra.pk %}" 
-                                   class="text-red-600 hover:text-red-900 transition-colors" 
+                                <a href="{% url 'eliminar_compra' compra.pk %}"
+                                   class="text-red-600 hover:text-red-900 transition-colors"
                                    title="Eliminar"
                                    onclick="return confirm('¿Está seguro de eliminar esta compra?')">
                                     <i class="fas fa-trash text-lg"></i>
@@ -633,7 +644,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="8" class="px-6 py-12 text-center">
+                        <td colspan="9" class="px-6 py-12 text-center">
                             <div class="flex flex-col items-center justify-center text-gray-500">
                                 <i class="fas fa-shopping-bag text-6xl mb-4 text-gray-300"></i>
                                 <p class="text-xl font-medium">No hay compras registradas</p>
@@ -664,6 +675,83 @@
         </a>
     </div></div>
 </div><!-- Cierre del div no-print -->
+
+<!-- Modal para detalles de pago -->
+<div id="modal-detalles-pago" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <!-- Header del modal -->
+        <div class="px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-t-2xl">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    Información de Pago
+                </h3>
+                <button onclick="cerrarModalDetalles()" class="text-white hover:text-gray-200 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenido del modal -->
+        <div class="p-6 space-y-4">
+            <!-- Estado de pago -->
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <span class="text-gray-600 font-medium">Estado de Pago</span>
+                <span id="modal-estado" class="px-3 py-1 rounded-full text-sm font-semibold"></span>
+            </div>
+
+            <!-- Número de factura -->
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <span class="text-gray-600 font-medium">
+                    <i class="fas fa-file-alt mr-2 text-indigo-500"></i>
+                    No. Factura
+                </span>
+                <span id="modal-factura" class="font-semibold text-gray-900"></span>
+            </div>
+
+            <!-- Método de pago -->
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <span class="text-gray-600 font-medium">
+                    <i class="fas fa-credit-card mr-2 text-green-500"></i>
+                    Método de Pago
+                </span>
+                <span id="modal-metodo" class="font-semibold text-gray-900"></span>
+            </div>
+
+            <!-- Comprobante -->
+            <div id="modal-comprobante-container" class="hidden">
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <span class="text-gray-600 font-medium block mb-3">
+                        <i class="fas fa-image mr-2 text-purple-500"></i>
+                        Comprobante de Pago
+                    </span>
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-2 bg-white">
+                        <img id="modal-comprobante-img" src="" alt="Comprobante" class="w-full rounded-lg cursor-pointer hover:opacity-90 transition-opacity" onclick="abrirImagenCompleta(this.src)">
+                    </div>
+                    <a id="modal-comprobante-link" href="" target="_blank" class="mt-3 inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                        <i class="fas fa-external-link-alt"></i>
+                        Abrir en nueva pestaña
+                    </a>
+                </div>
+            </div>
+
+            <!-- Mensaje si no hay comprobante -->
+            <div id="modal-sin-comprobante" class="hidden p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                <span class="text-yellow-700 flex items-center gap-2">
+                    <i class="fas fa-exclamation-circle"></i>
+                    No se ha subido comprobante de pago
+                </span>
+            </div>
+        </div>
+
+        <!-- Footer del modal -->
+        <div class="px-6 py-4 bg-gray-50 rounded-b-2xl border-t">
+            <button onclick="cerrarModalDetalles()" class="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>
 
 <!-- JavaScript para cambio masivo de estado -->
 <script>
@@ -775,6 +863,75 @@ function cambiarEstadoMasivo() {
 document.getElementById('nuevo-estado').addEventListener('change', function() {
     const checkboxes = document.querySelectorAll('.checkbox-compra:checked');
     document.getElementById('btn-cambiar-estado').disabled = checkboxes.length === 0 || !this.value;
+});
+
+// ===== Funciones para modal de detalles de pago =====
+function verDetallesPago(id, factura, metodo, estado, comprobanteUrl) {
+    const modal = document.getElementById('modal-detalles-pago');
+    const modalEstado = document.getElementById('modal-estado');
+    const modalFactura = document.getElementById('modal-factura');
+    const modalMetodo = document.getElementById('modal-metodo');
+    const comprobanteContainer = document.getElementById('modal-comprobante-container');
+    const sinComprobante = document.getElementById('modal-sin-comprobante');
+    const comprobanteImg = document.getElementById('modal-comprobante-img');
+    const comprobanteLink = document.getElementById('modal-comprobante-link');
+
+    // Establecer factura y método
+    modalFactura.textContent = factura || '-';
+    modalMetodo.textContent = metodo || 'No especificado';
+
+    // Establecer estado con estilo
+    if (estado === 'pagado') {
+        modalEstado.textContent = '✓ Pagado';
+        modalEstado.className = 'px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800';
+    } else if (estado === 'parcial') {
+        modalEstado.textContent = '⏳ Parcial';
+        modalEstado.className = 'px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-800';
+    } else {
+        modalEstado.textContent = '⏰ Pendiente';
+        modalEstado.className = 'px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-800';
+    }
+
+    // Mostrar u ocultar comprobante
+    if (comprobanteUrl && comprobanteUrl.trim() !== '') {
+        comprobanteContainer.classList.remove('hidden');
+        sinComprobante.classList.add('hidden');
+        comprobanteImg.src = comprobanteUrl;
+        comprobanteLink.href = comprobanteUrl;
+    } else {
+        comprobanteContainer.classList.add('hidden');
+        sinComprobante.classList.remove('hidden');
+    }
+
+    // Mostrar modal
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+}
+
+function cerrarModalDetalles() {
+    const modal = document.getElementById('modal-detalles-pago');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.body.style.overflow = '';
+}
+
+function abrirImagenCompleta(src) {
+    window.open(src, '_blank');
+}
+
+// Cerrar modal al hacer clic fuera
+document.getElementById('modal-detalles-pago').addEventListener('click', function(e) {
+    if (e.target === this) {
+        cerrarModalDetalles();
+    }
+});
+
+// Cerrar modal con tecla Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        cerrarModalDetalles();
+    }
 });
 </script>
 {% endblock %}
