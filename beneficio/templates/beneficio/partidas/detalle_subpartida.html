@@ -285,6 +285,95 @@
             </div>
         </div>
 
+        <!-- Datos de Catación -->
+        {% if subpartida.peso_cp or subpartida.oro_sucio or subpartida.oro_limpio or subpartida.granulometria or subpartida.bz_gramos or subpartida.bz_porcentaje or subpartida.defectos_fisicos or subpartida.defectos_verdes or subpartida.perfil_sensorial %}
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 border-l-4 border-orange-500">
+            <h2 class="text-xl font-bold text-gray-900 mb-6">
+                <i class="fas fa-flask text-orange-600 mr-2"></i>
+                Datos de Catación
+            </h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                <!-- Peso C/P -->
+                <div class="text-center p-4 bg-orange-50 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Peso C/P</p>
+                    <p class="text-xl font-bold text-orange-700">
+                        {% if subpartida.peso_cp %}{{ subpartida.peso_cp|floatformat:2 }}{% else %}-{% endif %}
+                    </p>
+                </div>
+
+                <!-- Oro Sucio -->
+                <div class="text-center p-4 bg-yellow-50 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Oro Sucio</p>
+                    <p class="text-xl font-bold text-yellow-700">
+                        {% if subpartida.oro_sucio %}{{ subpartida.oro_sucio|floatformat:2 }}{% else %}-{% endif %}
+                    </p>
+                </div>
+
+                <!-- Oro Limpio -->
+                <div class="text-center p-4 bg-green-50 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Oro Limpio</p>
+                    <p class="text-xl font-bold text-green-700">
+                        {% if subpartida.oro_limpio %}{{ subpartida.oro_limpio|floatformat:2 }}{% else %}-{% endif %}
+                    </p>
+                </div>
+
+                <!-- Granulometría -->
+                <div class="text-center p-4 bg-blue-50 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Granulometría</p>
+                    <p class="text-xl font-bold text-blue-700">
+                        {% if subpartida.granulometria %}{{ subpartida.granulometria }}{% else %}-{% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <!-- B/Z Gramos -->
+                <div class="text-center p-4 bg-purple-50 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">B/Z (gramos)</p>
+                    <p class="text-xl font-bold text-purple-700">
+                        {% if subpartida.bz_gramos %}{{ subpartida.bz_gramos|floatformat:2 }}{% else %}-{% endif %}
+                    </p>
+                </div>
+
+                <!-- B/Z Porcentaje -->
+                <div class="text-center p-4 bg-indigo-50 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">B/Z (%)</p>
+                    <p class="text-xl font-bold text-indigo-700">
+                        {% if subpartida.bz_porcentaje %}{{ subpartida.bz_porcentaje|floatformat:2 }}%{% else %}-{% endif %}
+                    </p>
+                </div>
+
+                <!-- Defectos Físicos -->
+                <div class="text-center p-4 bg-red-50 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Defectos Físicos</p>
+                    <p class="text-xl font-bold text-red-700">
+                        {% if subpartida.defectos_fisicos %}{{ subpartida.defectos_fisicos|floatformat:2 }}%{% else %}-{% endif %}
+                    </p>
+                </div>
+
+                <!-- Defectos Verdes -->
+                <div class="text-center p-4 bg-lime-50 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-1">Defectos Verdes</p>
+                    <p class="text-xl font-bold text-lime-700">
+                        {% if subpartida.defectos_verdes %}{{ subpartida.defectos_verdes|floatformat:2 }}%{% else %}-{% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Perfil Sensorial -->
+            {% if subpartida.perfil_sensorial %}
+            <div class="mt-4">
+                <p class="text-sm text-gray-500 font-semibold mb-2">
+                    <i class="fas fa-comment-alt text-orange-600 mr-1"></i>Perfil Sensorial
+                </p>
+                <div class="bg-orange-50 p-4 rounded-lg">
+                    <p class="text-orange-800 font-medium">{{ subpartida.perfil_sensorial }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
         <!-- Calidad de Taza -->
         <div class="bg-white rounded-xl shadow-lg p-6 mb-8 border-l-4 border-purple-500">
             <h2 class="text-xl font-bold text-gray-900 mb-6">

@@ -3794,6 +3794,39 @@ def agregar_subpartida(request, partida_id):
                 if score:
                     subpartida.score = Decimal(score)
 
+                # === Campos adicionales de catación ===
+                peso_cp = request.POST.get('peso_cp', '').strip()
+                if peso_cp:
+                    subpartida.peso_cp = Decimal(peso_cp)
+
+                oro_sucio = request.POST.get('oro_sucio', '').strip()
+                if oro_sucio:
+                    subpartida.oro_sucio = Decimal(oro_sucio)
+
+                oro_limpio = request.POST.get('oro_limpio', '').strip()
+                if oro_limpio:
+                    subpartida.oro_limpio = Decimal(oro_limpio)
+
+                granulometria = request.POST.get('granulometria', '').strip()
+                if granulometria:
+                    subpartida.granulometria = granulometria
+
+                bz_gramos = request.POST.get('bz_gramos', '').strip()
+                if bz_gramos:
+                    subpartida.bz_gramos = Decimal(bz_gramos)
+
+                bz_porcentaje = request.POST.get('bz_porcentaje', '').strip()
+                if bz_porcentaje:
+                    subpartida.bz_porcentaje = Decimal(bz_porcentaje)
+
+                defectos_fisicos = request.POST.get('defectos_fisicos', '').strip()
+                if defectos_fisicos:
+                    subpartida.defectos_fisicos = Decimal(defectos_fisicos)
+
+                defectos_verdes = request.POST.get('defectos_verdes', '').strip()
+                if defectos_verdes:
+                    subpartida.defectos_verdes = Decimal(defectos_verdes)
+
                 # === Calidad de Taza ===
                 taza = request.POST.get('taza', '').strip()
                 if taza:
@@ -3802,6 +3835,10 @@ def agregar_subpartida(request, partida_id):
                 cualidades = request.POST.get('cualidades', '').strip()
                 if cualidades:
                     subpartida.cualidades = cualidades
+
+                perfil_sensorial = request.POST.get('perfil_sensorial', '').strip()
+                if perfil_sensorial:
+                    subpartida.perfil_sensorial = perfil_sensorial
 
                 # Otros campos
                 proveedor = request.POST.get('proveedor', '').strip()
@@ -3903,6 +3940,34 @@ def editar_subpartida(request, pk):
 
                 cualidades = request.POST.get('cualidades', '').strip()
                 subpartida.cualidades = cualidades if cualidades else None
+
+                # === Datos de Catación ===
+                peso_cp = request.POST.get('peso_cp', '').strip()
+                subpartida.peso_cp = Decimal(peso_cp) if peso_cp else None
+
+                oro_sucio = request.POST.get('oro_sucio', '').strip()
+                subpartida.oro_sucio = Decimal(oro_sucio) if oro_sucio else None
+
+                oro_limpio = request.POST.get('oro_limpio', '').strip()
+                subpartida.oro_limpio = Decimal(oro_limpio) if oro_limpio else None
+
+                granulometria = request.POST.get('granulometria', '').strip()
+                subpartida.granulometria = granulometria if granulometria else None
+
+                bz_gramos = request.POST.get('bz_gramos', '').strip()
+                subpartida.bz_gramos = Decimal(bz_gramos) if bz_gramos else None
+
+                bz_porcentaje = request.POST.get('bz_porcentaje', '').strip()
+                subpartida.bz_porcentaje = Decimal(bz_porcentaje) if bz_porcentaje else None
+
+                defectos_fisicos = request.POST.get('defectos_fisicos', '').strip()
+                subpartida.defectos_fisicos = Decimal(defectos_fisicos) if defectos_fisicos else None
+
+                defectos_verdes = request.POST.get('defectos_verdes', '').strip()
+                subpartida.defectos_verdes = Decimal(defectos_verdes) if defectos_verdes else None
+
+                perfil_sensorial = request.POST.get('perfil_sensorial', '').strip()
+                subpartida.perfil_sensorial = perfil_sensorial if perfil_sensorial else None
 
                 # Otros campos
                 proveedor = request.POST.get('proveedor', '').strip()

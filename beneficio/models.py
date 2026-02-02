@@ -1947,6 +1947,17 @@ class SubPartida(models.Model):
     taza = models.CharField(max_length=20, choices=TAZA_CHOICES, blank=True, null=True, help_text="Calidad de taza")
     cualidades = models.TextField(blank=True, null=True, help_text="Cualidades del café (sabores, aromas)")
 
+    # Campos adicionales de catación/análisis
+    oro_sucio = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, help_text="Oro sucio (peso)")
+    oro_limpio = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, help_text="Oro limpio (peso)")
+    peso_cp = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, help_text="Peso C/P")
+    perfil_sensorial = models.TextField(blank=True, null=True, help_text="Perfil sensorial del café")
+    granulometria = models.CharField(max_length=100, blank=True, null=True, help_text="Granulometría")
+    defectos_fisicos = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True, help_text="Defectos físicos (%)")
+    defectos_verdes = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True, help_text="Defectos verdes (%)")
+    bz_gramos = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, help_text="B/Z en gramos")
+    bz_porcentaje = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, help_text="B/Z en porcentaje")
+
     # Otros campos
     proveedor = models.CharField(max_length=200, blank=True, null=True)
     observaciones = models.TextField(blank=True, null=True)
