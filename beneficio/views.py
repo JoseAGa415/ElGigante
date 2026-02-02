@@ -22,7 +22,7 @@ from .models import (
     Lote, Procesado, Reproceso, Mezcla, DetalleMezcla,
     Bodega, TipoCafe, Catacion, DefectoCatacion, Comprador, Compra,
     MantenimientoPlanta, HistorialMantenimiento, ReciboCafe, Partida, SubPartida,
-    Trabajador, PlanillaSemanal, RegistroDiario, MovimientoSubPartida
+    Trabajador, PlanillaSemanal, RegistroDiario, MovimientoSubPartida, EtiquetaLote
 )
 
 # ==========================================
@@ -3773,6 +3773,13 @@ def agregar_subpartida(request, partida_id):
                 if fila:
                     subpartida.fila = fila
 
+                # Etiqueta
+                etiqueta = request.POST.get('etiqueta', '').strip()
+                if etiqueta:
+                    subpartida.etiqueta = etiqueta
+                    # Crear la etiqueta en el catálogo si no existe
+                    EtiquetaLote.objects.get_or_create(nombre=etiqueta)
+
                 # === Campos de Análisis de Calidad ===
                 rendimiento_b15 = request.POST.get('rendimiento_b15', '').strip()
                 if rendimiento_b15:
@@ -3864,8 +3871,59 @@ def agregar_subpartida(request, partida_id):
         except Exception as e:
             messages.error(request, f'❌ Error: {str(e)}')
 
-    context = {'partida': partida}
+    etiquetas = EtiquetaLote.objects.all()
+    context = {'partida': partida, 'etiquetas': etiquetas}
     return render(request, 'beneficio/partidas/agregar_subpartida.html', context)
+
+
+@login_required
+def control_etiquetas(request):
+    """Vista para ver y filtrar lotes de punto por etiqueta"""
+    from django.db.models import Count, Sum
+
+    etiqueta_seleccionada = request.GET.get('etiqueta', '')
+
+    # Obtener todas las etiquetas disponibles
+    etiquetas = EtiquetaLote.objects.all()
+
+    # Obtener subpartidas filtradas por etiqueta si se seleccionó una
+    if etiqueta_seleccionada:
+        subpartidas = SubPartida.objects.filter(
+            etiqueta__iexact=etiqueta_seleccionada,
+            activo=True
+        ).select_related('partida', 'partida__bodega').order_by('-fecha_creacion')
+    else:
+        subpartidas = SubPartida.objects.filter(
+            etiqueta__isnull=False,
+            activo=True
+        ).exclude(etiqueta='').select_related('partida', 'partida__bodega').order_by('-fecha_creacion')
+
+    # Calcular totales de las subpartidas filtradas
+    totales = subpartidas.aggregate(
+        total_quintales=Sum('quintales'),
+        total_sacos=Sum('numero_sacos')
+    )
+
+    # Estadísticas por etiqueta
+    stats_etiquetas = SubPartida.objects.filter(
+        activo=True,
+        etiqueta__isnull=False
+    ).exclude(etiqueta='').values('etiqueta').annotate(
+        total_lotes=Count('id'),
+        total_quintales=Sum('quintales'),
+        total_sacos=Sum('numero_sacos')
+    ).order_by('etiqueta')
+
+    context = {
+        'etiquetas': etiquetas,
+        'etiqueta_seleccionada': etiqueta_seleccionada,
+        'subpartidas': subpartidas,
+        'stats_etiquetas': stats_etiquetas,
+        'total_quintales': totales['total_quintales'] or 0,
+        'total_sacos': totales['total_sacos'] or 0,
+    }
+    return render(request, 'beneficio/partidas/control_etiquetas.html', context)
+
 
 @login_required
 def editar_subpartida(request, pk):

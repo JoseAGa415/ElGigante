@@ -1887,6 +1887,20 @@ class Partida(models.Model):
         return "Sin ubicación"
 
 
+class EtiquetaLote(models.Model):
+    """Etiquetas reutilizables para clasificar lotes de punto"""
+    nombre = models.CharField(max_length=100, unique=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'etiquetas_lote'
+        verbose_name = 'Etiqueta de Lote'
+        verbose_name_plural = 'Etiquetas de Lote'
+        ordering = ['nombre']
+
+    def __str__(self):
+        return self.nombre
+
 
 class SubPartida(models.Model):
     """Sub-Partida - Entrada individual dentro de una partida (Lote de Punto)"""
@@ -1922,6 +1936,7 @@ class SubPartida(models.Model):
 
     # UBICACIÓN FÍSICA ⭐
     fila = models.CharField(max_length=50, blank=True, null=True, help_text="Fila en la percha")
+    etiqueta = models.CharField(max_length=100, blank=True, null=True, help_text="Etiqueta del lote")
 
     # Información del café
     tipo_proceso = models.CharField(max_length=20, choices=TIPO_PROCESO_CHOICES, default='LAVADO', help_text="Tipo de proceso del café")

@@ -220,7 +220,7 @@
                     <i class="fas fa-box mr-3"></i>Lotes
                 </a>
                 
-                <a href="{% url 'lista_partidas' %}" class="flex items-center justify-between px-6 py-3 sidebar-hover {% if 'partidas' in request.path %}active{% endif %}">
+                <a href="{% url 'lista_partidas' %}" class="flex items-center justify-between px-6 py-3 sidebar-hover {% if 'partidas' in request.path and 'etiquetas' not in request.path %}active{% endif %}">
                     <span>
                         <i class="fas fa-layer-group mr-3"></i>Partidas
                     </span>
@@ -228,7 +228,11 @@
                         NUEVO
                     </span>
                 </a>
-                
+
+                <a href="{% url 'control_etiquetas' %}" class="block px-6 py-3 sidebar-hover {% if 'etiquetas' in request.path %}active{% endif %}">
+                    <i class="fas fa-tags mr-3"></i>Control por Etiquetas
+                </a>
+
                 <a href="{% url 'lista_procesados' %}" class="block px-6 py-3 sidebar-hover {% if request.resolver_match.url_name == 'lista_procesados' %}active{% endif %}">
                     <i class="fas fa-cogs mr-3"></i>Procesado/Trilla
                 </a>

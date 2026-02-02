@@ -10,18 +10,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveIndex(
-            model_name='partida',
-            name='beneficio_p_lote_id_23bb1d_idx',
-        ),
-        migrations.RemoveIndex(
-            model_name='partida',
-            name='beneficio_p_created_d3c283_idx',
-        ),
-        migrations.RemoveField(
-            model_name='partida',
-            name='nombre_partida',
-        ),
         migrations.AddField(
             model_name='subpartida',
             name='bz_gramos',

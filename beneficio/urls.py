@@ -110,6 +110,9 @@ urlpatterns = [
     path('subpartidas/<int:pk>/editar/', views.editar_subpartida, name='editar_subpartida'),
     path('subpartidas/<int:pk>/eliminar/', views.eliminar_subpartida, name='eliminar_subpartida'),
 
+    # CONTROL POR ETIQUETAS
+    path('etiquetas/', views.control_etiquetas, name='control_etiquetas'),
+
     # MOVIMIENTOS DE SUBPARTIDA (Trazabilidad de Inventario)
     path('subpartidas/<int:pk>/procesar/', views.procesar_subpartida, name='procesar_subpartida'),
     path('movimientos/<int:pk>/eliminar/', views.eliminar_movimiento, name='eliminar_movimiento'),
