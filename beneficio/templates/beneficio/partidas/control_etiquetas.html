@@ -1,26 +1,136 @@
 {% extends 'base.html' %}
 
-{% block title %}Control por Etiquetas{% endblock %}
+{% block title %}Control de Partidas{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-8">
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 py-6">
     <div class="max-w-7xl mx-auto px-4">
 
         <!-- Encabezado -->
-        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-64 h-64 bg-blue-100 rounded-full -mr-32 -mt-32 opacity-50"></div>
-            <div class="relative">
-                <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                    <i class="fas fa-tags text-blue-600"></i>
-                    Control por Etiquetas
-                </h1>
-                <p class="mt-2 text-gray-600">
-                    Visualice y filtre los lotes de punto por tipo de etiqueta
-                </p>
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full -mr-32 -mt-32 opacity-50"></div>
+            <div class="relative flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                        <i class="fas fa-chart-pie text-blue-600"></i>
+                        Control de Partidas
+                    </h1>
+                    <p class="mt-2 text-gray-600">
+                        Dashboard de estadísticas y análisis de lotes de café
+                    </p>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm text-gray-500">Última actualización</div>
+                    <div class="text-lg font-semibold text-gray-700">{% now "d M Y, H:i" %}</div>
+                </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <!-- Tarjetas de Resumen General -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-xl shadow-md p-5 border-l-4 border-blue-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Total Partidas</p>
+                        <p class="text-3xl font-bold text-blue-600">{{ total_partidas }}</p>
+                    </div>
+                    <div class="bg-blue-100 p-3 rounded-full">
+                        <i class="fas fa-layer-group text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-5 border-l-4 border-green-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Total Lotes</p>
+                        <p class="text-3xl font-bold text-green-600">{{ totales_generales.total_lotes|default:0 }}</p>
+                    </div>
+                    <div class="bg-green-100 p-3 rounded-full">
+                        <i class="fas fa-boxes text-green-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-5 border-l-4 border-amber-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Total Quintales</p>
+                        <p class="text-3xl font-bold text-amber-600">{{ totales_generales.total_quintales|floatformat:0|default:0 }}</p>
+                        <p class="text-xs text-gray-400">qq</p>
+                    </div>
+                    <div class="bg-amber-100 p-3 rounded-full">
+                        <i class="fas fa-weight text-amber-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-5 border-l-4 border-purple-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Total Sacos</p>
+                        <p class="text-3xl font-bold text-purple-600">{{ totales_generales.total_sacos|default:0 }}</p>
+                    </div>
+                    <div class="bg-purple-100 p-3 rounded-full">
+                        <i class="fas fa-box text-purple-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráficas Principales -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Gráfica: Distribución por Tipo de Proceso -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-cogs text-blue-500"></i>
+                    Distribución por Tipo de Proceso
+                </h3>
+                <div class="relative h-64">
+                    <canvas id="chartProceso"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfica: Distribución por Etiqueta -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-tags text-green-500"></i>
+                    Top 10 Etiquetas (por quintales)
+                </h3>
+                <div class="relative h-64">
+                    <canvas id="chartEtiquetas"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfica: Distribución por Bodega -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-warehouse text-amber-500"></i>
+                    Distribución por Bodega
+                </h3>
+                <div class="relative h-64">
+                    <canvas id="chartBodega"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfica: Calidad de Taza -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-mug-hot text-purple-500"></i>
+                    Calidad de Taza
+                </h3>
+                <div class="relative h-64">
+                    <canvas id="chartTaza"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Filtro por Etiqueta y Tabla -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <!-- Panel de Filtros -->
             <div class="lg:col-span-1">
                 <div class="bg-white rounded-xl shadow-lg p-6 sticky top-4">
@@ -30,93 +140,88 @@
                     </h2>
 
                     <!-- Lista de etiquetas -->
-                    <div class="space-y-2">
+                    <div class="space-y-1 max-h-80 overflow-y-auto">
                         <a href="{% url 'control_etiquetas' %}"
-                           class="block px-4 py-2 rounded-lg transition-colors {% if not etiqueta_seleccionada %}bg-blue-100 text-blue-700 font-semibold{% else %}hover:bg-gray-100{% endif %}">
-                            <i class="fas fa-list mr-2"></i> Todas las etiquetas
+                           class="block px-3 py-2 rounded-lg text-sm transition-colors {% if not etiqueta_seleccionada %}bg-blue-100 text-blue-700 font-semibold{% else %}hover:bg-gray-100{% endif %}">
+                            <i class="fas fa-list mr-2"></i> Todos los lotes
                         </a>
                         {% for etiqueta in etiquetas %}
                         <a href="{% url 'control_etiquetas' %}?etiqueta={{ etiqueta.nombre|urlencode }}"
-                           class="block px-4 py-2 rounded-lg transition-colors {% if etiqueta_seleccionada == etiqueta.nombre %}bg-blue-100 text-blue-700 font-semibold{% else %}hover:bg-gray-100{% endif %}">
-                            <i class="fas fa-bookmark mr-2 text-blue-500"></i> {{ etiqueta.nombre }}
+                           class="block px-3 py-2 rounded-lg text-sm transition-colors {% if etiqueta_seleccionada == etiqueta.nombre %}bg-blue-100 text-blue-700 font-semibold{% else %}hover:bg-gray-100{% endif %}">
+                            <i class="fas fa-bookmark mr-2 text-blue-400"></i> {{ etiqueta.nombre }}
                         </a>
                         {% empty %}
-                        <p class="text-gray-500 text-sm py-2">No hay etiquetas registradas</p>
+                        <p class="text-gray-500 text-sm py-2">No hay etiquetas</p>
                         {% endfor %}
                     </div>
 
-                    <!-- Resumen de estadísticas -->
-                    {% if stats_etiquetas %}
-                    <div class="mt-6 pt-6 border-t">
-                        <h3 class="text-sm font-semibold text-gray-700 mb-3">Resumen por Etiqueta</h3>
-                        <div class="space-y-3 max-h-64 overflow-y-auto">
-                            {% for stat in stats_etiquetas %}
-                            <div class="bg-gray-50 rounded-lg p-3 text-sm">
-                                <div class="font-medium text-gray-800">{{ stat.etiqueta }}</div>
-                                <div class="text-gray-600 mt-1">
-                                    <span class="inline-block mr-3"><i class="fas fa-boxes text-blue-500"></i> {{ stat.total_lotes }} lotes</span>
-                                    <span class="inline-block"><i class="fas fa-weight text-green-500"></i> {{ stat.total_quintales|floatformat:2 }} qq</span>
-                                </div>
-                            </div>
-                            {% endfor %}
+                    <!-- Top 5 Partidas -->
+                    <div class="mt-6 pt-4 border-t">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                            <i class="fas fa-trophy text-yellow-500"></i>
+                            Top 5 Partidas
+                        </h3>
+                        <div class="space-y-2" id="topPartidas">
+                            <!-- Se llena con JS -->
                         </div>
                     </div>
-                    {% endif %}
                 </div>
             </div>
 
-            <!-- Listado de Lotes -->
+            <!-- Tabla de Lotes -->
             <div class="lg:col-span-3">
                 <div class="bg-white rounded-xl shadow-lg p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-semibold flex items-center gap-2">
-                            <i class="fas fa-coffee text-amber-600"></i>
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-semibold flex items-center gap-2">
+                            <i class="fas fa-table text-gray-600"></i>
                             {% if etiqueta_seleccionada %}
-                                Lotes con etiqueta: <span class="text-blue-600">{{ etiqueta_seleccionada }}</span>
+                                Lotes: <span class="text-blue-600">{{ etiqueta_seleccionada }}</span>
                             {% else %}
-                                Todos los Lotes Etiquetados
+                                Últimos Lotes Registrados
                             {% endif %}
                         </h2>
                         <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                            {{ subpartidas|length }} lotes
+                            {{ total_subpartidas }} lotes
                         </span>
                     </div>
 
                     {% if subpartidas %}
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
+                        <table class="min-w-full divide-y divide-gray-200 text-sm">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lote</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Partida</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Etiqueta</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Proceso</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quintales</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sacos</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ubicación</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Lote</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Partida</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Etiqueta</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Proceso</th>
+                                    <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">Quintales</th>
+                                    <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">Sacos</th>
+                                    <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 {% for sp in subpartidas %}
-                                <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-4 py-4">
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-3 py-2">
                                         <div class="font-medium text-gray-900">{{ sp.numero_subpartida }}</div>
-                                        <div class="text-sm text-gray-500">{{ sp.nombre|truncatechars:30 }}</div>
+                                        <div class="text-xs text-gray-500">{{ sp.nombre|truncatechars:25 }}</div>
                                     </td>
-                                    <td class="px-4 py-4">
+                                    <td class="px-3 py-2">
                                         <a href="{% url 'detalle_partida' sp.partida.pk %}" class="text-blue-600 hover:underline font-medium">
                                             {{ sp.partida.numero_partida }}
                                         </a>
-                                        <div class="text-sm text-gray-500">{{ sp.partida.nombre|truncatechars:25 }}</div>
                                     </td>
-                                    <td class="px-4 py-4">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                            <i class="fas fa-bookmark mr-1"></i> {{ sp.etiqueta }}
+                                    <td class="px-3 py-2">
+                                        {% if sp.etiqueta %}
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                            {{ sp.etiqueta|truncatechars:15 }}
                                         </span>
+                                        {% else %}
+                                        <span class="text-gray-400">-</span>
+                                        {% endif %}
                                     </td>
-                                    <td class="px-4 py-4">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                    <td class="px-3 py-2">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
                                             {% if sp.tipo_proceso == 'LAVADO' %}bg-blue-100 text-blue-800
                                             {% elif sp.tipo_proceso == 'NATURAL' %}bg-amber-100 text-amber-800
                                             {% elif sp.tipo_proceso == 'HONEY' %}bg-yellow-100 text-yellow-800
@@ -124,33 +229,17 @@
                                             {{ sp.tipo_proceso }}
                                         </span>
                                     </td>
-                                    <td class="px-4 py-4 text-right font-semibold text-green-700">
-                                        {{ sp.quintales|floatformat:2 }} qq
+                                    <td class="px-3 py-2 text-right font-semibold text-green-700">
+                                        {{ sp.quintales|floatformat:2 }}
                                     </td>
-                                    <td class="px-4 py-4 text-center">
-                                        {{ sp.numero_sacos }}
-                                    </td>
-                                    <td class="px-4 py-4 text-sm text-gray-600">
-                                        {% if sp.partida.bodega %}
-                                            <i class="fas fa-warehouse text-gray-400 mr-1"></i>{{ sp.partida.bodega.nombre }}
-                                        {% endif %}
-                                        {% if sp.fila %}
-                                            <br><i class="fas fa-layer-group text-gray-400 mr-1"></i>{{ sp.fila }}
-                                        {% endif %}
-                                    </td>
-                                    <td class="px-4 py-4">
-                                        <div class="flex gap-2">
-                                            <a href="{% url 'detalle_subpartida' sp.pk %}"
-                                               class="text-blue-600 hover:text-blue-800 p-1"
-                                               title="Ver detalle">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="{% url 'editar_subpartida' sp.pk %}"
-                                               class="text-amber-600 hover:text-amber-800 p-1"
-                                               title="Editar">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                        </div>
+                                    <td class="px-3 py-2 text-center">{{ sp.numero_sacos }}</td>
+                                    <td class="px-3 py-2 text-center">
+                                        <a href="{% url 'detalle_subpartida' sp.pk %}" class="text-blue-600 hover:text-blue-800 mr-2" title="Ver">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'editar_subpartida' sp.pk %}" class="text-amber-600 hover:text-amber-800" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -158,35 +247,28 @@
                         </table>
                     </div>
 
-                    <!-- Totales -->
-                    <div class="mt-6 pt-4 border-t bg-gray-50 rounded-lg p-4">
+                    <!-- Totales de la tabla -->
+                    <div class="mt-4 pt-3 border-t bg-gray-50 rounded-lg p-3">
                         <div class="grid grid-cols-3 gap-4 text-center">
                             <div>
-                                <div class="text-2xl font-bold text-blue-600">{{ subpartidas|length }}</div>
-                                <div class="text-sm text-gray-600">Total Lotes</div>
+                                <div class="text-xl font-bold text-blue-600">{{ total_subpartidas }}</div>
+                                <div class="text-xs text-gray-500">Lotes</div>
                             </div>
                             <div>
-                                <div class="text-2xl font-bold text-green-600">{{ total_quintales|floatformat:2 }} qq</div>
-                                <div class="text-sm text-gray-600">Total Quintales</div>
+                                <div class="text-xl font-bold text-green-600">{{ total_quintales|floatformat:2 }} qq</div>
+                                <div class="text-xs text-gray-500">Quintales</div>
                             </div>
                             <div>
-                                <div class="text-2xl font-bold text-amber-600">{{ total_sacos }}</div>
-                                <div class="text-sm text-gray-600">Total Sacos</div>
+                                <div class="text-xl font-bold text-amber-600">{{ total_sacos }}</div>
+                                <div class="text-xs text-gray-500">Sacos</div>
                             </div>
                         </div>
                     </div>
 
                     {% else %}
                     <div class="text-center py-12">
-                        <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
-                        <h3 class="text-xl font-medium text-gray-600 mb-2">No hay lotes con esta etiqueta</h3>
-                        <p class="text-gray-500">
-                            {% if etiqueta_seleccionada %}
-                                No se encontraron lotes de punto con la etiqueta "{{ etiqueta_seleccionada }}"
-                            {% else %}
-                                No hay lotes de punto etiquetados aún
-                            {% endif %}
-                        </p>
+                        <i class="fas fa-inbox text-5xl text-gray-300 mb-3"></i>
+                        <p class="text-gray-500">No hay lotes que mostrar</p>
                     </div>
                     {% endif %}
                 </div>
@@ -194,4 +276,143 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Colores para las gráficas
+    const colors = {
+        blue: ['#3B82F6', '#60A5FA', '#93C5FD', '#BFDBFE', '#DBEAFE'],
+        green: ['#10B981', '#34D399', '#6EE7B7', '#A7F3D0', '#D1FAE5'],
+        amber: ['#F59E0B', '#FBBF24', '#FCD34D', '#FDE68A', '#FEF3C7'],
+        purple: ['#8B5CF6', '#A78BFA', '#C4B5FD', '#DDD6FE', '#EDE9FE'],
+        mixed: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316']
+    };
+
+    // 1. Gráfica de Tipo de Proceso (Doughnut)
+    const dataProceso = {{ stats_proceso_json|safe }};
+    if (dataProceso.length > 0) {
+        new Chart(document.getElementById('chartProceso'), {
+            type: 'doughnut',
+            data: {
+                labels: dataProceso.map(d => d.tipo_proceso),
+                datasets: [{
+                    data: dataProceso.map(d => parseFloat(d.total_quintales) || 0),
+                    backgroundColor: colors.mixed,
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => `${ctx.label}: ${ctx.raw.toFixed(2)} qq (${dataProceso[ctx.dataIndex].total_lotes} lotes)`
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. Gráfica de Etiquetas (Bar horizontal)
+    const dataEtiquetas = {{ stats_etiquetas_json|safe }};
+    if (dataEtiquetas.length > 0) {
+        new Chart(document.getElementById('chartEtiquetas'), {
+            type: 'bar',
+            data: {
+                labels: dataEtiquetas.map(d => d.etiqueta.length > 20 ? d.etiqueta.substring(0,20)+'...' : d.etiqueta),
+                datasets: [{
+                    label: 'Quintales',
+                    data: dataEtiquetas.map(d => parseFloat(d.total_quintales) || 0),
+                    backgroundColor: colors.green[0],
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { beginAtZero: true, grid: { display: false } },
+                    y: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // 3. Gráfica de Bodega (Pie)
+    const dataBodega = {{ stats_bodega_json|safe }};
+    if (dataBodega.length > 0) {
+        new Chart(document.getElementById('chartBodega'), {
+            type: 'pie',
+            data: {
+                labels: dataBodega.map(d => d.partida__bodega__nombre || 'Sin bodega'),
+                datasets: [{
+                    data: dataBodega.map(d => parseFloat(d.total_quintales) || 0),
+                    backgroundColor: colors.amber.concat(colors.blue),
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } }
+                }
+            }
+        });
+    }
+
+    // 4. Gráfica de Calidad de Taza (Bar)
+    const dataTaza = {{ stats_taza_json|safe }};
+    if (dataTaza.length > 0) {
+        new Chart(document.getElementById('chartTaza'), {
+            type: 'bar',
+            data: {
+                labels: dataTaza.map(d => d.taza),
+                datasets: [{
+                    label: 'Quintales',
+                    data: dataTaza.map(d => parseFloat(d.total_quintales) || 0),
+                    backgroundColor: colors.purple,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // 5. Top 5 Partidas
+    const topPartidas = {{ top_partidas_json|safe }};
+    const topContainer = document.getElementById('topPartidas');
+    if (topPartidas.length > 0 && topContainer) {
+        topContainer.innerHTML = topPartidas.map((p, i) => `
+            <div class="flex items-center justify-between bg-gray-50 rounded-lg p-2 text-sm">
+                <div class="flex items-center gap-2">
+                    <span class="w-5 h-5 flex items-center justify-center rounded-full text-xs font-bold
+                        ${i === 0 ? 'bg-yellow-400 text-yellow-900' : i === 1 ? 'bg-gray-300 text-gray-700' : i === 2 ? 'bg-amber-600 text-white' : 'bg-gray-200 text-gray-600'}">
+                        ${i + 1}
+                    </span>
+                    <span class="font-medium text-gray-700">${p.numero_partida}</span>
+                </div>
+                <span class="font-bold text-green-600">${parseFloat(p.total_qq || 0).toFixed(1)} qq</span>
+            </div>
+        `).join('');
+    } else if (topContainer) {
+        topContainer.innerHTML = '<p class="text-sm text-gray-400">Sin datos</p>';
+    }
+});
+</script>
 {% endblock %}

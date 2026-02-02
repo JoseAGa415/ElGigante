@@ -3878,49 +3878,99 @@ def agregar_subpartida(request, partida_id):
 
 @login_required
 def control_etiquetas(request):
-    """Vista para ver y filtrar lotes de punto por etiqueta"""
-    from django.db.models import Count, Sum
+    """Vista para Control de Partidas - Dashboard con gráficas y estadísticas"""
+    from django.db.models import Count, Sum, Avg
+    import json
 
     etiqueta_seleccionada = request.GET.get('etiqueta', '')
 
     # Obtener todas las etiquetas disponibles
     etiquetas = EtiquetaLote.objects.all()
 
-    # Obtener subpartidas filtradas por etiqueta si se seleccionó una
+    # Obtener TODAS las subpartidas activas para estadísticas generales
+    todas_subpartidas = SubPartida.objects.filter(activo=True)
+
+    # Subpartidas filtradas por etiqueta si se seleccionó una
     if etiqueta_seleccionada:
-        subpartidas = SubPartida.objects.filter(
-            etiqueta__iexact=etiqueta_seleccionada,
-            activo=True
+        subpartidas = todas_subpartidas.filter(
+            etiqueta__iexact=etiqueta_seleccionada
         ).select_related('partida', 'partida__bodega').order_by('-fecha_creacion')
     else:
-        subpartidas = SubPartida.objects.filter(
-            etiqueta__isnull=False,
-            activo=True
-        ).exclude(etiqueta='').select_related('partida', 'partida__bodega').order_by('-fecha_creacion')
+        subpartidas = todas_subpartidas.select_related('partida', 'partida__bodega').order_by('-fecha_creacion')
+
+    # === ESTADÍSTICAS GENERALES ===
+    totales_generales = todas_subpartidas.aggregate(
+        total_lotes=Count('id'),
+        total_quintales=Sum('quintales'),
+        total_sacos=Sum('numero_sacos'),
+        promedio_quintales=Avg('quintales')
+    )
+
+    # Total de partidas activas
+    total_partidas = Partida.objects.filter(activo=True).count()
 
     # Calcular totales de las subpartidas filtradas
-    totales = subpartidas.aggregate(
+    totales_filtrados = subpartidas.aggregate(
         total_quintales=Sum('quintales'),
         total_sacos=Sum('numero_sacos')
     )
 
-    # Estadísticas por etiqueta
-    stats_etiquetas = SubPartida.objects.filter(
-        activo=True,
+    # === DATOS PARA GRÁFICAS ===
+
+    # 1. Distribución por Tipo de Proceso
+    stats_proceso = list(todas_subpartidas.values('tipo_proceso').annotate(
+        total_lotes=Count('id'),
+        total_quintales=Sum('quintales')
+    ).order_by('-total_quintales'))
+
+    # 2. Distribución por Etiqueta (top 10)
+    stats_etiquetas = list(todas_subpartidas.filter(
         etiqueta__isnull=False
     ).exclude(etiqueta='').values('etiqueta').annotate(
         total_lotes=Count('id'),
         total_quintales=Sum('quintales'),
         total_sacos=Sum('numero_sacos')
-    ).order_by('etiqueta')
+    ).order_by('-total_quintales')[:10])
 
+    # 3. Distribución por Bodega
+    stats_bodega = list(todas_subpartidas.filter(
+        partida__bodega__isnull=False
+    ).values('partida__bodega__nombre').annotate(
+        total_lotes=Count('id'),
+        total_quintales=Sum('quintales')
+    ).order_by('-total_quintales'))
+
+    # 4. Distribución por Calidad de Taza
+    stats_taza = list(todas_subpartidas.filter(
+        taza__isnull=False
+    ).exclude(taza='').values('taza').annotate(
+        total_lotes=Count('id'),
+        total_quintales=Sum('quintales')
+    ).order_by('-total_quintales'))
+
+    # 5. Top 5 Partidas con más quintales
+    top_partidas = list(Partida.objects.filter(activo=True).annotate(
+        total_qq=Sum('subpartidas__quintales')
+    ).filter(total_qq__gt=0).order_by('-total_qq')[:5].values('numero_partida', 'nombre', 'total_qq'))
+
+    # Convertir a JSON para las gráficas
     context = {
         'etiquetas': etiquetas,
         'etiqueta_seleccionada': etiqueta_seleccionada,
-        'subpartidas': subpartidas,
+        'subpartidas': subpartidas[:50],  # Limitar a 50 para rendimiento
+        'total_subpartidas': subpartidas.count(),
         'stats_etiquetas': stats_etiquetas,
-        'total_quintales': totales['total_quintales'] or 0,
-        'total_sacos': totales['total_sacos'] or 0,
+        'total_quintales': totales_filtrados['total_quintales'] or 0,
+        'total_sacos': totales_filtrados['total_sacos'] or 0,
+        # Estadísticas generales
+        'totales_generales': totales_generales,
+        'total_partidas': total_partidas,
+        # Datos JSON para gráficas
+        'stats_proceso_json': json.dumps(stats_proceso),
+        'stats_etiquetas_json': json.dumps(stats_etiquetas),
+        'stats_bodega_json': json.dumps(stats_bodega),
+        'stats_taza_json': json.dumps(stats_taza),
+        'top_partidas_json': json.dumps(top_partidas),
     }
     return render(request, 'beneficio/partidas/control_etiquetas.html', context)
 
