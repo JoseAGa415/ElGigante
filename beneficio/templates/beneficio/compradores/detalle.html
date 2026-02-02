@@ -470,15 +470,36 @@
         </form>
     </div>    <!-- Historial de Compras -->
     <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div class="px-6 py-4 bg-gradient-to-r from-amber-600 to-orange-600">
+        <div class="px-6 py-4 bg-gradient-to-r from-amber-600 to-orange-600 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <h2 class="text-2xl font-bold text-white flex items-center gap-3">
                 <i class="fas fa-history"></i>
                 Historial de Compras
             </h2>
+            <!-- Acciones masivas -->
+            <div class="flex items-center gap-2" id="acciones-masivas">
+                <span class="text-white text-sm" id="contador-seleccion">0 seleccionadas</span>
+                <select id="nuevo-estado" class="px-3 py-2 rounded-lg border-0 text-sm bg-white text-gray-700 focus:ring-2 focus:ring-white">
+                    <option value="">Cambiar estado a...</option>
+                    <option value="pagado">✓ Pagado</option>
+                    <option value="parcial">⏳ Parcial</option>
+                    <option value="pendiente">⏰ Pendiente</option>
+                </select>
+                <button type="button" onclick="cambiarEstadoMasivo()"
+                        class="px-4 py-2 bg-white text-amber-600 rounded-lg hover:bg-amber-50 transition-colors font-medium text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        id="btn-cambiar-estado" disabled>
+                    <i class="fas fa-check-double"></i>
+                    Aplicar
+                </button>
+            </div>
         </div>        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="min-w-full divide-y divide-gray-200" id="tabla-compras">
                 <thead class="bg-gray-50">
                     <tr>
+                        <th class="px-4 py-4 text-center">
+                            <input type="checkbox" id="seleccionar-todos"
+                                   class="w-4 h-4 text-amber-600 rounded border-gray-300 focus:ring-amber-500 cursor-pointer"
+                                   onchange="toggleSeleccionTodos(this)">
+                        </th>
                         <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Fecha
                         </th>
@@ -504,7 +525,12 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     {% for compra in compras %}
-                    <tr class="hover:bg-amber-50 transition-colors">
+                    <tr class="hover:bg-amber-50 transition-colors" data-compra-id="{{ compra.pk }}">
+                        <td class="px-4 py-4 text-center">
+                            <input type="checkbox" name="compras_seleccionadas" value="{{ compra.pk }}"
+                                   class="checkbox-compra w-4 h-4 text-amber-600 rounded border-gray-300 focus:ring-amber-500 cursor-pointer"
+                                   onchange="actualizarContador()">
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm font-medium text-gray-900">
                                 {{ compra.fecha_compra|date:"d/m/Y" }}
@@ -592,7 +618,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="px-6 py-12 text-center">
+                        <td colspan="8" class="px-6 py-12 text-center">
                             <div class="flex flex-col items-center justify-center text-gray-500">
                                 <i class="fas fa-shopping-bag text-6xl mb-4 text-gray-300"></i>
                                 <p class="text-xl font-medium">No hay compras registradas</p>
@@ -623,5 +649,88 @@
         </a>
     </div></div>
 </div><!-- Cierre del div no-print -->
+
+<!-- JavaScript para cambio masivo de estado -->
+<script>
+function toggleSeleccionTodos(checkbox) {
+    const checkboxes = document.querySelectorAll('.checkbox-compra');
+    checkboxes.forEach(cb => cb.checked = checkbox.checked);
+    actualizarContador();
+}
+
+function actualizarContador() {
+    const checkboxes = document.querySelectorAll('.checkbox-compra:checked');
+    const contador = document.getElementById('contador-seleccion');
+    const btnCambiar = document.getElementById('btn-cambiar-estado');
+    const selectTodos = document.getElementById('seleccionar-todos');
+    const totalCheckboxes = document.querySelectorAll('.checkbox-compra');
+
+    contador.textContent = checkboxes.length + ' seleccionada' + (checkboxes.length !== 1 ? 's' : '');
+    btnCambiar.disabled = checkboxes.length === 0;
+
+    // Actualizar estado del checkbox "seleccionar todos"
+    if (totalCheckboxes.length > 0) {
+        selectTodos.checked = checkboxes.length === totalCheckboxes.length;
+        selectTodos.indeterminate = checkboxes.length > 0 && checkboxes.length < totalCheckboxes.length;
+    }
+}
+
+function cambiarEstadoMasivo() {
+    const nuevoEstado = document.getElementById('nuevo-estado').value;
+    if (!nuevoEstado) {
+        alert('Por favor selecciona un estado de pago');
+        return;
+    }
+
+    const checkboxes = document.querySelectorAll('.checkbox-compra:checked');
+    if (checkboxes.length === 0) {
+        alert('Por favor selecciona al menos una compra');
+        return;
+    }
+
+    const ids = Array.from(checkboxes).map(cb => cb.value);
+    const estadoTexto = {
+        'pagado': 'Pagado',
+        'parcial': 'Parcial',
+        'pendiente': 'Pendiente'
+    };
+
+    if (!confirm(`¿Cambiar el estado de ${ids.length} compra(s) a "${estadoTexto[nuevoEstado]}"?`)) {
+        return;
+    }
+
+    // Enviar petición AJAX
+    fetch('{% url "cambiar_estado_compras_masivo" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            compras_ids: ids,
+            nuevo_estado: nuevoEstado
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Recargar la página para ver los cambios
+            location.reload();
+        } else {
+            alert('Error: ' + (data.error || 'No se pudo actualizar'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al procesar la solicitud');
+    });
+}
+
+// Habilitar/deshabilitar botón cuando cambia el select
+document.getElementById('nuevo-estado').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.checkbox-compra:checked');
+    document.getElementById('btn-cambiar-estado').disabled = checkboxes.length === 0 || !this.value;
+});
+</script>
 {% endblock %}
 </artifact>

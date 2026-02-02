@@ -67,6 +67,7 @@ urlpatterns = [
     path('compradores/<int:comprador_id>/compras/agregar/', views.agregar_compra, name='agregar_compra'),
     path('compras/<int:pk>/editar/', views.editar_compra, name='editar_compra'),
     path('compras/<int:pk>/eliminar/', views.eliminar_compra, name='eliminar_compra'),
+    path('compras/cambiar-estado-masivo/', views.cambiar_estado_compras_masivo, name='cambiar_estado_compras_masivo'),
 
     # Mantenimiento de Planta
     path('mantenimiento/', views.control_mantenimiento, name='control_mantenimiento'),

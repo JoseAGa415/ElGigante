@@ -1810,17 +1810,50 @@ def eliminar_compra(request, pk):
     """Eliminar una compra"""
     compra = get_object_or_404(Compra, pk=pk)
     comprador = compra.comprador
-    
+
     if request.method == 'POST':
         compra.delete()
         messages.success(request, 'Compra eliminada exitosamente')
         # CORREGIDO: Redirección a lista_compras
         return redirect('lista_compras')
-    
+
     context = {
         'compra': compra,
     }
     return render(request, 'beneficio/compradores/eliminar_compra.html', context)
+
+
+@login_required
+def cambiar_estado_compras_masivo(request):
+    """Cambiar el estado de pago de múltiples compras"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
+
+    try:
+        import json
+        data = json.loads(request.body)
+        compras_ids = data.get('compras_ids', [])
+        nuevo_estado = data.get('nuevo_estado', '')
+
+        if not compras_ids:
+            return JsonResponse({'success': False, 'error': 'No se seleccionaron compras'})
+
+        if nuevo_estado not in ['pagado', 'parcial', 'pendiente']:
+            return JsonResponse({'success': False, 'error': 'Estado de pago inválido'})
+
+        # Actualizar las compras
+        compras_actualizadas = Compra.objects.filter(pk__in=compras_ids).update(estado_pago=nuevo_estado)
+
+        return JsonResponse({
+            'success': True,
+            'message': f'{compras_actualizadas} compra(s) actualizada(s)',
+            'actualizadas': compras_actualizadas
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Datos inválidos'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
 @login_required
