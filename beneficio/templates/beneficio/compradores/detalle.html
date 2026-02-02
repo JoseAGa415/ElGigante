@@ -1,7 +1,275 @@
 <artifact identifier="detalle-proveedor-html" type="application/vnd.ant.code" language="html" title="detalle.html - Vista del Comprador con Historial de Compras">
 {% extends 'base.html' %}
-{% load static %}{% block title %}{{ comprador.nombre }} - Detalle{% endblock %}{% block content %}
-<div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-4 md:py-8">
+{% load static %}{% block title %}{{ comprador.nombre }} - Detalle{% endblock %}
+
+{% block extra_css %}
+<style>
+    @media print {
+        /* Ocultar elementos no necesarios en impresión */
+        .no-print, nav, footer, .sidebar,
+        form, button:not(.print-only),
+        a[href]:not(.print-link),
+        .filtros-section,
+        .action-buttons {
+            display: none !important;
+        }
+
+        /* Reset de estilos para impresión */
+        body {
+            background: white !important;
+            font-size: 12pt !important;
+            color: black !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        .print-container {
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 20px !important;
+        }
+
+        /* Encabezado de impresión */
+        .print-header {
+            display: block !important;
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .print-header h1 {
+            font-size: 24pt !important;
+            margin: 0;
+        }
+
+        .print-header p {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        /* Información del proveedor */
+        .print-info-section {
+            display: block !important;
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            background: #f9f9f9 !important;
+        }
+
+        .print-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .print-info-item {
+            padding: 5px 0;
+        }
+
+        .print-info-item label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Estadísticas */
+        .print-stats {
+            display: flex !important;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            background: #f5f5f5 !important;
+        }
+
+        .print-stat-item {
+            text-align: center;
+        }
+
+        .print-stat-item .value {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .print-stat-item .label {
+            font-size: 10pt;
+            color: #666;
+        }
+
+        /* Tabla de compras */
+        .print-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .print-table th {
+            background: #333 !important;
+            color: white !important;
+            padding: 10px;
+            text-align: left;
+            font-size: 10pt;
+        }
+
+        .print-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #ddd;
+            font-size: 10pt;
+        }
+
+        .print-table tr:nth-child(even) {
+            background: #f9f9f9 !important;
+        }
+
+        .print-table .total-row {
+            font-weight: bold;
+            background: #e0e0e0 !important;
+        }
+
+        /* Pie de página */
+        .print-footer {
+            display: block !important;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+            font-size: 9pt;
+            color: #666;
+            text-align: center;
+        }
+
+        /* Ocultar en pantalla, mostrar en impresión */
+        .print-only {
+            display: block !important;
+        }
+
+        /* Ajustes de página */
+        @page {
+            margin: 1.5cm;
+            size: A4;
+        }
+
+        /* Evitar cortes en filas de tabla */
+        tr {
+            page-break-inside: avoid;
+        }
+    }
+
+    /* Ocultar elementos de solo impresión en pantalla */
+    .print-only {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Sección de impresión - Solo visible al imprimir -->
+<div class="print-only print-container">
+    <div class="print-header">
+        <h1>REPORTE DE PROVEEDOR</h1>
+        <p><strong>{{ comprador.nombre }}</strong></p>
+        {% if comprador.empresa %}<p>{{ comprador.empresa }}</p>{% endif %}
+        <p style="font-size: 10pt; margin-top: 10px;">Fecha de impresión: {% now "d/m/Y H:i" %}</p>
+    </div>
+
+    <div class="print-info-section">
+        <h3 style="margin: 0 0 10px 0; font-size: 14pt; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Información del Proveedor</h3>
+        <div class="print-info-grid">
+            <div class="print-info-item">
+                <label>Teléfono:</label> {{ comprador.telefono|default:"N/A" }}
+            </div>
+            <div class="print-info-item">
+                <label>Email:</label> {{ comprador.email|default:"N/A" }}
+            </div>
+            <div class="print-info-item">
+                <label>Dirección:</label> {{ comprador.direccion|default:"N/A" }}
+            </div>
+            <div class="print-info-item">
+                <label>Estado:</label> {% if comprador.activo %}Activo{% else %}Inactivo{% endif %}
+            </div>
+            <div class="print-info-item">
+                <label>Fecha de registro:</label> {{ comprador.created_at|date:"d/m/Y" }}
+            </div>
+            {% if comprador.notas %}
+            <div class="print-info-item" style="grid-column: span 2;">
+                <label>Notas:</label> {{ comprador.notas }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="print-stats">
+        <div class="print-stat-item">
+            <div class="value">{{ total_compras }}</div>
+            <div class="label">Total de Compras</div>
+        </div>
+        <div class="print-stat-item">
+            <div class="value">{{ cantidad_total|floatformat:2 }}</div>
+            <div class="label">Cantidad Total</div>
+        </div>
+        <div class="print-stat-item">
+            <div class="value">Q{{ monto_total|floatformat:2 }}</div>
+            <div class="label">Monto Total</div>
+        </div>
+    </div>
+
+    <h3 style="margin: 20px 0 10px 0; font-size: 14pt;">Historial de Compras</h3>
+    <table class="print-table">
+        <thead>
+            <tr>
+                <th style="width: 12%;">Fecha</th>
+                <th style="width: 25%;">Descripción</th>
+                <th style="width: 12%;">Cantidad</th>
+                <th style="width: 12%;">Precio Unit.</th>
+                <th style="width: 14%;">Monto Total</th>
+                <th style="width: 12%;">Estado</th>
+                <th style="width: 13%;">Factura</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for compra in compras %}
+            <tr>
+                <td>{{ compra.fecha_compra|date:"d/m/Y" }}</td>
+                <td>{{ compra.descripcion|default:"Sin descripción" }}</td>
+                <td>{{ compra.cantidad }} {{ compra.get_unidad_display }}</td>
+                <td>Q{{ compra.precio_unitario|floatformat:2 }}</td>
+                <td><strong>Q{{ compra.monto_total|floatformat:2 }}</strong></td>
+                <td>{% if compra.estado_pago == 'pagado' %}Pagado{% elif compra.estado_pago == 'parcial' %}Parcial{% else %}Pendiente{% endif %}</td>
+                <td>{{ compra.numero_factura|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 20px;">No hay compras registradas</td>
+            </tr>
+            {% endfor %}
+            {% if compras %}
+            <tr class="total-row">
+                <td colspan="4" style="text-align: right;"><strong>TOTALES:</strong></td>
+                <td><strong>Q{{ monto_total|floatformat:2 }}</strong></td>
+                <td colspan="2"></td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <div class="print-footer">
+        <div style="display: flex; justify-content: space-between; margin-top: 40px;">
+            <div style="text-align: center; width: 45%;">
+                <div style="border-top: 1px solid #333; padding-top: 5px;">
+                    Firma del Responsable
+                </div>
+            </div>
+            <div style="text-align: center; width: 45%;">
+                <div style="border-top: 1px solid #333; padding-top: 5px;">
+                    Sello de la Empresa
+                </div>
+            </div>
+        </div>
+        <p style="margin-top: 20px;">Documento generado automáticamente - {% now "d/m/Y H:i" %}</p>
+    </div>
+</div>
+
+<div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-4 md:py-8 no-print">
     <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
 
     <!-- Encabezado del Comprador -->
@@ -41,14 +309,19 @@
             </div>
 
             <!-- Botones de acción -->
-            <div class="flex flex-row gap-2 w-full md:w-auto">
+            <div class="flex flex-row gap-2 w-full md:w-auto action-buttons">
+                <button onclick="window.print()"
+                   class="flex-1 md:flex-none px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 shadow-lg text-sm no-print">
+                    <i class="fas fa-print"></i>
+                    <span class="md:inline">Imprimir</span>
+                </button>
                 <a href="{% url 'editar_comprador' comprador.pk %}"
-                   class="flex-1 md:flex-none px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg text-sm">
+                   class="flex-1 md:flex-none px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg text-sm no-print">
                     <i class="fas fa-edit"></i>
                     <span class="md:inline">Editar</span>
                 </a>
                 <a href="{% url 'eliminar_comprador' comprador.pk %}"
-                   class="flex-1 md:flex-none px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 shadow-lg text-sm">
+                   class="flex-1 md:flex-none px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 shadow-lg text-sm no-print">
                     <i class="fas fa-user-slash"></i>
                     <span class="hidden sm:inline">Desactivar</span>
                 </a>
@@ -131,7 +404,7 @@
             Agregar Nueva Compra
         </a>
     </div>    <!-- Filtros -->
-    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8 filtros-section">
         <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
             <i class="fas fa-filter text-amber-600"></i>
             Filtrar Compras
@@ -318,17 +591,17 @@
         </div>
     </div>    <!-- Botón de regreso -->
     <div class="mt-8 flex gap-4">
-        <a href="{% url 'lista_compradores' %}" 
+        <a href="{% url 'lista_compradores' %}"
            class="inline-flex items-center gap-2 px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors shadow-lg">
             <i class="fas fa-arrow-left"></i>
             Volver a Lista de Compradores
         </a>
-        <a href="{% url 'lista_compras' %}" 
+        <a href="{% url 'lista_compras' %}"
            class="inline-flex items-center gap-2 px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors shadow-lg">
             <i class="fas fa-list"></i>
             Ver Todas las Compras
         </a>
     </div></div>
-</div>
+</div><!-- Cierre del div no-print -->
 {% endblock %}
 </artifact>
