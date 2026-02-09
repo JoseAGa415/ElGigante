@@ -3725,6 +3725,17 @@ def agregar_subpartida(request, partida_id):
     """Agregar un Lote de Punto (SubPartida) a una Partida"""
     partida = get_object_or_404(Partida, pk=partida_id, activo=True)
 
+    def safe_decimal(value, default=None):
+        """Convertir valor a Decimal de forma segura"""
+        if not value or value.strip() == '':
+            return default
+        try:
+            # Reemplazar coma por punto para formato español
+            cleaned = value.strip().replace(',', '.')
+            return Decimal(cleaned)
+        except:
+            return default
+
     if request.method == 'POST':
         try:
             with transaction.atomic():
@@ -3751,26 +3762,23 @@ def agregar_subpartida(request, partida_id):
                 subpartida.numero_sacos = int(numero_sacos) if numero_sacos else 1
 
                 # Quintales (obligatorio)
-                quintales = request.POST.get('quintales', '0')
-                if not quintales or Decimal(quintales) <= 0:
+                quintales_val = safe_decimal(request.POST.get('quintales', '0'), Decimal('0'))
+                if quintales_val <= 0:
                     raise ValueError("Los quintales son obligatorios y deben ser mayores a 0")
-                subpartida.quintales = Decimal(quintales)
+                subpartida.quintales = quintales_val
 
                 # Calcular peso en kg desde quintales (1 qq = 46 kg)
-                peso_bruto = request.POST.get('peso_bruto', '0')
-                if peso_bruto and Decimal(peso_bruto) > 0:
-                    subpartida.peso_bruto_kg = Decimal(peso_bruto)
+                peso_bruto_val = safe_decimal(request.POST.get('peso_bruto', '0'), Decimal('0'))
+                if peso_bruto_val > 0:
+                    subpartida.peso_bruto_kg = peso_bruto_val
                 else:
-                    subpartida.peso_bruto_kg = Decimal(quintales) * 46
+                    subpartida.peso_bruto_kg = quintales_val * 46
 
-                tara = request.POST.get('tara', '0')
-                subpartida.tara_kg = Decimal(tara) if tara else Decimal('0')
+                subpartida.tara_kg = safe_decimal(request.POST.get('tara', '0'), Decimal('0'))
                 subpartida.unidad_medida = 'qq'
 
                 # Humedad
-                humedad = request.POST.get('humedad', '').strip()
-                if humedad:
-                    subpartida.humedad = Decimal(humedad)
+                subpartida.humedad = safe_decimal(request.POST.get('humedad', ''))
 
                 # UBICACIÓN (Fila)
                 fila = request.POST.get('fila', '').strip()
@@ -3785,58 +3793,25 @@ def agregar_subpartida(request, partida_id):
                     EtiquetaLote.objects.get_or_create(nombre=etiqueta)
 
                 # === Campos de Análisis de Calidad ===
-                rendimiento_b15 = request.POST.get('rendimiento_b15', '').strip()
-                if rendimiento_b15:
-                    subpartida.rendimiento_b15 = Decimal(rendimiento_b15)
-
-                defectos = request.POST.get('defectos', '').strip()
-                if defectos:
-                    subpartida.defectos = Decimal(defectos)
-
-                rb = request.POST.get('rb', '').strip()
-                if rb:
-                    subpartida.rb = Decimal(rb)
-
-                rn = request.POST.get('rn', '').strip()
-                if rn:
-                    subpartida.rn = Decimal(rn)
-
-                score = request.POST.get('score', '').strip()
-                if score:
-                    subpartida.score = Decimal(score)
+                subpartida.rendimiento_b15 = safe_decimal(request.POST.get('rendimiento_b15', ''))
+                subpartida.defectos = safe_decimal(request.POST.get('defectos', ''))
+                subpartida.rb = safe_decimal(request.POST.get('rb', ''))
+                subpartida.rn = safe_decimal(request.POST.get('rn', ''))
+                subpartida.score = safe_decimal(request.POST.get('score', ''))
 
                 # === Campos adicionales de catación ===
-                peso_cp = request.POST.get('peso_cp', '').strip()
-                if peso_cp:
-                    subpartida.peso_cp = Decimal(peso_cp)
-
-                oro_sucio = request.POST.get('oro_sucio', '').strip()
-                if oro_sucio:
-                    subpartida.oro_sucio = Decimal(oro_sucio)
-
-                oro_limpio = request.POST.get('oro_limpio', '').strip()
-                if oro_limpio:
-                    subpartida.oro_limpio = Decimal(oro_limpio)
+                subpartida.peso_cp = safe_decimal(request.POST.get('peso_cp', ''))
+                subpartida.oro_sucio = safe_decimal(request.POST.get('oro_sucio', ''))
+                subpartida.oro_limpio = safe_decimal(request.POST.get('oro_limpio', ''))
 
                 granulometria = request.POST.get('granulometria', '').strip()
                 if granulometria:
                     subpartida.granulometria = granulometria
 
-                bz_gramos = request.POST.get('bz_gramos', '').strip()
-                if bz_gramos:
-                    subpartida.bz_gramos = Decimal(bz_gramos)
-
-                bz_porcentaje = request.POST.get('bz_porcentaje', '').strip()
-                if bz_porcentaje:
-                    subpartida.bz_porcentaje = Decimal(bz_porcentaje)
-
-                defectos_fisicos = request.POST.get('defectos_fisicos', '').strip()
-                if defectos_fisicos:
-                    subpartida.defectos_fisicos = Decimal(defectos_fisicos)
-
-                defectos_verdes = request.POST.get('defectos_verdes', '').strip()
-                if defectos_verdes:
-                    subpartida.defectos_verdes = Decimal(defectos_verdes)
+                subpartida.bz_gramos = safe_decimal(request.POST.get('bz_gramos', ''))
+                subpartida.bz_porcentaje = safe_decimal(request.POST.get('bz_porcentaje', ''))
+                subpartida.defectos_fisicos = safe_decimal(request.POST.get('defectos_fisicos', ''))
+                subpartida.defectos_verdes = safe_decimal(request.POST.get('defectos_verdes', ''))
 
                 # === Calidad de Taza ===
                 taza = request.POST.get('taza', '').strip()
@@ -3984,6 +3959,17 @@ def editar_subpartida(request, pk):
     """Editar un Lote de Punto (SubPartida)"""
     subpartida = get_object_or_404(SubPartida, pk=pk, activo=True)
 
+    def safe_decimal(value, default=None):
+        """Convertir valor a Decimal de forma segura"""
+        if not value or value.strip() == '':
+            return default
+        try:
+            # Reemplazar coma por punto para formato español
+            cleaned = value.strip().replace(',', '.')
+            return Decimal(cleaned)
+        except:
+            return default
+
     if request.method == 'POST':
         try:
             with transaction.atomic():
@@ -4006,45 +3992,34 @@ def editar_subpartida(request, pk):
                 subpartida.numero_sacos = int(numero_sacos) if numero_sacos else 1
 
                 # Quintales (obligatorio)
-                quintales = request.POST.get('quintales', '0')
-                if not quintales or Decimal(quintales) <= 0:
+                quintales_val = safe_decimal(request.POST.get('quintales', '0'), Decimal('0'))
+                if quintales_val <= 0:
                     raise ValueError("Los quintales son obligatorios y deben ser mayores a 0")
-                subpartida.quintales = Decimal(quintales)
+                subpartida.quintales = quintales_val
 
                 # Calcular peso en kg desde quintales (1 qq = 46 kg)
-                peso_bruto = request.POST.get('peso_bruto', '0')
-                if peso_bruto and Decimal(peso_bruto) > 0:
-                    subpartida.peso_bruto_kg = Decimal(peso_bruto)
+                peso_bruto_val = safe_decimal(request.POST.get('peso_bruto', '0'), Decimal('0'))
+                if peso_bruto_val > 0:
+                    subpartida.peso_bruto_kg = peso_bruto_val
                 else:
-                    subpartida.peso_bruto_kg = Decimal(quintales) * 46
+                    subpartida.peso_bruto_kg = quintales_val * 46
 
-                tara = request.POST.get('tara', '0')
-                subpartida.tara_kg = Decimal(tara) if tara else Decimal('0')
+                subpartida.tara_kg = safe_decimal(request.POST.get('tara', '0'), Decimal('0'))
                 subpartida.unidad_medida = 'qq'
 
                 # Humedad
-                humedad = request.POST.get('humedad', '').strip()
-                subpartida.humedad = Decimal(humedad) if humedad else None
+                subpartida.humedad = safe_decimal(request.POST.get('humedad', ''))
 
                 # UBICACIÓN (Fila)
                 fila = request.POST.get('fila', '').strip()
                 subpartida.fila = fila if fila else None
 
                 # === Campos de Análisis de Calidad ===
-                rendimiento_b15 = request.POST.get('rendimiento_b15', '').strip()
-                subpartida.rendimiento_b15 = Decimal(rendimiento_b15) if rendimiento_b15 else None
-
-                defectos = request.POST.get('defectos', '').strip()
-                subpartida.defectos = Decimal(defectos) if defectos else None
-
-                rb = request.POST.get('rb', '').strip()
-                subpartida.rb = Decimal(rb) if rb else None
-
-                rn = request.POST.get('rn', '').strip()
-                subpartida.rn = Decimal(rn) if rn else None
-
-                score = request.POST.get('score', '').strip()
-                subpartida.score = Decimal(score) if score else None
+                subpartida.rendimiento_b15 = safe_decimal(request.POST.get('rendimiento_b15', ''))
+                subpartida.defectos = safe_decimal(request.POST.get('defectos', ''))
+                subpartida.rb = safe_decimal(request.POST.get('rb', ''))
+                subpartida.rn = safe_decimal(request.POST.get('rn', ''))
+                subpartida.score = safe_decimal(request.POST.get('score', ''))
 
                 # === Calidad de Taza ===
                 taza = request.POST.get('taza', '').strip()
@@ -4054,29 +4029,17 @@ def editar_subpartida(request, pk):
                 subpartida.cualidades = cualidades if cualidades else None
 
                 # === Datos de Catación ===
-                peso_cp = request.POST.get('peso_cp', '').strip()
-                subpartida.peso_cp = Decimal(peso_cp) if peso_cp else None
-
-                oro_sucio = request.POST.get('oro_sucio', '').strip()
-                subpartida.oro_sucio = Decimal(oro_sucio) if oro_sucio else None
-
-                oro_limpio = request.POST.get('oro_limpio', '').strip()
-                subpartida.oro_limpio = Decimal(oro_limpio) if oro_limpio else None
+                subpartida.peso_cp = safe_decimal(request.POST.get('peso_cp', ''))
+                subpartida.oro_sucio = safe_decimal(request.POST.get('oro_sucio', ''))
+                subpartida.oro_limpio = safe_decimal(request.POST.get('oro_limpio', ''))
 
                 granulometria = request.POST.get('granulometria', '').strip()
                 subpartida.granulometria = granulometria if granulometria else None
 
-                bz_gramos = request.POST.get('bz_gramos', '').strip()
-                subpartida.bz_gramos = Decimal(bz_gramos) if bz_gramos else None
-
-                bz_porcentaje = request.POST.get('bz_porcentaje', '').strip()
-                subpartida.bz_porcentaje = Decimal(bz_porcentaje) if bz_porcentaje else None
-
-                defectos_fisicos = request.POST.get('defectos_fisicos', '').strip()
-                subpartida.defectos_fisicos = Decimal(defectos_fisicos) if defectos_fisicos else None
-
-                defectos_verdes = request.POST.get('defectos_verdes', '').strip()
-                subpartida.defectos_verdes = Decimal(defectos_verdes) if defectos_verdes else None
+                subpartida.bz_gramos = safe_decimal(request.POST.get('bz_gramos', ''))
+                subpartida.bz_porcentaje = safe_decimal(request.POST.get('bz_porcentaje', ''))
+                subpartida.defectos_fisicos = safe_decimal(request.POST.get('defectos_fisicos', ''))
+                subpartida.defectos_verdes = safe_decimal(request.POST.get('defectos_verdes', ''))
 
                 perfil_sensorial = request.POST.get('perfil_sensorial', '').strip()
                 subpartida.perfil_sensorial = perfil_sensorial if perfil_sensorial else None
