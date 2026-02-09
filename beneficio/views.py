@@ -3864,11 +3864,13 @@ def control_etiquetas(request):
 
     etiqueta_seleccionada = request.GET.get('etiqueta', '')
 
-    # Obtener todas las etiquetas disponibles
-    etiquetas = EtiquetaLote.objects.all()
-
     # Obtener TODAS las subpartidas activas para estadísticas generales
     todas_subpartidas = SubPartida.objects.filter(activo=True)
+
+    # Obtener etiquetas únicas que están en uso en las subpartidas
+    etiquetas = todas_subpartidas.filter(
+        etiqueta__isnull=False
+    ).exclude(etiqueta='').values_list('etiqueta', flat=True).distinct().order_by('etiqueta')
 
     # Subpartidas filtradas por etiqueta si se seleccionó una
     if etiqueta_seleccionada:
