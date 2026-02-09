@@ -1239,20 +1239,26 @@ class Compra(models.Model):
         ('parcial', 'Pago Parcial'),
         ('pagado', 'Pagado'),
     ]
-    
+
+    METODO_PAGO_CHOICES = [
+        ('efectivo', 'Efectivo'),
+        ('transferencia', 'Transferencia'),
+        ('cheque', 'Cheque'),
+    ]
+
     comprador = models.ForeignKey(Comprador, on_delete=models.CASCADE, related_name='compras')
     fecha_compra = models.DateTimeField(default=timezone.now)
     descripcion = models.TextField(blank=True, null=True)
-    
+
     # Cantidad y precio
     cantidad = models.DecimalField(max_digits=10, decimal_places=2)
     unidad = models.CharField(max_length=10, choices=UNIDAD_CHOICES, default='qq')
     precio_unitario = models.DecimalField(max_digits=10, decimal_places=2)
     monto_total = models.DecimalField(max_digits=12, decimal_places=2, editable=False)
-    
+
     # Información de pago
     numero_factura = models.CharField(max_length=100, blank=True, null=True)
-    metodo_pago = models.CharField(max_length=100, blank=True, null=True)
+    metodo_pago = models.CharField(max_length=20, choices=METODO_PAGO_CHOICES, blank=True, null=True)
     estado_pago = models.CharField(max_length=20, choices=ESTADO_PAGO_CHOICES, default='pendiente')
     comprobante = models.FileField(
         upload_to='comprobantes/%Y/%m/',

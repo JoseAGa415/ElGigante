@@ -1860,18 +1860,19 @@ def cambiar_estado_compras_masivo(request):
 def lista_compras(request):
     """Vista general de todas las compras"""
     compras = Compra.objects.select_related(
-        'comprador', 
-        'lote__bodega', 
-        'procesado__lote__bodega', 
+        'comprador',
+        'lote__bodega',
+        'procesado__lote__bodega',
         'mezcla'
     ).all().order_by('-fecha_compra')
-    
+
     # Filtros
     comprador_id = request.GET.get('comprador')
     fecha_desde = request.GET.get('fecha_desde')
     fecha_hasta = request.GET.get('fecha_hasta')
     estado_pago = request.GET.get('estado_pago')
-    
+    metodo_pago = request.GET.get('metodo_pago')
+
     if comprador_id:
         compras = compras.filter(comprador_id=comprador_id)
     if fecha_desde:
@@ -1880,18 +1881,21 @@ def lista_compras(request):
         compras = compras.filter(fecha_compra__date__lte=fecha_hasta)
     if estado_pago:
         compras = compras.filter(estado_pago=estado_pago)
-    
+    if metodo_pago:
+        compras = compras.filter(metodo_pago=metodo_pago)
+
     # Estadísticas
     estadisticas = compras.aggregate(
         total_cantidad=Sum('cantidad'),
         total_monto=Sum('monto_total'),
         total_compras=Count('id')
     )
-    
+
     context = {
         'compras': compras,
         'compradores': Comprador.objects.filter(activo=True),
         'estadisticas': estadisticas,
+        'metodos_pago': Compra.METODO_PAGO_CHOICES,
     }
     return render(request, 'beneficio/compradores/lista_compras.html', context)
 
