@@ -3859,6 +3859,7 @@ def agregar_subpartida(request, partida_id):
 def control_etiquetas(request):
     """Vista para Control de Partidas - Dashboard con gráficas y estadísticas"""
     from django.db.models import Count, Sum, Avg
+    from django.core.serializers.json import DjangoJSONEncoder
     import json
 
     etiqueta_seleccionada = request.GET.get('etiqueta', '')
@@ -3944,12 +3945,12 @@ def control_etiquetas(request):
         # Estadísticas generales
         'totales_generales': totales_generales,
         'total_partidas': total_partidas,
-        # Datos JSON para gráficas
-        'stats_proceso_json': json.dumps(stats_proceso),
-        'stats_etiquetas_json': json.dumps(stats_etiquetas),
-        'stats_bodega_json': json.dumps(stats_bodega),
-        'stats_taza_json': json.dumps(stats_taza),
-        'top_partidas_json': json.dumps(top_partidas),
+        # Datos JSON para gráficas (usar DjangoJSONEncoder para manejar Decimal)
+        'stats_proceso_json': json.dumps(stats_proceso, cls=DjangoJSONEncoder),
+        'stats_etiquetas_json': json.dumps(stats_etiquetas, cls=DjangoJSONEncoder),
+        'stats_bodega_json': json.dumps(stats_bodega, cls=DjangoJSONEncoder),
+        'stats_taza_json': json.dumps(stats_taza, cls=DjangoJSONEncoder),
+        'top_partidas_json': json.dumps(top_partidas, cls=DjangoJSONEncoder),
     }
     return render(request, 'beneficio/partidas/control_etiquetas.html', context)
 
