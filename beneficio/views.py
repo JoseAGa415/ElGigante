@@ -3616,10 +3616,12 @@ def editar_partida(request, pk):
                     raise ValueError("El número de partida es obligatorio")
 
                 viejo_numero = partida.numero_partida
+
+                # Verificar unicidad siempre (incluso si el número no cambió, por si hay duplicados en BD)
+                if Partida.objects.filter(numero_partida=nuevo_numero).exclude(pk=partida.pk).exists():
+                    raise ValueError(f"El número '{nuevo_numero}' ya está en uso por otra partida")
+
                 if nuevo_numero != viejo_numero:
-                    # Verificar que no esté en uso por otra partida
-                    if Partida.objects.filter(numero_partida=nuevo_numero).exclude(pk=partida.pk).exists():
-                        raise ValueError(f"El número '{nuevo_numero}' ya está en uso por otra partida")
                     # Actualizar subpartidas: reemplazar el prefijo viejo por el nuevo
                     from beneficio.models import SubPartida
                     subs = SubPartida.objects.filter(partida=partida)
@@ -3686,18 +3688,20 @@ def editar_partida(request, pk):
             print(f"❌ ValueError: {str(ve)}")
             messages.error(request, f'❌ Error: {str(ve)}')
             print("=" * 60 + "\n")
-            
+
         except Exception as e:
-            print(f"❌ Exception: {str(e)}")
-            print(f"   Tipo: {type(e).__name__}")
-            
-            import traceback
-            print("\n📋 Traceback completo:")
-            traceback.print_exc()
-            
-            messages.error(request, f'❌ Error al actualizar partida: {str(e)}')
+            from django.db import IntegrityError
+            if isinstance(e, IntegrityError) and 'numero_partida' in str(e):
+                messages.error(request, f'❌ El número de partida ya está en uso por otra partida')
+            else:
+                print(f"❌ Exception: {str(e)}")
+                print(f"   Tipo: {type(e).__name__}")
+                import traceback
+                print("\n📋 Traceback completo:")
+                traceback.print_exc()
+                messages.error(request, f'❌ Error al actualizar partida: {str(e)}')
             print("=" * 60 + "\n")
-    
+
     # GET request o después de error
     print(f"\n📄 Mostrando formulario de edición para partida {partida.numero_partida}")
     print(f"   Bodegas disponibles: {bodegas.count()}")
