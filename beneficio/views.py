@@ -3693,32 +3693,29 @@ def editar_partida(request, pk):
 @login_required
 def eliminar_partida(request, pk):
     """
-    Eliminar (desactivar) partida principal
+    Eliminar permanentemente una partida y todas sus sub-partidas
     """
     partida = get_object_or_404(Partida, pk=pk, activo=True)
-    
+
     if request.method == 'POST':
         try:
-            # Soft delete
-            partida.activo = False
-            partida.save()
-            
-            # También desactivar todas las sub-partidas
-            partida.subpartidas.all().update(activo=False)
-            
-            messages.success(request, f'✅ Partida "{partida.nombre}" eliminada')
+            nombre = partida.nombre
+            # Hard delete: elimina subpartidas y la partida permanentemente
+            partida.subpartidas.all().delete()
+            partida.delete()
+            messages.success(request, f'✅ Partida "{nombre}" eliminada permanentemente')
             return redirect('lista_partidas')
-            
+
         except Exception as e:
             messages.error(request, f'❌ Error al eliminar: {str(e)}')
-    
+
     context = {'partida': partida}
     return render(request, 'beneficio/partidas/eliminar.html', context)
 
 
 @login_required
 def eliminar_partidas_multiple(request):
-    """Eliminar (desactivar) múltiples partidas seleccionadas"""
+    """Eliminar permanentemente múltiples partidas seleccionadas"""
     if request.method == 'POST':
         ids_raw = request.POST.get('partidas_ids', '')
         ids = [int(i) for i in ids_raw.split(',') if i.strip().isdigit()]
@@ -3726,13 +3723,11 @@ def eliminar_partidas_multiple(request):
             messages.error(request, '❌ No se seleccionaron partidas')
             return redirect('lista_partidas')
         try:
-            partidas = Partida.objects.filter(pk__in=ids, activo=True)
-            count = partidas.count()
-            for partida in partidas:
-                partida.activo = False
-                partida.save()
-                partida.subpartidas.all().update(activo=False)
-            messages.success(request, f'✅ {count} partida(s) eliminada(s) correctamente')
+            from beneficio.models import SubPartida
+            SubPartida.objects.filter(partida_id__in=ids).delete()
+            count = Partida.objects.filter(pk__in=ids, activo=True).count()
+            Partida.objects.filter(pk__in=ids).delete()
+            messages.success(request, f'✅ {count} partida(s) eliminada(s) permanentemente')
         except Exception as e:
             messages.error(request, f'❌ Error al eliminar: {str(e)}')
     return redirect('lista_partidas')
