@@ -10,7 +10,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '--confirm',
             action='store_true',
-            help='Confirmar que deseas ejecutar esta operación',
+            help='Confirmar que deseas ejecutar esta operacion',
         )
 
     def handle(self, *args, **options):
@@ -19,9 +19,9 @@ class Command(BaseCommand):
 
         if not options['confirm']:
             self.stdout.write(self.style.WARNING(
-                f'\n⚠️  ADVERTENCIA: Esta operación modificará los IDs de las partidas.\n'
+                f'\nADVERTENCIA: Esta operacion modificara los IDs de las partidas.\n'
                 f'   Base de datos detectada: {db_engine}\n'
-                f'   Asegúrate de tener un backup de la base de datos.\n\n'
+                f'   Asegurate de tener un backup de la base de datos.\n\n'
                 f'   Para ejecutar, usa: python manage.py reset_partida_ids --confirm\n'
             ))
 
@@ -37,118 +37,111 @@ class Command(BaseCommand):
             return
 
         # Ejecutar el reset
-        self.stdout.write(f'\n🔄 Iniciando reset de IDs... (DB: {db_engine})\n')
+        self.stdout.write(f'\nIniciando reset de IDs... (DB: {db_engine})\n')
 
         try:
             with transaction.atomic():
-                # Obtener todas las partidas ordenadas por fecha de creación o ID actual
+                # Obtener todas las partidas ordenadas por fecha de creacion o ID actual
                 partidas = list(Partida.objects.all().order_by('fecha_creacion', 'id'))
 
                 if not partidas:
                     self.stdout.write(self.style.WARNING('No hay partidas para resetear.'))
                     return
 
-                self.stdout.write(f'📋 Procesando {len(partidas)} partidas...\n')
+                self.stdout.write(f'Procesando {len(partidas)} partidas...\n')
 
                 # Crear mapeo de ID antiguo a ID nuevo
                 id_mapping = {}
                 for new_id, partida in enumerate(partidas, start=1):
                     id_mapping[partida.id] = new_id
-                    self.stdout.write(f'  {partida.numero_partida}: ID {partida.id} → ID {new_id}')
+                    self.stdout.write(f'  {partida.numero_partida}: ID {partida.id} -> ID {new_id}')
 
-                # Usar IDs temporales para evitar conflictos de unicidad
-                # Primero movemos todos a IDs negativos temporales
-                self.stdout.write('\n🔧 Paso 1: Asignando IDs temporales...')
-
-                with connection.cursor() as cursor:
-                    for old_id, new_id in id_mapping.items():
-                        temp_id = -old_id  # ID temporal negativo
-
-                        # Actualizar subpartidas primero (desactivar FK temporalmente en PostgreSQL)
-                        if db_engine == 'postgresql':
-                            cursor.execute(
-                                'UPDATE beneficio_subpartida SET partida_id = %s WHERE partida_id = %s',
-                                [temp_id, old_id]
-                            )
-                            cursor.execute(
-                                'UPDATE beneficio_partida SET id = %s WHERE id = %s',
-                                [temp_id, old_id]
-                            )
-                        else:  # SQLite
-                            cursor.execute(
-                                'UPDATE beneficio_subpartida SET partida_id = ? WHERE partida_id = ?',
-                                [temp_id, old_id]
-                            )
-                            cursor.execute(
-                                'UPDATE beneficio_partida SET id = ? WHERE id = ?',
-                                [temp_id, old_id]
-                            )
-
-                # Ahora asignamos los IDs finales
-                self.stdout.write('🔧 Paso 2: Asignando IDs finales...')
+                # Paso 1: IDs temporales negativos para evitar conflictos
+                self.stdout.write('\nPaso 1: Asignando IDs temporales...')
                 with connection.cursor() as cursor:
                     for old_id, new_id in id_mapping.items():
                         temp_id = -old_id
-
                         if db_engine == 'postgresql':
                             cursor.execute(
-                                'UPDATE beneficio_partida SET id = %s WHERE id = %s',
+                                'UPDATE subpartidas SET partida_id = %s WHERE partida_id = %s',
+                                [temp_id, old_id]
+                            )
+                            cursor.execute(
+                                'UPDATE partidas SET id = %s WHERE id = %s',
+                                [temp_id, old_id]
+                            )
+                        else:  # SQLite
+                            cursor.execute(
+                                'UPDATE subpartidas SET partida_id = ? WHERE partida_id = ?',
+                                [temp_id, old_id]
+                            )
+                            cursor.execute(
+                                'UPDATE partidas SET id = ? WHERE id = ?',
+                                [temp_id, old_id]
+                            )
+
+                # Paso 2: IDs finales
+                self.stdout.write('Paso 2: Asignando IDs finales...')
+                with connection.cursor() as cursor:
+                    for old_id, new_id in id_mapping.items():
+                        temp_id = -old_id
+                        if db_engine == 'postgresql':
+                            cursor.execute(
+                                'UPDATE partidas SET id = %s WHERE id = %s',
                                 [new_id, temp_id]
                             )
                             cursor.execute(
-                                'UPDATE beneficio_subpartida SET partida_id = %s WHERE partida_id = %s',
+                                'UPDATE subpartidas SET partida_id = %s WHERE partida_id = %s',
                                 [new_id, temp_id]
                             )
                         else:  # SQLite
                             cursor.execute(
-                                'UPDATE beneficio_partida SET id = ? WHERE id = ?',
+                                'UPDATE partidas SET id = ? WHERE id = ?',
                                 [new_id, temp_id]
                             )
                             cursor.execute(
-                                'UPDATE beneficio_subpartida SET partida_id = ? WHERE partida_id = ?',
+                                'UPDATE subpartidas SET partida_id = ? WHERE partida_id = ?',
                                 [new_id, temp_id]
                             )
 
-                # Resetear la secuencia
-                self.stdout.write('🔧 Paso 3: Reseteando secuencia de autoincremento...')
+                # Paso 3: Resetear secuencia de autoincremento
+                self.stdout.write('Paso 3: Reseteando secuencia de autoincremento...')
                 max_id = len(partidas)
-
                 with connection.cursor() as cursor:
                     if db_engine == 'postgresql':
-                        # PostgreSQL: resetear secuencia
                         cursor.execute(
-                            "SELECT setval(pg_get_serial_sequence('beneficio_partida', 'id'), %s, true)",
+                            "SELECT setval(pg_get_serial_sequence('partidas', 'id'), %s, true)",
                             [max_id]
                         )
                     else:  # SQLite
                         cursor.execute(
                             'UPDATE sqlite_sequence SET seq = ? WHERE name = ?',
-                            [max_id, 'beneficio_partida']
+                            [max_id, 'partidas']
                         )
 
-                # Renumerar numero_partida (PAR-0001, PAR-0002, ...)
-                self.stdout.write('🔧 Paso 4: Actualizando numero_partida...')
+                # Paso 4: Actualizar campo numero_partida (PAR-0001, PAR-0002, ...)
+                self.stdout.write('Paso 4: Actualizando numero_partida...')
                 with connection.cursor() as cursor:
                     for new_id, partida in enumerate(partidas, start=1):
                         nuevo_numero = f'PAR-{new_id:04d}'
                         if db_engine == 'postgresql':
                             cursor.execute(
-                                'UPDATE beneficio_partida SET numero_partida = %s WHERE id = %s',
+                                'UPDATE partidas SET numero_partida = %s WHERE id = %s',
                                 [nuevo_numero, new_id]
                             )
                         else:
                             cursor.execute(
-                                'UPDATE beneficio_partida SET numero_partida = ? WHERE id = ?',
+                                'UPDATE partidas SET numero_partida = ? WHERE id = ?',
                                 [nuevo_numero, new_id]
                             )
-                        self.stdout.write(f'  {partida.numero_partida} → {nuevo_numero}')
+                        self.stdout.write(f'  {partida.numero_partida} -> {nuevo_numero}')
 
-                self.stdout.write(self.style.SUCCESS(f'\n✅ Reset completado exitosamente!'))
+                self.stdout.write(self.style.SUCCESS(f'\nReset completado exitosamente!'))
                 self.stdout.write(f'   - {len(partidas)} partidas renumeradas')
                 self.stdout.write(f'   - Secuencia reiniciada a {max_id}')
-                self.stdout.write(f'   - La próxima partida tendrá ID {max_id + 1}\n')
+                self.stdout.write(f'   - La proxima partida tendra ID {max_id + 1}\n')
 
-                # Mostrar resultado
+                # Mostrar resultado final
                 self.stdout.write('\nNuevo estado de las partidas:')
                 self.stdout.write('-' * 50)
                 for p in Partida.objects.all().order_by('id'):
@@ -157,6 +150,6 @@ class Command(BaseCommand):
                 self.stdout.write('-' * 50)
 
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f'\n❌ Error: {str(e)}'))
-            self.stdout.write('   La operación ha sido revertida (rollback).')
+            self.stdout.write(self.style.ERROR(f'\nError: {str(e)}'))
+            self.stdout.write('   La operacion ha sido revertida (rollback).')
             raise
