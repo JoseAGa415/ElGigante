@@ -1862,7 +1862,18 @@ class Partida(models.Model):
             self.numero_partida = f"PAR-{nuevo_num:04d}"
         
         super().save(*args, **kwargs)
-    
+
+    @property
+    def display_id(self):
+        """Devuelve el identificador visible: '28' para PAR-0028, '26A' para PAR-0026A"""
+        import re
+        if self.numero_partida and self.numero_partida.startswith('PAR-'):
+            suffix = self.numero_partida[4:]  # quitar 'PAR-'
+            match = re.match(r'^0*(\d+\w*)', suffix)
+            if match:
+                return match.group(1)
+        return str(self.id)
+
     def actualizar_totales(self):
         from django.db.models import Sum, Count
         
