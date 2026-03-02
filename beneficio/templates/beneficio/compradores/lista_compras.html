@@ -3,6 +3,43 @@
 
 {% block title %}Lista de Compras {% endblock %}
 
+{% block extra_css %}
+<style>
+@media print {
+    /* Ocultar navegacion Jazzmin/AdminLTE */
+    .main-sidebar, .main-header, .main-footer,
+    nav, header, footer, .sidebar,
+    [class*="sidebar"], [class*="navbar"],
+    .brand-link, .nav-link { display: none !important; }
+    /* Sin fondos de pagina */
+    body, .wrapper, .content-wrapper {
+        background: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+    }
+    .min-h-screen { min-height: unset !important; background: white !important; }
+    /* Ocultar filtros, boton volver, columna acciones */
+    #filtros-section, #back-button, .no-print { display: none !important; }
+    .col-acciones { display: none !important; }
+    /* Sin sombras ni degradados */
+    .shadow-lg, .shadow { box-shadow: none !important; }
+    .bg-gradient-to-br, .bg-gradient-to-r { background: white !important; }
+    .rounded-xl, .rounded-lg { border-radius: 0 !important; }
+    /* Mostrar cabecera de impresion */
+    .print-only { display: block !important; }
+    /* Estilos de tabla */
+    table { width: 100% !important; font-size: 11px !important; border-collapse: collapse !important; }
+    th, td { padding: 5px 8px !important; border: 1px solid #ccc !important; }
+    thead { background-color: #f59e0b !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    thead th { color: white !important; }
+    .text-3xl { font-size: 16px !important; }
+    /* Maquetacion de la pagina */
+    @page { margin: 1.5cm; size: A4 landscape; }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -71,7 +108,7 @@
         {% endif %}
 
         <!-- Filtros -->
-        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <div id="filtros-section" class="bg-white rounded-xl shadow-lg p-6 mb-8">
             <form method="get" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                     <div>
@@ -139,8 +176,34 @@
                     <a href="{% url 'lista_compras' %}" class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
                         Limpiar Filtros
                     </a>
+                    <button type="button" onclick="window.print()" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                        </svg>
+                        Imprimir
+                    </button>
                 </div>
             </form>
+        </div>
+
+        <!-- Cabecera visible solo al imprimir -->
+        <div class="print-only" style="display:none; margin-bottom:16px; padding-bottom:12px; border-bottom:2px solid #f59e0b;">
+            <h2 style="font-size:20px; font-weight:bold; margin-bottom:6px;">El Gigante - Lista de Compras</h2>
+            <div style="font-size:12px; color:#555; line-height:1.8;">
+                <strong>Fecha de impresion:</strong> {% now "d/m/Y H:i" %} &nbsp;|&nbsp;
+                <strong>Total registros:</strong> {{ estadisticas.total_compras|default:0 }} &nbsp;|&nbsp;
+                <strong>Cantidad total:</strong> {{ estadisticas.total_cantidad|default:0|floatformat:2 }} &nbsp;|&nbsp;
+                <strong>Monto total:</strong> Q{{ estadisticas.total_monto|default:0|floatformat:2 }}
+            </div>
+            {% if request.GET.comprador or request.GET.fecha_desde or request.GET.fecha_hasta or request.GET.estado_pago or request.GET.metodo_pago %}
+            <div style="font-size:12px; color:#333; margin-top:6px;">
+                <strong>Filtros aplicados:</strong>
+                {% if request.GET.estado_pago %} Estado: <em>{{ request.GET.estado_pago|capfirst }}</em>{% endif %}
+                {% if request.GET.metodo_pago %} | Metodo: <em>{{ request.GET.metodo_pago|capfirst }}</em>{% endif %}
+                {% if request.GET.fecha_desde %} | Desde: <em>{{ request.GET.fecha_desde }}</em>{% endif %}
+                {% if request.GET.fecha_hasta %} | Hasta: <em>{{ request.GET.fecha_hasta }}</em>{% endif %}
+            </div>
+            {% endif %}
         </div>
 
         <!-- Tabla de Compras -->
@@ -173,7 +236,7 @@
                             <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
                                 Estado Pago
                             </th>
-                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">
+                            <th class="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider col-acciones">
                                 Acciones
                             </th>
                         </tr>
@@ -261,7 +324,7 @@
                                 </span>
                                 {% endif %}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium col-acciones">
                                 <div class="flex gap-2">
                                     <a href="{% url 'editar_compra' compra.pk %}" 
                                        class="text-blue-600 hover:text-blue-900 transition-colors" 
@@ -300,7 +363,7 @@
         </div>
 
         <!-- Botón de regreso -->
-        <div class="mt-8">
+        <div id="back-button" class="mt-8">
             <a href="{% url 'lista_compradores' %}" 
                class="inline-flex items-center gap-2 px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
