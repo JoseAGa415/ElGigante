@@ -104,16 +104,26 @@ class Command(BaseCommand):
                             [max_id, 'partidas']
                         )
 
-                # Paso 5: Actualizar numero_partida
-                self.stdout.write('Paso 5: Actualizando numero_partida...')
+                # Paso 5: Actualizar numero_partida y numero_subpartida
+                self.stdout.write('Paso 5: Actualizando numero_partida y subpartidas...')
                 with connection.cursor() as cursor:
                     for new_id, partida in enumerate(activas, start=1):
                         nuevo_numero = f'PAR-{new_id:04d}'
+                        viejo_numero = partida.numero_partida
                         if db_engine == 'postgresql':
                             cursor.execute('UPDATE partidas SET numero_partida = %s WHERE id = %s', [nuevo_numero, new_id])
+                            # Actualizar numero_subpartida: reemplazar prefijo viejo por nuevo
+                            cursor.execute(
+                                "UPDATE subpartidas SET numero_subpartida = %s || substring(numero_subpartida from length(%s)+1) WHERE partida_id = %s AND numero_subpartida LIKE %s",
+                                [nuevo_numero, viejo_numero, new_id, f'{viejo_numero}%']
+                            )
                         else:
                             cursor.execute('UPDATE partidas SET numero_partida = ? WHERE id = ?', [nuevo_numero, new_id])
-                        self.stdout.write(f'  {partida.numero_partida} -> {nuevo_numero}')
+                            cursor.execute(
+                                "UPDATE subpartidas SET numero_subpartida = ? || substr(numero_subpartida, length(?)+1) WHERE partida_id = ? AND numero_subpartida LIKE ?",
+                                [nuevo_numero, viejo_numero, new_id, f'{viejo_numero}%']
+                            )
+                        self.stdout.write(f'  {viejo_numero} -> {nuevo_numero}')
 
                 self.stdout.write(self.style.SUCCESS(f'\nReset completado!'))
                 self.stdout.write(f'   - {len(activas)} partidas renumeradas')
