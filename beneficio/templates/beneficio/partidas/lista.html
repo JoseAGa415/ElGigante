@@ -5,7 +5,7 @@
 {% block content %}
 <div class="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 py-8">
     <div class="max-w-7xl mx-auto px-4">
-        
+
         <!-- Header -->
         <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
             <div class="flex items-center justify-between">
@@ -21,7 +21,7 @@
                         Gestión de sub-agrupaciones de lotes de café
                     </p>
                 </div>
-                <a href="{% url 'crear_partida' %}" 
+                <a href="{% url 'crear_partida' %}"
                    class="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition font-medium shadow-lg">
                     <i class="fas fa-plus mr-2"></i>
                     Nueva Partida
@@ -103,7 +103,7 @@
                         <i class="fas fa-user mr-1"></i>
                         Proveedor
                     </label>
-                    <input type="text" 
+                    <input type="text"
                            name="proveedor"
                            placeholder="Nombre del proveedor"
                            class="w-full px-4 py-2 rounded-lg border border-gray-300">
@@ -122,18 +122,41 @@
                 </div>
 
                 <div class="flex items-end gap-2">
-                    <button type="submit" 
+                    <button type="submit"
                             class="flex-1 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium">
                         <i class="fas fa-search mr-2"></i>
                         Buscar
                     </button>
-                    <button type="button" 
-                            onclick="window.location.href='{% url 'lista_partidas' %}'"
+                    <button type="button"
+                            data-url="{% url 'lista_partidas' %}"
+                            onclick="window.location.href=this.dataset.url"
                             class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
                         <i class="fas fa-sync-alt"></i>
                     </button>
                 </div>
             </form>
+        </div>
+
+        <!-- Barra de acciones masivas (oculta por defecto) -->
+        <div id="bulk-actions-bar" class="hidden bg-red-50 border border-red-200 rounded-xl shadow-lg p-4 mb-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-check-square text-red-500 text-lg"></i>
+                <span class="font-semibold text-red-700">
+                    <span id="selected-count">0</span> partida(s) seleccionada(s)
+                </span>
+            </div>
+            <div class="flex items-center gap-3">
+                <button type="button" onclick="deseleccionarTodo()"
+                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm font-medium">
+                    <i class="fas fa-times mr-1"></i>
+                    Cancelar
+                </button>
+                <button type="button" onclick="confirmarEliminacionMasiva()"
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm font-medium">
+                    <i class="fas fa-trash mr-1"></i>
+                    Eliminar seleccionadas
+                </button>
+            </div>
         </div>
 
         <!-- Tabla de Partidas -->
@@ -142,6 +165,15 @@
                 <table class="w-full">
                     <thead class="bg-green-600 text-white">
                         <tr>
+                            <!-- Columna checkbox con "Seleccionar todo" -->
+                            <th class="px-4 py-4 text-center w-12">
+                                <div class="flex flex-col items-center gap-1">
+                                    <input type="checkbox" id="select-all"
+                                           onchange="toggleSeleccionarTodo(this)"
+                                           class="w-4 h-4 rounded border-white cursor-pointer accent-white">
+                                    <span class="text-xs font-normal opacity-80">Todo</span>
+                                </div>
+                            </th>
                             <th class="px-6 py-4 text-left text-sm font-semibold">NÚMERO</th>
                             <th class="px-6 py-4 text-left text-sm font-semibold">NOMBRE</th>
                             <th class="px-6 py-4 text-left text-sm font-semibold">
@@ -155,9 +187,17 @@
                             <th class="px-6 py-4 text-center text-sm font-semibold">ACCIONES</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200">
+                    <tbody class="divide-y divide-gray-200" id="partidas-tbody">
                         {% for partida in partidas %}
-                        <tr class="hover:bg-green-50 transition">
+                        <tr class="hover:bg-green-50 transition partida-row" data-id="{{ partida.pk }}">
+                            <!-- Checkbox por fila -->
+                            <td class="px-4 py-4 text-center">
+                                <input type="checkbox"
+                                       class="partida-checkbox w-4 h-4 rounded border-gray-300 cursor-pointer accent-green-600"
+                                       value="{{ partida.pk }}"
+                                       onchange="actualizarSeleccion()">
+                            </td>
+
                             <!-- Número -->
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
@@ -179,7 +219,7 @@
                                 {% endif %}
                             </td>
 
-                            <!-- UBICACIÓN ⭐ -->
+                            <!-- UBICACIÓN -->
                             <td class="px-6 py-4">
                                 {% if partida.bodega or partida.percha %}
                                 <div class="flex flex-col gap-1">
@@ -197,7 +237,7 @@
                                         </span>
                                     </div>
                                     {% endif %}
-                                    
+
                                     {% if partida.percha %}
                                     <div class="flex items-center gap-2 text-sm">
                                         <i class="fas fa-boxes text-green-600"></i>
@@ -218,9 +258,7 @@
                                 <p class="text-lg font-bold text-blue-600">
                                     {{ partida.peso_total_kg|floatformat:2 }}
                                 </p>
-                                <p class="text-xs text-gray-500">
-                                    kg
-                                </p>
+                                <p class="text-xs text-gray-500">kg</p>
                                 <p class="text-xs text-gray-500">
                                     {{ partida.peso_en_quintales|floatformat:2 }} qq
                                 </p>
@@ -256,17 +294,17 @@
                             <!-- Acciones -->
                             <td class="px-6 py-4">
                                 <div class="flex items-center justify-center gap-2">
-                                    <a href="{% url 'detalle_partida' partida.pk %}" 
+                                    <a href="{% url 'detalle_partida' partida.pk %}"
                                        class="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition"
                                        title="Ver detalles">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{% url 'editar_partida' partida.pk %}" 
+                                    <a href="{% url 'editar_partida' partida.pk %}"
                                        class="p-2 bg-amber-100 text-amber-600 rounded-lg hover:bg-amber-200 transition"
                                        title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a href="{% url 'eliminar_partida' partida.pk %}" 
+                                    <a href="{% url 'eliminar_partida' partida.pk %}"
                                        class="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition"
                                        title="Eliminar">
                                         <i class="fas fa-trash"></i>
@@ -276,10 +314,10 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="8" class="px-6 py-12 text-center">
+                            <td colspan="9" class="px-6 py-12 text-center">
                                 <i class="fas fa-inbox text-gray-400 text-5xl mb-4"></i>
                                 <p class="text-gray-600 mb-4">No hay partidas creadas</p>
-                                <a href="{% url 'crear_partida' %}" 
+                                <a href="{% url 'crear_partida' %}"
                                    class="inline-block px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium">
                                     <i class="fas fa-plus mr-2"></i>
                                     Crear Primera Partida
@@ -297,21 +335,21 @@
         <div class="mt-8 flex justify-center">
             <nav class="flex gap-2">
                 {% if partidas.has_previous %}
-                <a href="?page={{ partidas.previous_page_number }}" 
+                <a href="?page={{ partidas.previous_page_number }}"
                    class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
                     <i class="fas fa-chevron-left"></i>
                 </a>
                 {% endif %}
 
                 {% for num in partidas.paginator.page_range %}
-                <a href="?page={{ num }}" 
+                <a href="?page={{ num }}"
                    class="px-4 py-2 {% if partidas.number == num %}bg-green-600 text-white{% else %}bg-white border border-gray-300 hover:bg-gray-50{% endif %} rounded-lg">
                     {{ num }}
                 </a>
                 {% endfor %}
 
                 {% if partidas.has_next %}
-                <a href="?page={{ partidas.next_page_number }}" 
+                <a href="?page={{ partidas.next_page_number }}"
                    class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
                     <i class="fas fa-chevron-right"></i>
                 </a>
@@ -322,4 +360,101 @@
 
     </div>
 </div>
+
+<!-- Modal de confirmación eliminación masiva -->
+<div id="modal-eliminar-masivo" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-gray-900">Eliminar partidas</h3>
+                <p class="text-sm text-gray-500">Esta acción no se puede deshacer</p>
+            </div>
+        </div>
+        <p class="text-gray-700 mb-6">
+            ¿Estás seguro de que deseas eliminar
+            <span id="modal-count" class="font-bold text-red-600">0</span>
+            partida(s) seleccionada(s)? También se desactivarán todas sus sub-partidas.
+        </p>
+        <div class="flex gap-3 justify-end">
+            <button type="button" onclick="cerrarModal()"
+                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium">
+                Cancelar
+            </button>
+            <form method="post" action="{% url 'eliminar_partidas_multiple' %}" id="form-eliminar-masivo">
+                {% csrf_token %}
+                <input type="hidden" name="partidas_ids" id="input-partidas-ids" value="">
+                <button type="submit"
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium">
+                    <i class="fas fa-trash mr-1"></i>
+                    Sí, eliminar
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function getSeleccionados() {
+    return Array.from(document.querySelectorAll('.partida-checkbox:checked')).map(cb => cb.value);
+}
+
+function actualizarSeleccion() {
+    const seleccionados = getSeleccionados();
+    const count = seleccionados.length;
+    const total = document.querySelectorAll('.partida-checkbox').length;
+    const bar = document.getElementById('bulk-actions-bar');
+    const countEl = document.getElementById('selected-count');
+    const selectAll = document.getElementById('select-all');
+
+    countEl.textContent = count;
+    bar.classList.toggle('hidden', count === 0);
+    bar.classList.toggle('flex', count > 0);
+
+    // Estado del checkbox "seleccionar todo"
+    selectAll.indeterminate = count > 0 && count < total;
+    selectAll.checked = count === total && total > 0;
+
+    // Resaltar filas seleccionadas
+    document.querySelectorAll('.partida-row').forEach(row => {
+        const cb = row.querySelector('.partida-checkbox');
+        row.classList.toggle('bg-red-50', cb.checked);
+        row.classList.toggle('hover:bg-red-50', cb.checked);
+    });
+}
+
+function toggleSeleccionarTodo(checkbox) {
+    document.querySelectorAll('.partida-checkbox').forEach(cb => {
+        cb.checked = checkbox.checked;
+    });
+    actualizarSeleccion();
+}
+
+function deseleccionarTodo() {
+    document.querySelectorAll('.partida-checkbox').forEach(cb => cb.checked = false);
+    document.getElementById('select-all').checked = false;
+    actualizarSeleccion();
+}
+
+function confirmarEliminacionMasiva() {
+    const seleccionados = getSeleccionados();
+    if (seleccionados.length === 0) return;
+
+    document.getElementById('modal-count').textContent = seleccionados.length;
+    document.getElementById('input-partidas-ids').value = seleccionados.join(',');
+    document.getElementById('modal-eliminar-masivo').classList.remove('hidden');
+}
+
+function cerrarModal() {
+    document.getElementById('modal-eliminar-masivo').classList.add('hidden');
+}
+
+// Cerrar modal al hacer clic fuera
+document.getElementById('modal-eliminar-masivo').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModal();
+});
+</script>
+
 {% endblock %}

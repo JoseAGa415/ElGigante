@@ -3716,6 +3716,28 @@ def eliminar_partida(request, pk):
     return render(request, 'beneficio/partidas/eliminar.html', context)
 
 
+@login_required
+def eliminar_partidas_multiple(request):
+    """Eliminar (desactivar) múltiples partidas seleccionadas"""
+    if request.method == 'POST':
+        ids_raw = request.POST.get('partidas_ids', '')
+        ids = [int(i) for i in ids_raw.split(',') if i.strip().isdigit()]
+        if not ids:
+            messages.error(request, '❌ No se seleccionaron partidas')
+            return redirect('lista_partidas')
+        try:
+            partidas = Partida.objects.filter(pk__in=ids, activo=True)
+            count = partidas.count()
+            for partida in partidas:
+                partida.activo = False
+                partida.save()
+                partida.subpartidas.all().update(activo=False)
+            messages.success(request, f'✅ {count} partida(s) eliminada(s) correctamente')
+        except Exception as e:
+            messages.error(request, f'❌ Error al eliminar: {str(e)}')
+    return redirect('lista_partidas')
+
+
 # ==========================================
 # SUB-PARTIDAS
 # ==========================================

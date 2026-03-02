@@ -103,6 +103,7 @@ urlpatterns = [
     path('partidas/<int:pk>/', views.detalle_partida, name='detalle_partida'),
     path('partidas/<int:pk>/editar/', views.editar_partida, name='editar_partida'),
     path('partidas/<int:pk>/eliminar/', views.eliminar_partida, name='eliminar_partida'),
+    path('partidas/eliminar-multiple/', views.eliminar_partidas_multiple, name='eliminar_partidas_multiple'),
 
     # SUB-PARTIDAS
     path('partidas/<int:partida_id>/agregar/', views.agregar_subpartida, name='agregar_subpartida'),
