@@ -126,6 +126,23 @@ class Command(BaseCommand):
                             [max_id, 'beneficio_partida']
                         )
 
+                # Renumerar numero_partida (PAR-0001, PAR-0002, ...)
+                self.stdout.write('🔧 Paso 4: Actualizando numero_partida...')
+                with connection.cursor() as cursor:
+                    for new_id, partida in enumerate(partidas, start=1):
+                        nuevo_numero = f'PAR-{new_id:04d}'
+                        if db_engine == 'postgresql':
+                            cursor.execute(
+                                'UPDATE beneficio_partida SET numero_partida = %s WHERE id = %s',
+                                [nuevo_numero, new_id]
+                            )
+                        else:
+                            cursor.execute(
+                                'UPDATE beneficio_partida SET numero_partida = ? WHERE id = ?',
+                                [nuevo_numero, new_id]
+                            )
+                        self.stdout.write(f'  {partida.numero_partida} → {nuevo_numero}')
+
                 self.stdout.write(self.style.SUCCESS(f'\n✅ Reset completado exitosamente!'))
                 self.stdout.write(f'   - {len(partidas)} partidas renumeradas')
                 self.stdout.write(f'   - Secuencia reiniciada a {max_id}')
