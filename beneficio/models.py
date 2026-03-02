@@ -2001,14 +2001,14 @@ class SubPartida(models.Model):
         # Calcular peso neto
         self.peso_neto_kg = self.peso_bruto_kg - self.tara_kg
         
-        # Auto-generar número
+        # Auto-generar número único globalmente
         if not self.numero_subpartida:
             partida_num = self.partida.numero_partida
+            # Buscar globalmente (no solo en esta partida) para evitar conflictos
             ultimo = SubPartida.objects.filter(
-                partida=self.partida,
                 numero_subpartida__startswith=f"{partida_num}-"
             ).order_by('-numero_subpartida').first()
-            
+
             if ultimo:
                 try:
                     ultimo_num = int(ultimo.numero_subpartida.split('-')[-1])
@@ -2017,7 +2017,7 @@ class SubPartida(models.Model):
                     nuevo_num = 1
             else:
                 nuevo_num = 1
-            
+
             self.numero_subpartida = f"{partida_num}-{nuevo_num:03d}"
         
         super().save(*args, **kwargs)
