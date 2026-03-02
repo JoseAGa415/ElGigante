@@ -4064,6 +4064,14 @@ def editar_subpartida(request, pk):
                 perfil_sensorial = request.POST.get('perfil_sensorial', '').strip()
                 subpartida.perfil_sensorial = perfil_sensorial if perfil_sensorial else None
 
+                # Etiqueta
+                etiqueta = request.POST.get('etiqueta', '').strip()
+                if etiqueta:
+                    subpartida.etiqueta = etiqueta
+                    EtiquetaLote.objects.get_or_create(nombre=etiqueta)
+                else:
+                    subpartida.etiqueta = None
+
                 # Otros campos
                 proveedor = request.POST.get('proveedor', '').strip()
                 subpartida.proveedor = proveedor if proveedor else None
@@ -4080,7 +4088,8 @@ def editar_subpartida(request, pk):
         except Exception as e:
             messages.error(request, f'❌ Error: {str(e)}')
 
-    context = {'subpartida': subpartida}
+    etiquetas = EtiquetaLote.objects.all()
+    context = {'subpartida': subpartida, 'etiquetas': etiquetas}
     return render(request, 'beneficio/partidas/editar_subpartida.html', context)
 
 
