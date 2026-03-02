@@ -1846,21 +1846,17 @@ class Partida(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.numero_partida:
-            ultimo = Partida.objects.filter(
-                numero_partida__startswith='PAR-'
-            ).order_by('-numero_partida').first()
-            
-            if ultimo:
-                try:
-                    ultimo_num = int(ultimo.numero_partida.split('-')[1])
-                    nuevo_num = ultimo_num + 1
-                except:
-                    nuevo_num = 1
-            else:
-                nuevo_num = 1
-            
-            self.numero_partida = f"PAR-{nuevo_num:04d}"
-        
+            import re
+            # Buscar el número más alto ignorando sufijos de letra (PAR-0026A cuenta como 26)
+            max_num = 0
+            for p in Partida.objects.filter(numero_partida__startswith='PAR-'):
+                match = re.match(r'^PAR-0*(\d+)', p.numero_partida)
+                if match:
+                    num = int(match.group(1))
+                    if num > max_num:
+                        max_num = num
+            self.numero_partida = f"PAR-{max_num + 1:04d}"
+
         super().save(*args, **kwargs)
 
     @property
