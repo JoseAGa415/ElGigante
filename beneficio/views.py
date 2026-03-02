@@ -3603,62 +3603,83 @@ def editar_partida(request, pk):
                 # Nombre (obligatorio)
                 nombre = request.POST.get('nombre', '').strip()
                 print(f"\n✅ Nombre: '{nombre}'")
-                
+
                 if not nombre:
                     print("❌ ERROR: Nombre está vacío")
                     raise ValueError("El nombre es obligatorio")
-                
+
                 partida.nombre = nombre
-                
+
+                # Número de Partida (editable)
+                nuevo_numero = request.POST.get('numero_partida', '').strip().upper()
+                if not nuevo_numero:
+                    raise ValueError("El número de partida es obligatorio")
+
+                viejo_numero = partida.numero_partida
+                if nuevo_numero != viejo_numero:
+                    # Verificar que no esté en uso por otra partida
+                    if Partida.objects.filter(numero_partida=nuevo_numero).exclude(pk=partida.pk).exists():
+                        raise ValueError(f"El número '{nuevo_numero}' ya está en uso por otra partida")
+                    # Actualizar subpartidas: reemplazar el prefijo viejo por el nuevo
+                    from beneficio.models import SubPartida
+                    subs = SubPartida.objects.filter(partida=partida)
+                    for sub in subs:
+                        if sub.numero_subpartida.startswith(viejo_numero + '-'):
+                            nuevo_sub = nuevo_numero + sub.numero_subpartida[len(viejo_numero):]
+                            sub.numero_subpartida = nuevo_sub
+                            sub.save(update_fields=['numero_subpartida'])
+                    partida.numero_partida = nuevo_numero
+                    print(f"✅ Número cambiado: {viejo_numero} -> {nuevo_numero} ({subs.count()} subpartidas actualizadas)")
+
                 # Descripción y observaciones
                 descripcion = request.POST.get('descripcion', '').strip()
                 observaciones = request.POST.get('observaciones', '').strip()
-                
+
                 print(f"✅ Descripción: '{descripcion}'")
                 print(f"✅ Observaciones: '{observaciones}'")
-                
+
                 partida.descripcion = descripcion
                 partida.observaciones = observaciones
-                
+
                 # Ubicación
                 bodega_id = request.POST.get('bodega_id')
                 percha = request.POST.get('percha', '').strip()
-                
+
                 print(f"✅ Bodega ID: {bodega_id}")
                 print(f"✅ Percha: '{percha}'")
-                
+
                 if bodega_id and bodega_id != '':
                     partida.bodega_id = int(bodega_id)
                     print(f"   → Bodega asignada: ID {bodega_id}")
                 else:
                     partida.bodega = None
                     print(f"   → Bodega removida")
-                
+
                 if percha:
                     partida.percha = percha
                 else:
                     partida.percha = None
-                
+
                 # Guardar
                 print("\n💾 Intentando guardar cambios...")
                 partida.save()
                 print(f"✅ ¡Partida actualizada exitosamente! ID: {partida.id}")
-                
+
                 # Mensaje de éxito
                 ubicacion_msg = ""
                 if partida.bodega and partida.percha:
                     ubicacion_msg = f" | Ubicación: Bodega #{partida.bodega.id} - {partida.percha}"
                 elif partida.bodega:
                     ubicacion_msg = f" | Bodega: Bodega #{partida.bodega.id}"
-                
+
                 messages.success(
                     request,
-                    f'✅ Partida "{nombre}" actualizada{ubicacion_msg}'
+                    f'Partida "{nombre}" actualizada{ubicacion_msg}'
                 )
-                
+
                 print(f"✅ Redirigiendo a detalle_partida con pk={partida.pk}")
                 print("=" * 60 + "\n")
-                
+
                 return redirect('detalle_partida', pk=partida.pk)
                 
         except ValueError as ve:
