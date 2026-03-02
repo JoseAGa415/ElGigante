@@ -3381,26 +3381,34 @@ def crear_partida(request):
         try:
             with transaction.atomic():
                 partida = Partida()
-                
+
+                # Número de partida personalizado (opcional)
+                numero_custom = request.POST.get('numero_partida', '').strip().upper()
+                if numero_custom:
+                    if Partida.objects.filter(numero_partida=numero_custom).exists():
+                        raise ValueError(f"El número '{numero_custom}' ya está en uso por otra partida")
+                    partida.numero_partida = numero_custom
+                # Si está vacío, el modelo lo auto-genera en save()
+
                 # Nombre (obligatorio)
                 nombre = request.POST.get('nombre', '').strip()
                 if not nombre:
                     raise ValueError("El nombre es obligatorio")
                 partida.nombre = nombre
-                
+
                 # Descripción y observaciones
                 partida.descripcion = request.POST.get('descripcion', '').strip()
                 partida.observaciones = request.POST.get('observaciones', '').strip()
-                
-                # UBICACIÓN ⭐
+
+                # UBICACIÓN
                 bodega_id = request.POST.get('bodega_id')
                 if bodega_id:
                     partida.bodega_id = bodega_id
-                
+
                 percha = request.POST.get('percha', '').strip()
                 if percha:
                     partida.percha = percha
-                
+
                 partida.creado_por = request.user
                 partida.save()
                 

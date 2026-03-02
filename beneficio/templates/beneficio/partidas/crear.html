@@ -27,13 +27,29 @@
                 </h2>
 
                 <div class="space-y-6">
+                    <!-- Número de Partida (Opcional) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-hashtag text-blue-600 mr-1"></i>
+                            Número de Partida <span class="text-gray-400 font-normal">(opcional)</span>
+                        </label>
+                        <input type="text"
+                               name="numero_partida"
+                               placeholder="Ej: PAR-0026A — dejar vacío para auto-generar"
+                               class="w-full px-4 py-3 rounded-lg border-2 border-blue-300 focus:ring-2 focus:ring-blue-600 font-bold text-lg text-gray-900">
+                        <p class="text-xs text-blue-600 mt-1">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Si lo dejas vacío se asigna el siguiente número automáticamente (PAR-0027, etc.)
+                        </p>
+                    </div>
+
                     <!-- Nombre -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             <i class="fas fa-tag text-green-600 mr-1"></i>
                             Nombre de la Partida <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" 
+                        <input type="text"
                                name="nombre"
                                required
                                placeholder="Ej: Café de Enero, Cosecha 2026, Café Guatemala"
@@ -126,7 +142,7 @@
             <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-lg">
                 <p class="text-sm text-amber-800">
                     <i class="fas fa-exclamation-circle mr-2"></i>
-                    <strong>Importante:</strong> El número de partida se generará automáticamente (PAR-0001, PAR-0002, etc.)
+                    <strong>Importante:</strong> Si dejas el número vacío se genera automáticamente. Puedes usar formatos personalizados como PAR-0026A, PAR-0026B, etc.
                 </p>
             </div>
 
